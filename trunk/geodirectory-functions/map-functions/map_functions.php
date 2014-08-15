@@ -1,0 +1,184 @@
+<?php
+/*-------------------------------------------------*/
+/* All map related functions
+/*-------------------------------------------------*/
+
+function  geodir_init_map_jason()
+{
+	global $map_jason;
+	$map_jason = array();
+}
+
+function geodir_init_map_canvas_array()
+{
+	global $map_canvas_arr;
+	$map_canvas_arr = array();
+}
+
+/* Create marker jason for map script */
+function create_marker_jason_of_posts($post){
+	global $wpdb,$map_jason,$add_post_in_marker_array,$geodir_cat_icons;
+	
+	if( ( is_main_query() || $add_post_in_marker_array ) && $post->marker_json != '')
+	{	
+			
+			$srcharr = array("'","/","-",'"','\\');
+			$replarr = array("&prime;","&frasl;","&ndash;","&ldquo;",'');
+		
+		 $icon = '';
+		 if($post->default_category != ''){
+			
+			if(!empty($geodir_cat_icons) && is_array($geodir_cat_icons) && array_key_exists($post->default_category,$geodir_cat_icons)){
+				
+				$icon = $geodir_cat_icons[$post->default_category];
+				
+			}else{
+				
+				$term_icon_url = get_tax_meta($post->default_category,'ct_cat_icon', false, $post->post_type);
+				$icon = isset($term_icon_url['src']) ? $term_icon_url['src'] : '';
+				
+				$geodir_cat_icons[$post->default_category] = $icon;
+				
+			}
+
+			
+		 }
+		
+			$post_title = $post->post_title;
+			$title = str_replace($srcharr,$replarr,$post_title);
+				
+		$map_jason[] =  '{"id":"'.$post->ID.'","t": "'.$title.'","lt": "'.$post->post_latitude.'","ln": "'.$post->post_longitude.'","mk_id":"'.$post->ID.'_'.$post->default_category.'","i":"'.$icon.'"}';
+		
+		//$map_jason[] =  $post->marker_json;
+		
+	}
+}
+
+
+/* Send jason data to script and show listing map */
+function send_marker_jason_to_js(){
+	global $map_jason,$map_canvas_arr;
+	
+	if(is_array($map_canvas_arr) && !empty($map_canvas_arr))
+	{
+		foreach($map_canvas_arr as $canvas => $jason)
+		{
+			if(is_array($map_jason) && !empty($map_jason))
+			{
+			
+				$canvas_jason = $canvas."_jason" ;
+				$map_canvas_arr[$canvas] =  array_unique($map_jason);
+				unset($cat_content_info) ;
+				$cat_content_info[]= implode(',',$map_canvas_arr[$canvas]); 
+				$totalcount = count( array_unique($map_jason) );
+				if(!empty($cat_content_info))	
+					$canvas_jason =  '[{"totalcount":"'.$totalcount.'",'.substr(implode(',',$cat_content_info),1).']'; 
+				else
+					$canvas_jason = '[{"totalcount":"0"}]';
+				
+				$map_canvas_jason_args = array($canvas.'_jason'=>$canvas_jason );
+				$map_canvas_jason_args = apply_filters('geodir_map_canvas_jason_'. $canvas  ,$map_canvas_jason_args ) ;
+				
+				wp_localize_script( 'geodir-map-widget', $canvas.'_jason_args', $map_canvas_jason_args);
+			}
+			else
+			{
+				$canvas_jason = '[{"totalcount":"0"}]';
+				$map_canvas_jason_args = array($canvas.'_jason'=>$canvas_jason );
+				$map_canvas_jason_args = apply_filters('geodir_map_canvas_jason_' . $canvas  ,$map_canvas_jason_args ) ;
+				wp_localize_script( 'geodir-map-widget', $canvas.'_jason_args', $map_canvas_jason_args);
+			}
+		}
+		
+	}
+}
+
+/* Home map Taxonomy walker */
+function home_map_taxonomy_walker($cat_taxonomy, $cat_parent = 0,$hide_empty = true,$pading = 0 , $map_canvas_name ='',$child_collapse)
+{
+	global $cat_count,$geodir_cat_icons;
+	$exclude_categories = get_option('geodir_exclude_cat_on_map');;
+	$exclude_cat_str = implode(',' , $exclude_categories );
+	if($exclude_cat_str =='')
+		$exclude_cat_str='0' ;
+	$cat_terms = get_terms($cat_taxonomy, array('parent' => $cat_parent,'exclude'=> $exclude_cat_str , 'hide_empty ' => $hide_empty));
+	
+	$main_list_class = '';
+	//exit();
+	//If there are terms, start displaying
+	if(count($cat_terms) > 0)
+	{
+		//Displaying as a list
+		$p = $pading * 15; $pading++;
+		
+		if($cat_parent == 0)
+		{	$list_class = 'main_list'; 	
+			$display = '';
+		}	
+		else
+		{	$list_class = 'sub_list';	
+			if(!$child_collapse)
+				$display = '';
+			else
+				$display = 'display:none';
+		}
+		
+		
+		$exclude_categories = get_option('geodir_exclude_cat_on_map');
+		$out = '<ul class="treeview '.$list_class.'" style="margin-left:'.$p.'px;'.$display.';">';
+		foreach ($cat_terms as $cat_term):
+			
+			$post_type = isset($_REQUEST['post_type']) ? $_REQUEST['post_type']: 'gd_place';
+			
+			$term_icon_url = '';
+			if(!empty($geodir_cat_icons) && is_array($geodir_cat_icons) && array_key_exists($cat_term->term_id,$geodir_cat_icons)){
+				
+				$term_icon_url = $geodir_cat_icons[$cat_term->term_id];
+				
+			}else{
+			
+				$term_icon_url_arr = get_tax_meta($cat_term->term_id, 'ct_cat_icon', false, $post_type);
+				
+				$term_icon_url = isset($term_icon_url_arr['src']) ? $term_icon_url_arr['src'] : '';
+				
+				$geodir_cat_icons[$cat_term->term_id] = $term_icon_url;
+			}
+			
+			
+			
+			if($term_icon_url){$icon =  $term_icon_url;}
+			else{$icon = get_option('geodir_default_marker_icon');}
+			if(!in_array($cat_term->term_id,$exclude_categories)):
+				//Secret sauce.  Function calls itself to display child elements, if any
+				$term_check = '<input type="checkbox" checked="checked" class="group_selector '.$main_list_class.'"'; 
+				$term_check .= ' name="'.$map_canvas_name.'_cat[]" group="catgroup'.$cat_term->term_id.'"'; 
+				$term_check .= ' alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" " onclick="javascript:build_map_ajax_search_param(\''.$map_canvas_name.'\',false)">';
+				$term_check .= '<img height="15" width="15" alt="" src="'.$icon.'" title="'.ucfirst($cat_term->name).'"/>';
+				$out .= '<li>'.$term_check.'<label>'.ucfirst($cat_term->name).'</label><i class="fa fa-long-arrow-down"></i>'; 
+			endif;
+			
+			
+		
+				// get sub category by recurson
+				$out .=  home_map_taxonomy_walker($cat_taxonomy, $cat_term->term_id,$hide_empty,$pading, $map_canvas_name, $child_collapse);
+		
+			$out .= '</li>'; 
+				
+		endforeach;
+		
+		$out .= '</ul>'; 
+		
+		return $out;
+	}
+	else
+	{
+		if($cat_parent==0)
+			return _e('No category',GEODIRECTORY_TEXTDOMAIN) ;
+	}
+	return ;	
+}
+
+
+
+
+?>
