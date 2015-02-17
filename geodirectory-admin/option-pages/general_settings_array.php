@@ -67,6 +67,39 @@ global $geodir_settings;
 			'radiogroup' => 'end'
 		),
 		
+		array(  
+			'name' => __( 'Allow user to choose own password', GEODIRECTORY_TEXTDOMAIN ),
+			'desc' 		=> __( 'Yes', GEODIRECTORY_TEXTDOMAIN ),
+			'id' 		=> 'geodir_allow_cpass',
+			'std' 		=> '1',
+			'type' 		=> 'radio',
+			'value'		=> '1',
+			'radiogroup' => 'start'
+		),
+		array(  
+			'name' => __( 'Allow user to choose own password', GEODIRECTORY_TEXTDOMAIN ),
+			'desc' 		=> __( 'No', GEODIRECTORY_TEXTDOMAIN ),
+			'id' 		=> 'geodir_allow_cpass',
+			'std' 		=> '0',
+			'type' 		=> 'radio',
+			'value'		=> '0',
+			'radiogroup' => 'end'
+		),
+		array(  
+			'name' 		=> __( 'Disable rating on comments', GEODIRECTORY_TEXTDOMAIN ),
+			'desc' 		=> __( 'Disable rating without disabling comments on listings', GEODIRECTORY_TEXTDOMAIN ),
+			'id' 		=> 'geodir_disable_rating',
+			'type' 		=> 'checkbox',
+			'std' 		=> '0'
+		),
+		array(  
+			'name' => __( 'Maxi upload file size(in mb)', GEODIRECTORY_TEXTDOMAIN ),
+			'desc' 		=> __( '(Maximum upload file size in MB, 1 MB = 1024 KB. Must be greater then 0(ZERO), for ex: 2 )', GEODIRECTORY_TEXTDOMAIN ),
+			'id' 		=> 'geodir_upload_max_filesize',
+			'type' 		=> 'text',
+			'css' 		=> 'min-width:300px;',
+			'std' 		=> '2'
+		),
 		/*array(  
 			'name' => __( 'Disable standard place taxonomie?', GEODIRECTORY_TEXTDOMAIN ),
 			'desc' 		=> __( 'Yes', GEODIRECTORY_TEXTDOMAIN ),

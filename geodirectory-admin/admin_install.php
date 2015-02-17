@@ -20,9 +20,14 @@ include_once('admin_db_install.php');
 function geodir_activation() {
  
 	geodir_install(); 
-	
-} 
+	add_action('wp_loaded','geodir_flush_activation');
+}
 
+function geodir_flush_activation(){
+	// Remove rewrite rules and then recreate rewrite rules.
+	// flush late so everything is loaded
+	flush_rewrite_rules();
+}
 
 /**
  * Install geodirectory
@@ -43,6 +48,11 @@ function geodir_install() {
 		
 		update_option('geodir_default_data_installed', 1);
 		
+	}
+	
+	if(!get_option('geodir_default_data_installed_1.2.8')){
+		//geodir_create_tables(); // in admin db install.php
+		update_option('geodir_default_data_installed_1.2.8', 1);
 	}
 	
 	geodir_installation_end();

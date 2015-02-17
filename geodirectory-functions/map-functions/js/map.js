@@ -44,10 +44,35 @@ function initMap(map_options){
 	
 	if(!(typeof geodir_custom_map_style ==='undefined' ))
 		styles = geodir_custom_map_style ;
-		
+	
+	/* custom google map style */
+	if (typeof options.mapStyles != 'undefined') {
+		try {
+			var mapStyles = JSON.parse(options.mapStyles);
+			if (typeof mapStyles == 'object' && mapStyles ) {
+				styles = mapStyles;
+			}
+		}
+		catch(err) {
+			console.log(err.message);
+		}
+	}
+	/* custom google map style */
+	
 	jQuery.goMap.map.setOptions({styles: styles});
 	
-	
+	/* add option that allows enable/disable map dragging to phone devices */
+	if (GeodirIsiPhone() && typeof geodir_all_js_msg.geodir_onoff_dragging != 'undefined' && geodir_all_js_msg.geodir_onoff_dragging) {
+		var centerControlDiv = document.createElement('div');
+		var centerControl = new gdCustomControl(centerControlDiv, options.enable_cat_filters);
+		
+		centerControlDiv.index = 1;
+		if (options.enable_cat_filters) {
+			jQuery.goMap.map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(centerControlDiv);
+		} else {
+			jQuery.goMap.map.controls[google.maps.ControlPosition.BOTTOM_RIGHT].push(centerControlDiv);
+		}
+	}
 	
 	google.maps.event.addListenerOnce(jQuery.goMap.map, 'idle', function(){
 		jQuery("#"  + map_canvas).goMap();
@@ -83,6 +108,57 @@ function initMap(map_options){
 	}
 }
 
+function gdCustomControl(controlDiv, cat_filters) {
+  // Set CSS for the control border
+  var controlUI = document.createElement('div');
+  jQuery(controlUI).addClass('gd-dragg-ui');
+  if (cat_filters) {
+	  jQuery(controlUI).addClass('gd-dragg-with-cat');
+  }
+  jQuery.goMap.map.setOptions({draggable:false});
+  jQuery(controlUI).addClass('gd-drag-inactive');
+  controlUI.style.backgroundColor = '#fff';
+  controlUI.style.borderRadius = '2px';
+  controlUI.style.boxShadow = '0 1px 4px -1px rgba(0, 0, 0, 0.3)';
+  controlUI.style.cursor = 'pointer';
+  if (cat_filters) {
+  	controlUI.style.marginBottom = '40px';
+  } else {
+	controlUI.style.marginBottom = '5px';
+  }
+  controlUI.style.marginTop = '5px';
+  controlUI.style.textAlign = 'center';
+  controlDiv.appendChild(controlUI);
+
+  // Set CSS for the control interior
+  var controlText = document.createElement('div');
+  jQuery(controlText).addClass('gd-dragg-action');
+  controlUI.style.border = '1px solid rgba(0, 0, 0, 0.15)';
+  controlText.style.color = '#333';
+  controlText.style.fontSize = '11px';
+  controlText.style.lineHeight = '1.5';
+  controlText.style.paddingLeft = '6px';
+  controlText.style.paddingTop = '1px';
+  controlText.style.paddingBottom = '1px';
+  controlText.style.paddingRight = '6px';
+  controlText.innerHTML = geodir_all_js_msg.geodir_on_dragging_text;
+  controlUI.appendChild(controlText);
+
+  // Setup the click event listeners: simply set the map to
+  //
+  google.maps.event.addDomListener(controlUI, 'click', function() {
+		if(jQuery(this).hasClass('gd-drag-active')){
+			jQuery(this).removeClass('gd-drag-active').addClass('gd-drag-inactive').find('.gd-dragg-action').text(geodir_all_js_msg.geodir_on_dragging_text);
+			jQuery.goMap.map.setOptions({draggable:false});
+		} else {
+			jQuery(this).removeClass('gd-drag-inactive').addClass('gd-drag-active').find('.gd-dragg-action').text(geodir_all_js_msg.geodir_off_dragging_text);
+			jQuery.goMap.map.setOptions({draggable:true});
+		}
+  });
+
+}
+
+
 function build_map_ajax_search_param(map_canvas_var,reload_cat_list)
 {
 	var child_collapse = jQuery('#'+map_canvas_var+'_child_collapse').val() ;
@@ -108,7 +184,7 @@ function build_map_ajax_search_param(map_canvas_var,reload_cat_list)
 	}
 	
 	if(reload_cat_list) // load the category listing in map canvas category list panel 
-	{
+	{	
 		jQuery.get(eval(map_canvas_var).ajax_url,{geodir_ajax:'map_ajax',ajax_action:'homemap_catlist',post_type:gd_cat_posttype, map_canvas:map_canvas_var, child_collapse:child_collapse},function(data){
 			
 			if(data){
@@ -131,6 +207,7 @@ function build_map_ajax_search_param(map_canvas_var,reload_cat_list)
 	
 	
 	var location_string = '';
+	var hood_string = '';
 	
 	if(jQuery('#'+map_canvas_var +'_country').val() != ''){
 		var $gd_country = jQuery('#'+map_canvas_var +'_country').val();
@@ -147,23 +224,37 @@ function build_map_ajax_search_param(map_canvas_var,reload_cat_list)
 		location_string = location_string+'&gd_city='+$gd_city;
 	}
 	
+	if(jQuery('#'+map_canvas_var +'_neighbourhood').val() != ''){	
+		var $gd_neighbourhood = jQuery('#'+map_canvas_var +'_neighbourhood').val();	
+		//location_string = location_string+'&gd_neighbourhood='+$gd_neighbourhood;
+		hood_string = location_string+'&gd_neighbourhood='+$gd_neighbourhood;
+		
+	}
+	
 	
 	//loop through available categories
 	mapcat = document.getElementsByName( map_canvas_var +"_cat[]");
 	
 	var checked = "";
+	var none_checked = "";
 	for(i = 0; i < mapcat.length; i++){
 		if(mapcat[i].checked){
 			checked += mapcat[i].value+",";
+			
+		}
+		else{
+			none_checked += mapcat[i].value+",";
 		}
 	}
+	
+	if(checked==""){checked = none_checked;}
 	
 	var strLen = checked.length;
 	checked    = checked.slice(0,strLen-1);
 	
 	
 	var search_query_string = '' ;
-	search_query_string = '&geodir_ajax=map_ajax&ajax_action=cat&cat_id='+checked+"&search="+search_string
+	search_query_string = '&geodir_ajax=map_ajax&ajax_action=cat&cat_id='+checked+"&search="+search_string+hood_string
 	if(gd_posttype != '')
 		search_query_string = search_query_string+gd_posttype;	
 	
@@ -228,11 +319,14 @@ function geodir_activate_collapse_pan()
 function map_ajax_search(map_canvas_var, search_query_string, marker_jason)
 {
 	
-	document.getElementById( map_canvas_var+'_loading_div').style.display="block";
+	//document.getElementById( map_canvas_var+'_loading_div').style.display="block";
+	jQuery( '#'+map_canvas_var+'_loading_div').show();
+	
 	if(marker_jason!='')
 	{
 		parse_marker_jason(marker_jason, map_canvas_var)	
-		document.getElementById( map_canvas+'_loading_div').style.display="none";
+		//document.getElementById( map_canvas+'_loading_div').style.display="none";
+		jQuery( '#'+map_canvas+'_loading_div').hide();
 		return;
 	}
 	
@@ -243,7 +337,8 @@ function map_ajax_search(map_canvas_var, search_query_string, marker_jason)
 		url: query_url,
 		success: function(data){
 		//	alert(map_canvas) ;
-			document.getElementById( map_canvas_var+'_loading_div').style.display="none";
+			//document.getElementById( map_canvas_var+'_loading_div').style.display="none";
+			jQuery( '#'+map_canvas_var+'_loading_div').hide();
 			parse_marker_jason( data, map_canvas_var );
 		//	document.dispatchEvent(event_marker_reloaded);
 		}
@@ -305,6 +400,7 @@ initMap(map_canvas_var);
 	}
 	
 	jQuery('#' + map_canvas_var + '_loading_div').hide();
+	jQuery( "body" ).trigger("map_show",map_canvas_var);
 }	
 
 	
@@ -421,6 +517,15 @@ function openMarker(map_canvas ,id){
 	//for (var i = 0, l = jQuery.goMap.markers.length; i < l; i++) {
 	//	alert(jQuery.goMap.markers[i])
 	//}
+	
+	if(jQuery('.stickymap').legnth){}else{
+		mTag = false;
+		if(jQuery(".geodir-sidebar-wrap .stick_trigger_container").offset()){mTag = jQuery(".geodir-sidebar-wrap .stick_trigger_container").offset().top;}
+		else if(jQuery(".stick_trigger_container").offset()){mTag = jQuery(".stick_trigger_container").offset().top;}
+    	if(mTag){jQuery('html,body').animate({scrollTop: mTag},'slow');}
+				
+	}
+	
 	google.maps.event.trigger(jQuery.goMap.mapId.data(id), 'click'); 
 }
 
@@ -477,7 +582,8 @@ function map_sticky(map_options) {
 		
 		var stickymap = jQuery("#sticky_map_"+optionsname+"").scrollBottom();
 		var catcher = jQuery('#catcher_'+optionsname+'');
-		var sticky = jQuery('#sticky_map_'+optionsname+'');		
+		var sticky = jQuery('#sticky_map_'+optionsname+'');	
+		var map_parent = sticky.parent();	
 		var sticky_show_hide_trigger = sticky.closest('.stick_trigger_container').find('.trigger_sticky');
 		var mapheight = jQuery("#sticky_map_"+optionsname+"").height();
 		//alert(mapheight)
@@ -498,10 +604,13 @@ function map_sticky(map_options) {
 			//if(content > stickymap ) {alert(1);}
 			//if(jQuery(window).scrollTop() >= catcher.offset().top ) {alert(2);}
 				
-			if(jQuery(window).scrollTop() >= catcher.offset().top && content > stickymap ) {
+			if(jQuery(window).scrollTop() >= catcher.offset().top ) {
 				if(!sticky.hasClass('stickymap')){ 	
 					sticky.addClass('stickymap');
 					sticky.hide();
+					
+					sticky.appendTo('body');
+					
 					sticky.css({'position':'fixed','right':'0','border':'1px solid red'});
 					//sticky.css({'top':'25%','width':'25%'});
 					sticky.css({'top':'25%'});
@@ -530,6 +639,7 @@ function map_sticky(map_options) {
 			
 			if(jQuery(window).scrollTop() < catcher.offset().top){	
 				if(sticky.hasClass('stickymap')){ 	
+					sticky.appendTo(map_parent);
 					sticky.hide();
 					sticky.removeClass('stickymap');
 					sticky.css({'position':'relative','border':'none'});

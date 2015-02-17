@@ -1,7 +1,7 @@
 <?php
 function geodir_locate_template($template = '')
 {
-	global $post_type,$wp;
+	global $post_type,$wp,$post;
 	$fields = array();
 	
 	switch($template):
@@ -9,7 +9,10 @@ function geodir_locate_template($template = '')
 				return $template = locate_template( array( "geodirectory/geodir-signup.php" ));
 		break;
 		case 'add-listing':
-				$listing_page_id = get_option( 'geodir_add_listing_page' );
+
+				if(is_page() && isset($post->post_content) && has_shortcode( $post->post_content, 'add_listing' ) ) {$listing_page_id =$post->ID;}
+				else{$listing_page_id = get_option( 'geodir_add_listing_page' );}
+
 				if( $listing_page_id != '' && is_page( $listing_page_id ) && isset($_REQUEST['listing_type'])
 					&& in_array( $_REQUEST['listing_type'], geodir_get_posttypes() ) )
 						$post_type = $_REQUEST['listing_type'];
@@ -19,7 +22,7 @@ function geodir_locate_template($template = '')
 					$post_types = geodir_get_posttypes();
 					if(!empty($post_types))
 						$post_type 	= $post_types[0] ;
-					wp_redirect(home_url().'/'.$pagename .'?listing_type='.$post_type);
+					wp_redirect(home_url().'/'.$pagename .'/?listing_type='.$post_type);
 					exit();		
 				}
 				return $template = locate_template( array( "geodirectory/add-{$post_type}.php","geodirectory/add-listing.php" ));
@@ -142,7 +145,11 @@ function geodir_template_loader( $template ) {
 			
 		} 
 		
-		geodir_is_login(true);
+		//geodir_is_login(true);
+		global $current_user; 
+		if(!$current_user->ID){
+			wp_redirect( home_url().'?geodir_signup=true&redirect_add_listing='.urlencode(geodir_curPageURL()), 302 );exit;
+		}
 		
 	 	$template = geodir_locate_template('add-listing');
 		
@@ -231,9 +238,9 @@ function geodir_template_loader( $template ) {
 		
 			$template = geodir_locate_template('location');
 			
-			if ( ! $template ) $template = geodir_plugin_path() . '/geodirectory-templates/geodir-home.php';
+			if ( ! $template ) $template = geodir_plugin_path() . '/geodirectory-templates/geodir-location.php';
 			
-			return $template = apply_filters('geodir_template_homepage',$template);
+			return $template = apply_filters('geodir_template_location',$template);
 			
 		}else
 			return $template;
@@ -264,4 +271,22 @@ function geodir_get_template_part( $slug = '', $name = NULL )
 		locate_template(array("geodirectory/" .$template_name), true, false);
 	endif;
 	
+}
+
+function geodir_core_post_view_extra_class( $class , $all_postypes='' ) {
+	global $post;
+	
+	if(!$all_postypes){$all_postypes = geodir_get_posttypes();}
+	
+	$gdp_post_id = !empty( $post ) && isset( $post->ID ) ? $post->ID : NULL;
+	$gdp_post_type = $gdp_post_id > 0 && isset( $post->post_type ) ? $post->post_type : NULL;
+	$gdp_post_type = $gdp_post_type != '' && !empty( $all_postypes ) && in_array( $gdp_post_type, $all_postypes ) ? $gdp_post_type : NULL;
+		
+	if ( $gdp_post_id && $gdp_post_type ) {
+		$append_class = 'gd-post-' . $gdp_post_type;
+		$append_class .= isset( $post->is_featured ) && $post->is_featured > 0 ? ' gd-post-featured' : '';
+		$class = $class != '' ? $class . ' ' . $append_class : $append_class;
+	}
+	
+	return $class;
 }

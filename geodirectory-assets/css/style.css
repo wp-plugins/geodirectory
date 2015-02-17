@@ -112,10 +112,12 @@ float: left;
 /* tabs */
 dl.geodir-tab-head {
 margin: 0px;
-height: 48px;
+height: auto;
 border-bottom: 1px #e1e1e1 solid;
 display: block;
-margin-top: 10px;
+margin-top: 0px;
+position: relative;
+z-index: 10;
 }	
 dl.geodir-tab-head dd {
 height: 48px;
@@ -123,6 +125,7 @@ float: left;
 display: block;
 cursor: pointer;
 margin-left: 0;
+padding:0;
 }
 dl.geodir-tab-head dd a {
 font-weight: bold;
@@ -134,7 +137,6 @@ display: block;
 font-weight: normal;
 border: 1px solid #e1e1e1;
 border-right: none;
-border-bottom: none;
 }
 dl.geodir-tab-head dd.geodir-tab-active a {
 background: #FFFFFF;
@@ -296,6 +298,7 @@ margin-left: 48px;
 #reviewsTab .commentlist .children li.comment .fn {
 display: inline;
 }
+.err-no-rating{border:1px solid red;color:#fff;display:block;font-size:90%;margin:7px 0 5px 0;padding:5px 7px;background-color:red}
 /* ########################################
 listings page 
 ######################################### */
@@ -403,6 +406,8 @@ margin-bottom: 5px;
 -webkit-box-sizing: border-box;
 -moz-box-sizing: border-box;
 box-sizing: border-box;
+margin-right:0px;
+margin-left:0px;
 }
 
 .geodir_form_row ul{
@@ -433,6 +438,14 @@ padding-top: 5px;
 color: #999;
 }
 #geodir_filled_by_spam_bot_top_form{display:none !important;}
+.geodir_form_row .geodir_multiselect_list{float:left;width:70%}
+.geodir_form_row .geodir_multiselect_list li.search-field input[type="text"]{height:auto}
+@media only screen and (max-width:480px)
+{
+	.geodir_form_row .geodir_multiselect_list{width:100%;margin-top:10px}
+	.geodir_link_business_chosen_div{width:100%!important;}
+	#geodir_link_business_autofill{margin-left:0!important}
+}
 /* ########################################
 signup/reg page 
 ######################################### */
@@ -486,6 +499,9 @@ transition: all 0.5s ease;
 section.widget{margin-bottom:20px;}
 .geodir_full_page section.widget{margin-bottom:0px;padding:0px;}
 /* GD > Popular post categories */
+.geodir-hide {
+	display: none;
+}
 .geodir-popular-cat-list{
 margin:0px;}
 .geodir-popular-cat-list li{clear:none;}
@@ -655,6 +671,7 @@ background-position: 50% 50%;
 background-repeat: no-repeat;
 background-size: cover;
 min-width: 92%;
+max-width: 92%;
 position: absolute;
 top: 0;
 bottom: 0;
@@ -694,6 +711,7 @@ background-position: 50% 50%;
 background-repeat: no-repeat;
 background-size: cover;
 min-width: 92%;
+max-width: 92%;
 position: absolute;
 top: 0;
 bottom: 0;
@@ -943,4 +961,21 @@ height: auto;
     line-height: 17px;
     margin-bottom: 0;
     padding: 5px 0;
+}
+.geodir_recent_reviews a.comment_excerpt{text-decoration:none}
+.login_form_box .error_msg, .registration_form_box .error_msg{margin:7px 0 5px 0;border-left:2px solid #7ad03a;padding:5px 7px}
+/* fix menu issue for jquery light box */
+div#jquery-overlay{z-index:1510}
+div#jquery-lightbox{z-index:1520}
+
+
+.gd-cats-display-radio,
+.gd-cats-display-checkbox,
+.gd_multi_choice
+{
+	margin-left: 0px;
+	max-height: 150px;
+	overflow-y: scroll;
+	border: 1px #ccc solid;
+	padding: 10px;
 }

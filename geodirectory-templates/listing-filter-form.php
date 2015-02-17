@@ -5,7 +5,7 @@ $curr_post_type = geodir_get_current_posttype();
 ?>
 
 
- <form class="geodir-listing-search" name="geodir-listing-search" action="<?php echo home_url();?>" method="get" >
+ <form class="<?php echo apply_filters( 'geodir_search_form_class',  'geodir-listing-search');?>" name="geodir-listing-search" action="<?php echo home_url();?>" method="get" >
     <input type="hidden" name="geodir_search" value="1"  />
     
     <div class="geodir-loc-bar">
@@ -58,9 +58,14 @@ $curr_post_type = geodir_get_current_posttype();
 					$near = stripslashes($_REQUEST['snear']);
 				}else{$near = $default_near_text;}
 				
+				$near = apply_filters( 'geodir_search_near_text', $near, $default_near_text);
+				$default_near_text = apply_filters( 'geodir_search_default_near_text',  $default_near_text,$near);
+				$near_class = apply_filters( 'geodir_search_near_class',  '');
 				?>
-                <input name="snear" class="snear" type="text" value="<?php echo $near;?>" onblur="if (this.value == '') {this.value = '<?php echo $default_near_text;?>';}"  onfocus="if (this.value == '<?php echo $default_near_text;?>') {this.value = '';}" onkeydown="javascript: if(event.keyCode == 13) geodir_click_search(this);"  />
-               
+                
+                <input name="snear" class="snear <?php echo $near_class;?>" type="text" value="<?php echo $near;?>" onblur="if (this.value == '') {this.value = '<?php echo $default_near_text;?>';}"  onfocus="if (this.value == '<?php echo $default_near_text;?>') {this.value = '';}" onkeydown="javascript: if(event.keyCode == 13) geodir_click_search(this);"  />
+                
+               <?php do_action('geodir_before_search_button');?> 
                 <input type="button" value="<?php echo $default_search_button_label; ?>" class="geodir_submit_search">
                <?php do_action('geodir_after_search_button');?> 
             </div>    
