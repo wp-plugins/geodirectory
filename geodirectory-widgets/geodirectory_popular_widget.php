@@ -16,114 +16,26 @@ class geodir_popular_post_category extends WP_Widget {
 	
 	
 	function widget( $args, $instance ) {
-		// prints the widget
-		extract( $args, EXTR_SKIP );
-		
-		echo $before_widget;
-		
-		$title = empty( $instance['title'] ) ? __( 'Popular Categories',GEODIRECTORY_TEXTDOMAIN ) : apply_filters( 'widget_title', __( $instance['title'],GEODIRECTORY_TEXTDOMAIN ) );
-		
-		global $wpdb, $plugin_prefix, $geodir_post_category_str;
-			
-		$gd_post_type = geodir_get_current_posttype();
-		/*
-		if($gd_post_type):
-			$post_type_info = get_post_type_object( $gd_post_type );
-			$single_name = $post_type_info->labels->singular_name;
-			$title = __('Popular',GEODIRECTORY_TEXTDOMAIN).' '.$single_name. __(' Categories',GEODIRECTORY_TEXTDOMAIN);
-		endif;
-		*/
-		$taxonomy = geodir_get_taxonomies( $gd_post_type );
-			
-		$args = array(
-					'orderby'       => 'count', 
-					'order'			=> 'DESC',
-					'pad_counts'  	=> true
-				); 
-		$terms = get_terms( $taxonomy );
-		$categ_limit = isset( $instance['categ_limit'] ) && $instance['categ_limit']>0 ? (int)$instance['categ_limit'] : 15;
-		
-		if( !empty( $terms ) ) {
-		?>
-			<div class="geodir-category-list-in clearfix">
-				<div class="geodir-cat-list clearfix">
-			<?php
-			$identifier = 'geodir-' . substr( md5( microtime() ), 0, 6 );
-			echo $before_title . __( $title ) . $after_title;
-			echo '<ul class="geodir-popular-cat-list">';
-			  
-			$cat_count = 0;
-			$geodir_post_category_str = array();
-			
-			foreach( $terms as $cat ) {
-				$cat_count++;
-				
-				$taxonomy_obj = get_taxonomy( $cat->taxonomy );
-				$post_type = $taxonomy_obj->object_type[0];
-				
-				$geodir_post_category_str[] = array( 'posttype' => $post_type, 'termid' => $cat->term_id );
-				
-				$class_row = $cat_count > $categ_limit ? 'geodir-pcat-hide geodir-hide' : 'geodir-pcat-show';
-				$total_post =  0;
-						
-				echo '<li class="' . $class_row . '"><a href="' . get_term_link( $cat, $cat->taxonomy ) . '"><i class="fa fa-caret-right"></i> ';
-				echo ucwords( $cat->name ) . ' (<span class="geodir_term_class geodir_link_span geodir_category_class_' . $post_type . '_' . $cat->term_id . '" >' . $total_post . '</span>) ';							
-				echo '</a></li>';
-			}
-			echo '</ul>';
-			?>
-			</div> 
-			</div>
-		<?php 
-			if( $cat_count > $categ_limit ) {
-				echo '<a href="javascript:void(0)" class="geodir-morecat geodir-showcat">' . __( 'More Categories', GEODIRECTORY_TEXTDOMAIN ) . '</a>';
-				echo '<a href="javascript:void(0)" class="geodir-morecat geodir-hidecat geodir-hide">' . __( 'Less Categories', GEODIRECTORY_TEXTDOMAIN ) . '</a>';
-				/* add scripts */
-				add_action( 'wp_footer', array($this, 'geodir_popular_category_add_scripts'), 100 );
-			}
-			
-		}
-		echo $after_widget;
+		geodir_popular_post_category_output($args,$instance);
 	}
-	
-	function geodir_popular_category_add_scripts() {
-		?>
-<style>.geodir-hide{display:none}</style>
-<script type="text/javascript">
-jQuery(function($){
-	$('.geodir-showcat').click(function(){
-		var objCat = $(this).closest('.geodir-category-list-in');
-		$(objCat).find('li.geodir-pcat-hide').removeClass('geodir-hide');
-		$(objCat).find('a.geodir-showcat').addClass('geodir-hide');
-		$(objCat).find('a.geodir-hidecat').removeClass('geodir-hide');
-	});
-	$('.geodir-hidecat').click(function(){
-		var objCat = $(this).closest('.geodir-category-list-in');
-		$(objCat).find('li.geodir-pcat-hide').addClass('geodir-hide');
-		$(objCat).find('a.geodir-hidecat').addClass('geodir-hide');
-		$(objCat).find('a.geodir-showcat').removeClass('geodir-hide');
-	});
-});
-</script>
-		<?php
-	}
+
 	
 	function update($new_instance, $old_instance) {
 		//save the widget
 		$instance = $old_instance;
 		$instance['title'] = strip_tags( $new_instance['title'] );
-		$categ_limit = (int)$new_instance['categ_limit'];
-		$instance['categ_limit'] = $categ_limit > 0 ? $categ_limit : 15; 
+		$categ_limit = (int)$new_instance['category_limit'];
+		$instance['category_limit'] = $category_limit > 0 ? $category_limit : 15;
 		return $instance;
 	}
 	
 	function form( $instance ) {
 		//widgetform in backend
-		$instance = wp_parse_args( (array)$instance, array( 'title' => '', 'categ_limit' => 15 ) );
+		$instance = wp_parse_args( (array)$instance, array( 'title' => '', 'category_limit' => 15 ) );
 		
 		$title = strip_tags($instance['title']);
-		$categ_limit = (int)$instance['categ_limit'];
-		$categ_limit = $categ_limit > 0 ? $categ_limit : 15; 
+		$category_limit = (int)$instance['category_limit'];
+		$category_limit = $category_limit > 0 ? $category_limit : 15;
 		?>
         <p>
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:', GEODIRECTORY_TEXTDOMAIN );?>
@@ -131,8 +43,8 @@ jQuery(function($){
 			</label>
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'categ_limit' ); ?>"><?php _e( 'Customize categories count to appear by default:', GEODIRECTORY_TEXTDOMAIN );?>
-			<input class="widefat" id="<?php echo $this->get_field_id( 'categ_limit' ); ?>" name="<?php echo $this->get_field_name( 'categ_limit' ); ?>" type="text" value="<?php echo (int)esc_attr( $categ_limit );?>" />
+			<label for="<?php echo $this->get_field_id( 'category_limit' ); ?>"><?php _e( 'Customize categories count to appear by default:', GEODIRECTORY_TEXTDOMAIN );?>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'category_limit' ); ?>" name="<?php echo $this->get_field_name( 'category_limit' ); ?>" type="text" value="<?php echo (int)esc_attr( $category_limit );?>" />
 			<p class="description" style="padding:0"><?php _e( 'After categories count reaches this limit option More Categories / Less Categoris will be displayed to show/hide categories. Default: 15', GEODIRECTORY_TEXTDOMAIN );?></p>
 			</label>
 		</p>
@@ -155,180 +67,7 @@ class geodir_popular_postview extends WP_Widget {
 	}
 	
 	function widget( $args, $instance ) {
-		// prints the widget
-		extract( $args, EXTR_SKIP );
-	
-		echo $before_widget;
-		
-		$title = empty( $instance['title'] ) ? ucwords( $instance['category_title'] ) : apply_filters( 'widget_title', __( $instance['title'],GEODIRECTORY_TEXTDOMAIN ) );
-		$post_type = empty( $instance['post_type'] ) ? 'gd_place' : apply_filters( 'widget_post_type', $instance['post_type'] );
-		$category = empty( $instance['category'] ) ? '0' : apply_filters( 'widget_category', $instance['category'] );
-		$post_number = empty( $instance['post_number'] ) ? '5' : apply_filters( 'widget_post_number', $instance['post_number'] );
-		$layout = empty( $instance['layout'] ) ? 'gridview_onehalf' : apply_filters( 'widget_layout', $instance['layout'] );
-		$add_location_filter = empty( $instance['add_location_filter'] ) ? '0' : apply_filters( 'widget_layout', $instance['add_location_filter'] );
-		$listing_width = empty( $instance['listing_width'] ) ? '' : apply_filters( 'widget_listing_width', $instance['listing_width'] );
-		$list_sort = empty( $instance['list_sort'] ) ? 'latest' : apply_filters( 'widget_list_sort', $instance['list_sort'] );
-		$use_viewing_post_type = !empty( $instance['use_viewing_post_type'] ) ? true : false;
-		
-		// set post type to current viewing post type
-		if ( $use_viewing_post_type ) {
-			$current_post_type = geodir_get_current_posttype();
-			if ( $current_post_type != '' && $current_post_type != $post_type ) {
-				$post_type = $current_post_type;
-				$category = array(); // old post type category will not work for current changed post type
-			}
-		}
-		// replace widget title dynamically
-		$posttype_plural_label = __( get_post_type_plural_label( $post_type ), GEODIRECTORY_TEXTDOMAIN );
-		$posttype_singular_label = __( get_post_type_singular_label( $post_type ), GEODIRECTORY_TEXTDOMAIN );
-		
-		$title = str_replace( "%posttype_plural_label%", $posttype_plural_label, $title );
-		$title = str_replace( "%posttype_singular_label%", $posttype_singular_label, $title );
-		
-		if ( isset( $instance['character_count'] ) ) {
-			$character_count = apply_filters( 'widget_list_character_count', $instance['character_count'] );
-		} else {
-			$character_count = '';
-		}
-	
-		if ( empty( $title ) || $title == 'All' ){
-			$title .= ' '. __( get_post_type_plural_label( $post_type ), GEODIRECTORY_TEXTDOMAIN );
-		}
-	
-		$location_url = array();
-		$city = get_query_var( 'gd_city' );
-		if ( !empty( $city )  ){
-			if ( get_option( 'geodir_show_location_url' ) == 'all' ) {
-				$country = get_query_var( 'gd_country' );
-				$region = get_query_var( 'gd_region' );
-				
-				if ( !empty( $country ) ) {
-					$location_url[] = $country;
-				}
-				
-				if ( !empty( $region ) ) {
-					$location_url[] = $region;
-				}
-			}
-			
-			$location_url[] = $city;
-		}
-	
-		$location_url = implode( "/", $location_url );
-		
-		if ( get_option( 'permalink_structure' ) ) {
-			$viewall_url = get_post_type_archive_link( $post_type );
-		} else {
-			$viewall_url = get_post_type_archive_link( $post_type );
-		}	
-	
-		if( !empty( $category ) && $category[0] != '0' ) {
-			global $geodir_add_location_url;
-			
-			$geodir_add_location_url = '0';
-			
-			if ( $add_location_filter != '0' ) {
-				$geodir_add_location_url = '1'; 
-			}
-			
-			$viewall_url = get_term_link( (int)$category[0], $post_type . 'category' );
-			
-			$geodir_add_location_url = NULL;
-		}
-		$query_args = array(
-							'posts_per_page' => $post_number,
-							'is_geodir_loop' => true,
-							'gd_location' 	 => $add_location_filter ? true : false,
-							'post_type' => $post_type,
-							'order_by' => $list_sort
-						);
-	
-		if ( $character_count ) {
-			$query_args['excerpt_length'] = $character_count;
-		}
-		
-		if ( !empty( $instance['show_featured_only'] ) ) {
-			$query_args['show_featured_only'] = 1;
-		}
-		
-		if ( !empty( $instance['show_special_only'] ) ) {
-			$query_args['show_special_only'] = 1;
-		}
-		
-		if ( !empty( $instance['with_pics_only'] ) ) {
-			$query_args['with_pics_only'] = 1;
-		}
-		
-		if ( !empty( $instance['with_videos_only'] ) ) {
-			$query_args['with_videos_only'] = 1;
-		}
-		$with_no_results = !empty( $instance['without_no_results'] ) ? false : true;
-	
-		if( !empty( $category ) && $category[0] != '0' ) {
-			$category_taxonomy = geodir_get_taxonomies( $post_type ); 
-	
-			######### WPML #########
-			if ( function_exists( 'icl_object_id' ) ) {
-				$category = gd_lang_object_ids( $category, $category_taxonomy[0] );
-			}
-			######### WPML #########
-	
-			$tax_query = array(
-								'taxonomy' => $category_taxonomy[0],
-								'field' => 'id',
-								'terms' => $category
-							);
-	
-			$query_args['tax_query'] = array( $tax_query );
-		}
-	
-		global $gridview_columns_widget, $geodir_is_widget_listing;
-		
-		$widget_listings = geodir_get_widget_listings( $query_args );
-		
-		if ( !empty( $widget_listings ) || $with_no_results ) {
-			?>
-			<div class="geodir_locations geodir_location_listing">
-				<?php do_action( 'geodir_before_view_all_link_in_widget' ); ?>
-				<div class="geodir_list_heading clearfix">
-					<?php echo $before_title . $title . $after_title;?>
-					<a href="<?php echo $viewall_url; ?>" class="geodir-viewall"><?php _e( 'View all', GEODIRECTORY_TEXTDOMAIN ); ?></a>
-				</div>
-			<?php do_action( 'geodir_after_view_all_link_in_widget' ); ?>
-			<?php 
-			if ( strstr( $layout, 'gridview' ) ) {
-				$listing_view_exp = explode( '_', $layout );
-				$gridview_columns_widget = $layout;
-				$layout = $listing_view_exp[0];
-			} else {
-				$gridview_columns_widget  = '';
-			}
-			
-			$template = apply_filters( "geodir_template_part-widget-listing-listview", geodir_plugin_path() . '/geodirectory-templates/widget-listing-listview.php' );
-			if ( !isset( $character_count ) ) {
-				$character_count = $character_count == '' ? 50 : apply_filters( 'widget_character_count', $character_count );
-			}
-			
-			global $post, $map_jason, $map_canvas_arr;
-			
-			$current_post = $post;
-			$current_map_jason = $map_jason;
-			$current_map_canvas_arr = $map_canvas_arr;
-			$geodir_is_widget_listing = true;
-			
-			include( $template );
-			
-			$geodir_is_widget_listing = false;
-			
-			$GLOBALS['post'] = $current_post;
-			setup_postdata( $current_post );
-			$map_jason = $current_map_jason;
-			$map_canvas_arr = $current_map_canvas_arr;
-			?>
-			</div>
-			<?php
-		}
-		echo $after_widget;
+		geodir_popular_postview_output($args, $instance);
 	}
 	
 	function update($new_instance, $old_instance) {

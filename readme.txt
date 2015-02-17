@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=payments
 Tags:  address book, addressbook, addresses, bio, biographies, bios, business, business directory plugin, business-directory, businesses, church, directories, directory, directory plugin, directory widget, geodirectory, googlemap, googlemaps, google maps, list, listings, lists, member directory, members directories, members directory, microformat, microformats, multisite, profile, profiles, staff, user, users, vcard, wordpress business directory, wordpress directory, wordpress directory plugin, yelp clone, tripadvisor clone, yellow pages clone, wordpress business directory plugin, wordpress directory theme, wordpress business directory theme, wordpress city directory plugin, wordpress local directory plugin
 Requires at least: 3.1
 Tested up to: 4.1.0
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,7 +12,7 @@ A superior and extendible Directory plugin to create beautiful location based bu
 
 == Description ==
 
-Turn your WordPress website into an interactive Business Directory, now 100% Multisite compatible! 
+Turn your WordPress website into an interactive Business Directory, now 100% Multisite compatible and with a new set of shortcodes available! 
 
 Built based on over 3 years experience developing and supporting GeoTheme, one of the most succesful directory themes for wordpress, over one year of development and testing, GeoDirectory is finally released to the public.
 
@@ -37,6 +37,7 @@ GeoDirectory was developed to work with any theme. If you need help getting your
 * Our optimized database structure allows for hundreds of thousands of businesses to be listed. 
 * GeoDirectory is 100% WPML compatible for multilanguage directories.
 * GeoDirectory is multisite compatible.
+* New set of Shortcode available
 
 = GDF - Directory Theme Framework =
 
@@ -117,6 +118,10 @@ GeoDirectory comes with some dummy data you can use to see how listings look. Yo
 7. GD WordPress Admin Page.
 
 == Changelog ==
+
+= 1.3.7 =
+
+[GeoDirectory changelog for version 1.3.7](http://wpgeodirectory.com/change-logs/#v1.3.7).
 
 = 1.3.6 =
 

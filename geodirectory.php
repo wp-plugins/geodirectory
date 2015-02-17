@@ -3,18 +3,16 @@
 Plugin Name: GeoDirectory
 Plugin URI: http://wpgeodirectory.com/
 Description: GeoDirectory plugin for wordpress.
-Version: 1.3.6
+Version: 1.3.7
 Author: GeoDirectory
 Author URI: http://wpgeodirectory.com
 Requires at least: 3.1
-Tested up to: 4.0
+Tested up to: 4.1
 */
 
-
-define("GEODIRECTORY_VERSION", "1.3.6");
+define("GEODIRECTORY_VERSION", "1.3.7");
 
 if (!session_id()) session_start();
-
 
 ///CHECK FOR OLD COMPATIBILITY PACKS AND DISABLE IF THEY ARE ACTIVE
 if(is_admin()){
@@ -69,7 +67,7 @@ if (!defined('GEODIR_CUSTOM_FIELDS_TABLE')) define('GEODIR_CUSTOM_FIELDS_TABLE',
 if (!defined('GEODIR_ICON_TABLE')) define('GEODIR_ICON_TABLE', $plugin_prefix . 'post_icon' );	
 if (!defined('GEODIR_ATTACHMENT_TABLE')) define('GEODIR_ATTACHMENT_TABLE', $plugin_prefix . 'attachments' );	
 if (!defined('GEODIR_REVIEW_TABLE')) define('GEODIR_REVIEW_TABLE', $plugin_prefix . 'post_review' );	
-if (!defined('GEODIR_CUSTOM_SORT_FIELDS_TABLE')) define('GEODIR_CUSTOM_SORT_FIELDS_TABLE', $plugin_prefix . 'custom_sort_fields' );	
+if (!defined('GEODIR_CUSTOM_SORT_FIELDS_TABLE')) define('GEODIR_CUSTOM_SORT_FIELDS_TABLE', $plugin_prefix . 'custom_sort_fields' );
 
 
 // disable cache on homepage

@@ -158,13 +158,7 @@ $theme_compat['GeoDirectory_Framework'] = array(
     'geodir_after_widget_filter' => '',
     'geodir_theme_compat_css' => '',
     'geodir_theme_compat_js' => '',
-    'geodir_theme_compat_default_options' => Array
-        (
-            'geodir_width_home_contant_section' => '67',
-            'geodir_width_listing_contant_section' => '67',
-            'geodir_width_search_contant_section' => '67',
-            'geodir_width_author_contant_section' => '67'
-        ),
+    'geodir_theme_compat_default_options' => '',
     'geodir_theme_compat_code' => ''
 	);
 	
@@ -200,13 +194,7 @@ $theme_compat['Avada'] = array(
     'geodir_after_widget_filter' => '',
     'geodir_theme_compat_css' => stripslashes('.geodir-sidebar-left{float:left}select,textarea{border-style:solid;border-width:1px}.top-menu li > div{visibility:visible}.geodir-chosen-container-single .chosen-single{height:auto}ul li#menu-item-gd-location-switcher ul{width:222px}ul li#menu-item-gd-location-switcher ul li{padding-right:0!important}#mobile-nav li#mobile-menu-item-gd-location-switcher li a{padding-left:10px;padding-right:10px}#menu-item-gd-location-switcher dd,#mobile-menu-item-gd-location-switcher{margin-left:0}#menu-item-gd-location-switcher dd a{display:block}.geodir-chosen-container .chosen-results li.highlighted{background-color:#eee;background-image:none;color:#444}#mobile-nav li.mobile-nav-item li a:before{content:\'\';margin:0}#mobile-nav li.mobile-nav-item li a{padding:10px;width:auto}.geodir-listing-search{text-align:center}.geodir-search{float:none;margin:0}.geodir-search select,.geodir-search .search_by_post,.geodir-search input[type="text"],.geodir-search input[type="button"],.geodir-search input[type="submit"]{display:inline-block;float:none}.geodir-cat-list ul li,.map_category ul li{list-style-type:none}.wpgeo-avada .page-title ul li:after{content:\'\'}.top_banner_section{margin-bottom:0}.geodir-category-list-in{margin:0;padding:15px}.geodir_full_page .geodir-cat-list .widget-title{margin-top:0}.geodir_full_page .geodir-cat-list ul li{padding-left:0}.geodir-loc-bar{border:none;margin:0;padding:0}.geodir-loc-bar-in{padding:15px 0}.geodir_full_page section.widget{margin-bottom:20px}.sidebar .geodir-loginbox-list li{margin-bottom:10px;padding-bottom:10px}.sidebar .geodir-loginbox-list li a{display:block}.sidebar .geodir-chosen-container .chosen-results li{margin:0;padding:5px 6px}.sidebar .geodir-chosen-container .chosen-results li.highlighted{background:#eee;background-image:none;color:#000}.sidebar .geodir_category_list_view li.geodir-gridview{display:inline-block;margin-bottom:15px}.wpgeo-avada.double-sidebars #main #sidebar{margin-left:3%}.wpgeo-avada.double-sidebars #main #sidebar-2{margin-left:-100%}.wpgeo-avada.double-sidebars #content{float:left;margin-left:0}.geodir_full_page section.widget{margin-bottom: 0px;}'),
     'geodir_theme_compat_js' => '',
-    'geodir_theme_compat_default_options' => Array
-        (
-            'geodir_width_home_contant_section' => '67',
-            'geodir_width_listing_contant_section' => '67',
-            'geodir_width_search_contant_section' => '67',
-            'geodir_width_author_contant_section' => '67'
-        ),
+    'geodir_theme_compat_default_options' => '',
     'geodir_theme_compat_code' => 'Avada'
 	);
 
@@ -320,13 +308,13 @@ $theme_compat['Divi'] = array(
 	
 // Genesis
 $theme_compat['Genesis'] = array(
-	'geodir_wrapper_open_id' => 'content-sidebar-wrap',
-    'geodir_wrapper_open_class' => '',
+	'geodir_wrapper_open_id' => '',
+    'geodir_wrapper_open_class' => 'content-sidebar-wrap',
     'geodir_wrapper_open_replace' => '',
     'geodir_wrapper_close_replace' => '',
     'geodir_wrapper_content_open_id' => '',
     'geodir_wrapper_content_open_class' => 'content',
-    'geodir_wrapper_content_open_replace' => '',
+    'geodir_wrapper_content_open_replace' => '<div class="[class]" role="main" >',
     'geodir_wrapper_content_close_replace' => '',
     'geodir_article_open_id' => '',
     'geodir_article_open_class' => '',
@@ -334,11 +322,11 @@ $theme_compat['Genesis'] = array(
     'geodir_article_close_replace' => '',
     'geodir_sidebar_right_open_id' => '',
     'geodir_sidebar_right_open_class' => 'sidebar sidebar-primary widget-area',
-    'geodir_sidebar_right_open_replace' => '',
+    'geodir_sidebar_right_open_replace' => '<aside  id="[id]" class="[class]" role="complementary" itemscope itemtype="[itemtype]">',
     'geodir_sidebar_right_close_replace' => '',
     'geodir_sidebar_left_open_id' => '',
-    'geodir_sidebar_left_open_class' => 'sidebar sidebar-primary widget-area',
-    'geodir_sidebar_left_open_replace' => '',
+    'geodir_sidebar_left_open_class' => 'sidebar sidebar-secondary widget-area',
+    'geodir_sidebar_left_open_replace' => '<aside  id="[id]" class="[class]" role="complementary" itemscope itemtype="[itemtype]">',
     'geodir_sidebar_left_close_replace' => '',
     'geodir_main_content_open_id' => '',
     'geodir_main_content_open_class' => '',
@@ -348,10 +336,57 @@ $theme_compat['Genesis'] = array(
     'geodir_before_main_content_add' => '',
     'geodir_before_widget_filter' => '',
     'geodir_after_widget_filter' => '',
-    'geodir_theme_compat_css' => stripslashes('.full-width-content #geodir-wrapper-content{width:100%}.geodir_full_page .geodir-listing-search{text-align:center}.geodir_full_page .geodir-search{float:none;margin:0}.geodir_full_page .geodir-search select,.geodir_full_page .geodir-search .search_by_post,.geodir_full_page .geodir-search input[type="text"],.geodir_full_page .geodir-search input[type="button"],.geodir_full_page .geodir-search input[type="submit"]{display:inline-block;float:none}.content{float:left}.sidebar-content .content,.sidebar-content #geodir-wrapper-content{float:right}.sidebar .geodir-company_info{background-color:#fff;border:none}.geodir_full_page .geodir-loc-bar{padding:0;margin:0;border:none}.geodir_full_page .geodir-category-list-in{margin-top:0}.geodir_full_page .top_banner_section{margin-bottom:0}.geodir-breadcrumb-bar{margin-bottom:-35px}'),
+    'geodir_theme_compat_css' => stripslashes('.full-width-content #geodir-wrapper-content{width:100%}.geodir_full_page .geodir-listing-search{text-align:center}.geodir_full_page .geodir-search{float:none;margin:0}.geodir_full_page .geodir-search select,.geodir_full_page .geodir-search .search_by_post,.geodir_full_page .geodir-search input[type="text"],.geodir_full_page .geodir-search input[type="button"],.geodir_full_page .geodir-search input[type="submit"]{display:inline-block;float:none}.content{float:left}.sidebar-content .content,.sidebar-content #geodir-wrapper-content{float:right}.sidebar .geodir-company_info{background-color:#fff;border:none}.geodir_full_page .geodir-loc-bar{padding:0;margin:0;border:none}.geodir_full_page .geodir-category-list-in{margin-top:0}.geodir_full_page .top_banner_section{margin-bottom:0}.geodir-breadcrumb-bar{margin-bottom:-35px} .search-page .entry-title,.listings-page .entry-title{font-size: 20px;}.site-inner .geodir-breadcrumb-bar{margin-bottom:0px}'),
     'geodir_theme_compat_js' => '',
     'geodir_theme_compat_default_options' => '',
     'geodir_theme_compat_code' => 'Genesis'
+	);
+	
+// Jupiter
+$theme_compat['Jupiter'] = array(
+	'geodir_wrapper_open_id' => '',
+    'geodir_wrapper_open_class' => '',
+    'geodir_wrapper_open_replace' => '<div id="theme-page"><div class="mk-main-wrapper-holder"><div  class="theme-page-wrapper mk-main-wrapper  mk-grid vc_row-fluid">',
+    'geodir_wrapper_close_replace' => '</div></div></div>',
+    'geodir_wrapper_content_open_id' => '',
+    'geodir_wrapper_content_open_class' => '',
+    'geodir_wrapper_content_open_replace' => '',
+    'geodir_wrapper_content_close_replace' => '',
+    'geodir_article_open_id' => '',
+    'geodir_article_open_class' => '',
+    'geodir_article_open_replace' => '',
+    'geodir_article_close_replace' => '',
+    'geodir_sidebar_right_open_id' => 'mk-sidebar',
+    'geodir_sidebar_right_open_class' => 'mk-builtin geodir-sidebar-right geodir-listings-sidebar-right',
+    'geodir_sidebar_right_open_replace' => '',
+    'geodir_sidebar_right_close_replace' => '',
+    'geodir_sidebar_left_open_id' => 'mk-sidebar',
+    'geodir_sidebar_left_open_class' => 'mk-builtin geodir-sidebar-right geodir-listings-sidebar-right',
+    'geodir_sidebar_left_open_replace' => '',
+    'geodir_sidebar_left_close_replace' => '',
+    'geodir_main_content_open_id' => '',
+    'geodir_main_content_open_class' => '',
+    'geodir_main_content_open_replace' => '',
+    'geodir_main_content_close_replace' => '',
+    'geodir_top_content_add' => '',
+    'geodir_before_main_content_add' => '',
+    'geodir_before_widget_filter' => '',
+    'geodir_after_widget_filter' => '',
+    'geodir_before_title_filter' => '<h3 class="widgettitle geodir-widget-title">',
+    'geodir_after_title_filter' => '',
+    'geodir_menu_li_class_filter' => 'menu-item menu-item-has-children no-mega-menu',
+    'geodir_sub_menu_ul_class_filter' => '',
+    'geodir_sub_menu_li_class_filter' => '',
+    'geodir_menu_a_class_filter' => 'menu-item-link',
+    'geodir_sub_menu_a_class_filter' => 'menu-item-link one-page-nav-item',
+    'geodir_location_switcher_menu_li_class_filter' => 'menu-item menu-item-type-social menu-item-type-social gd-location-switcher menu-item-has-children no-mega-menu',
+    'geodir_location_switcher_menu_a_class_filter' => 'menu-item-link',
+    'geodir_location_switcher_menu_sub_ul_class_filter' => '',
+    'geodir_location_switcher_menu_sub_li_class_filter' => '',
+    'geodir_theme_compat_css' => stripslashes('.geodir-widget li,.geodir_category_list_view li{margin:0}#theme-page h3.geodir-entry-title{font-size:14px}#menu-item-gd-location-switcher dd{line-height:44px}#menu-item-gd-location-switcher .geodir_location_sugestion{line-height:20px}.geodir_loginbox{overflow:visible}.geodir_full_page .geodir-listing-search{text-align:center}.geodir_full_page .geodir-search{float:none;margin:0}.geodir_full_page .geodir-search select,.geodir_full_page .geodir-search .search_by_post,.geodir_full_page .geodir-search input[type="text"],.geodir_full_page .geodir-search input[type="button"],.geodir_full_page .geodir-search input[type="submit"]{display:inline-block;float:none}'),
+    'geodir_theme_compat_js' => '',
+    'geodir_theme_compat_default_options' => '',
+    'geodir_theme_compat_code' => 'Jupiter'
 	);
 	
 update_option('gd_theme_compats',$theme_compat);	

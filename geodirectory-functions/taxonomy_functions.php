@@ -19,7 +19,7 @@ function geodir_add_nav_menu_items(  ) {
 	$items = '';
 	// apply filter to add more navigations // -Filter-Location-Manager
 	
-	if(get_option('geodir_show_listing_nav')){	
+	if(get_option('geodir_show_listing_nav')){
 	
 	$menu_class = '';
 	if(geodir_is_page('listing'))
@@ -37,9 +37,10 @@ function geodir_add_nav_menu_items(  ) {
 					$menu_class = '';
 					if(geodir_get_current_posttype() == $post_type && geodir_is_page('listing'))
 					$menu_class = 'current-menu-item';
-					
-					$items .=	'<li class="menu-item '.$menu_class.'">
-									<a href="'. get_post_type_archive_link( $post_type ) .'">
+					$li_class = apply_filters('geodir_menu_li_class','menu-item '.$menu_class);
+					$a_class = apply_filters('geodir_menu_a_class','');
+					$items .=	'<li class="'.$li_class.'">
+									<a href="'. get_post_type_archive_link( $post_type ) .'" class="'.$a_class.'">
 										'.__(ucfirst($args->labels->name)).'
 									</a>
 								</li>';
@@ -53,10 +54,14 @@ function geodir_add_nav_menu_items(  ) {
 	$view_posttype_listing = get_option('geodir_add_posttype_in_listing_nav') ;
 	$is_listing_sub_meny_exists = (!empty($view_posttype_listing)) ? true : false ;	
 	if($is_listing_sub_meny_exists)
-	{
-		$items .= '<li class="menu-item '.$menu_class.' '.apply_filters('geodir_sub_menu_li_class','').' ">
-					<a href="#">'.__('Listing',GEODIRECTORY_TEXTDOMAIN).'</a>
-					<ul class="sub-menu">';
+	{	$li_class = apply_filters('geodir_menu_li_class','menu-item '.$menu_class);
+		$sub_li_class = apply_filters('geodir_sub_menu_li_class','menu-item '.$menu_class);
+		$sub_ul_class = apply_filters('geodir_sub_menu_ul_class' ,'sub-menu' );
+		$a_class = apply_filters('geodir_menu_a_class','');
+		$sub_a_class = apply_filters('geodir_sub_menu_a_class','');
+		$items .= '<li class="'.$li_class.'">
+					<a href="#" class="'.$a_class.'">'.__('Listing',GEODIRECTORY_TEXTDOMAIN).'</a>
+					<ul class="'.$sub_ul_class .'">';
 						$post_types = geodir_get_posttypes('object');
 						
 						$show_listing_post_types = get_option('geodir_add_posttype_in_listing_nav');
@@ -73,8 +78,8 @@ function geodir_add_nav_menu_items(  ) {
 												if(geodir_get_current_posttype() == $post_type && geodir_is_page('listing'))
 												$menu_class = 'current-menu-item';
 											
-												$items .=	'<li class="menu-item '.$menu_class.'">
-														<a href="'. get_post_type_archive_link( $post_type ) .'">
+												$items .=	'<li class="'.$sub_li_class.'">
+														<a href="'. get_post_type_archive_link( $post_type ) .'" class="'.$sub_a_class.'">
 															'.__(ucfirst($args->labels->name)).'
 														</a>
 													</li>';
@@ -112,9 +117,10 @@ function geodir_add_nav_menu_items(  ) {
 										$menu_class = '';
 										if(geodir_get_current_posttype() == $post_type && geodir_is_page('add-listing'))
 										$menu_class = 'current-menu-item';
-									
-										$items .=	'<li class="menu-item '.$menu_class.'">
-											<a href="'. geodir_get_addlisting_link( $post_type ) .'">
+										$li_class = apply_filters('geodir_menu_li_class','menu-item '.$menu_class);
+										$a_class = apply_filters('geodir_menu_a_class','');
+										$items .=	'<li class="'.$li_class .'">
+											<a href="'. geodir_get_addlisting_link( $post_type ) .'" class="'.$a_class.'">
 												'.__('Add',GEODIRECTORY_TEXTDOMAIN).' '.__( $args->labels->singular_name, GEODIRECTORY_TEXTDOMAIN ).'
 											</a>
 										</li>';
@@ -134,10 +140,14 @@ function geodir_add_nav_menu_items(  ) {
 	{
 	
 		if(get_option('geodir_show_addlisting_nav')){		
-		
-		$items .= '<li  class="menu-item '.$menu_class.' '.apply_filters('geodir_sub_menu_li_class','').' ">
-					<a href="#">'.__('Add Listing',GEODIRECTORY_TEXTDOMAIN).'</a>
-					<ul class="sub-menu">';
+		$li_class = apply_filters('geodir_menu_li_class','menu-item '.$menu_class);
+		$sub_li_class = apply_filters('geodir_sub_menu_li_class','menu-item '.$menu_class);
+		$sub_ul_class = apply_filters('geodir_sub_menu_ul_class' ,'sub-menu' );
+		$a_class = apply_filters('geodir_menu_a_class','');
+		$sub_a_class = apply_filters('geodir_sub_menu_a_class','');
+		$items .= '<li  class="'.$li_class.'">
+					<a href="#" class="'.$a_class.'">'.__('Add Listing',GEODIRECTORY_TEXTDOMAIN).'</a>
+					<ul class="'.$sub_ul_class .'">';
 					
 						$post_types = geodir_get_posttypes('object');
 						
@@ -154,9 +164,9 @@ function geodir_add_nav_menu_items(  ) {
 													$menu_class = '';
 													if(geodir_get_current_posttype() == $post_type && geodir_is_page('add-listing'))
 													$menu_class = 'current-menu-item';
-												
-													$items .=	'<li class="menu-item '.$menu_class.'">
-														<a href="'. geodir_get_addlisting_link( $post_type ) .'">
+												$li_class = apply_filters('geodir_menu_li_class','menu-item '.$menu_class);
+													$items .=	'<li class="'.$li_class.'">
+														<a href="'. geodir_get_addlisting_link( $post_type ) .'" class="'.$sub_a_class.'">
 															'.__('Add',GEODIRECTORY_TEXTDOMAIN).' ' . __( $args->labels->singular_name, GEODIRECTORY_TEXTDOMAIN ) . '
 														</a>
 													</li>';
@@ -474,8 +484,7 @@ function geodir_custom_taxonomy_walker($cat_taxonomy, $cat_parent = 0,$hide_empt
 	if(count($cat_terms) > 0)
 	{
 		//Displaying as a list
-		
-		$p = $pading*15;
+		$p = $pading * 20;
 		$pading++;
 		
 		
@@ -483,18 +492,20 @@ function geodir_custom_taxonomy_walker($cat_taxonomy, $cat_parent = 0,$hide_empt
 		{
 			if($cat_parent == 0)
 			{	
-				$list_class = 'main_list';
+				$list_class = 'main_list gd-parent-cats-list gd-cats-display-' . $cat_display;
 				$main_list_class = 'class="main_list_selecter"';
 			}	
 			else
 			{	
 				//$display = 'display:none';
-				$list_class = 'sub_list';
+				$list_class = 'sub_list gd-sub-cats-list';
 			}
 		}					
 		
-		if($cat_display == 'checkbox')	
-			$out = '<div class="'.$list_class.'" style="margin-left:'.$p.'px;'.$display.';">';
+		if($cat_display == 'checkbox' || $cat_display == 'radio') {
+			$p = 0;
+			$out = '<div class="'.$list_class.' gd-cat-row-' . $cat_parent . '" style="margin-left:'.$p.'px;'.$display.';">';
+		}
 		 
 		foreach ($cat_terms as $cat_term)
 		{
@@ -510,19 +521,20 @@ function geodir_custom_taxonomy_walker($cat_taxonomy, $cat_parent = 0,$hide_empt
 			}	
 			
 			if($cat_display == 'radio')
-				$out .= '<span style="display:inline;line-height:30px;" ><input type="radio" field_type="radio" name="post_category['.$cat_term->taxonomy.'][]" '.$main_list_class.' alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" '.$checked.$onchange.' >'.$term_check.ucfirst($cat_term->name).'</span>';
+				$out .= '<span style="display:block" ><input type="radio" field_type="radio" name="post_category['.$cat_term->taxonomy.'][]" '.$main_list_class.' alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" '.$checked.$onchange.' id="gd-cat-' . $cat_term->term_id . '" >'.$term_check.ucfirst($cat_term->name).'</span>';
 			elseif($cat_display == 'select' || $cat_display == 'multiselect') 
             	$out .= '<option '.$main_list_class.' style="margin-left:'.$p.'px;" alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" '.$checked.$onchange.' >'.$term_check.ucfirst($cat_term->name).'</option>';
 				
-			else
-				$out .= '<span style="display:block" ><input style="display:inline-block" type="checkbox" field_type="checkbox" name="post_category['.$cat_term->taxonomy.'][]" '.$main_list_class.' alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" '.$checked.$onchange.' >'.$term_check.ucfirst($cat_term->name).'</span>'; 
+			else {
+				$out .= '<span style="display:block"><input style="display:inline-block" type="checkbox" field_type="checkbox" name="post_category['.$cat_term->taxonomy.'][]" '.$main_list_class.' alt="'.$cat_term->taxonomy.'" title="'.ucfirst($cat_term->name).'" value="'.$cat_term->term_id.'" '.$checked.$onchange.' id="gd-cat-' . $cat_term->term_id . '" >'.$term_check.ucfirst($cat_term->name).'</span>'; 
+			}
 				
 				// Call recurson to print sub cats
 				$out .=  geodir_custom_taxonomy_walker($cat_taxonomy, $cat_term->term_id,$hide_empty,$pading);
 			
 		}
 		
-		if($cat_display == 'checkbox')	
+		if($cat_display == 'checkbox' || $cat_display == 'radio')	
 			$out .= '</div>'; 
 		
 		return $out;
@@ -1228,7 +1240,8 @@ function geodir_listing_permalink_structure($post_link, $post_obj, $leavename, $
 function geodir_term_link($termlink, $term, $taxonomy) 
 {
   	$geodir_taxonomies = geodir_get_taxonomies('',true);
-	if(isset($taxonomy) && in_array($taxonomy,$geodir_taxonomies)){
+
+	if(isset($taxonomy) && !empty($geodir_taxonomies) && in_array($taxonomy,$geodir_taxonomies)){
 		global $geodir_add_location_url;
 		$include_location = false;
 		$request_term = array();
