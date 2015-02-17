@@ -275,6 +275,11 @@ button.ui-button::-moz-focus-inner {
 .ui-datepicker select.ui-datepicker-month,
 .ui-datepicker select.ui-datepicker-year {
 	width: 49%;
+	float:left;
+	
+}
+.ui-datepicker select.ui-datepicker-year{
+margin-left:1px;	
 }
 .ui-datepicker table {
 	width: 100%;
@@ -931,7 +936,7 @@ body .ui-tooltip {
 	background-image: url(../images/ui-icons_datepicker.png);
 }
 .ui-state-default .ui-icon {
-	background-image: url(../images/ui-icons_888888_256x240.png);
+	background-image: url(../images/ui-icons_datepicker.png);
 }
 .ui-state-hover .ui-icon,
 .ui-state-focus .ui-icon {
@@ -941,11 +946,11 @@ body .ui-tooltip {
 	background-image: url(../images/ui-icons_datepicker_h.png);
 }
 .ui-state-highlight .ui-icon {
-	background-image: url(../images/ui-icons_2e83ff_256x240.png);
+	background-image: url(../images/ui-icons_datepicker.png);
 }
 .ui-state-error .ui-icon,
 .ui-state-error-text .ui-icon {
-	background-image: url(../images/ui-icons_cd0a0a_256x240.png);
+	background-image: url(../images/ui-icons_datepicker.png);
 }
 
 /* positioning */
