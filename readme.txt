@@ -57,6 +57,7 @@ Premium [Addons](http://wpgeodirectory.com/addons/ "Premium addons for GeoDirect
 * [Custom Post Types](http://wpgeodirectory.com/addons/custom-post-types/ "Allows to extend your directory categorization") - Adds any custom post type you want as well as "Places" 
 * [MultiRatings and Reviews](http://wpgeodirectory.com/addons/multiratings-and-reviews/ "Allows you to extend your rating and reviews categorization") - Extend the review system allowing multiple rating categories (example service, quality, price) and other cool features.
 * [Advance search filters](http://wpgeodirectory.com/addons/advanced-search-filters/ "Allows you to extended search with custom filters") - Adds advance filters to the search widget, search autocompleter, geolocation and much more (example: "pet friendly" filter).
+* [Buddypress Integration](http://wpgeodirectory.com/addons/buddypress-integration/ "integrates Buddypress with GeoDirectory") - Integrates GeoDirectory with Buddypress.
 * [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allows business owners to take control of their listing.
 * [Marker Cluster](http://wpgeodirectory.com/addons/marker-cluster/ "To avoid overcrowded maps") - Adds numbered markers at high zoom levels.
 * [Duplicate alert](http://wpgeodirectory.com/addons/ajax-duplicate-alert/ "Listing already exists?") - Alert users when adding a listing with the same title as another listing.
