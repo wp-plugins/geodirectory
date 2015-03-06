@@ -1545,7 +1545,7 @@ if (!function_exists('geodir_get_infowindow_html')) {
 				
 				if (!empty($post_images)) {
 				?>
-				<div class="geodir-bubble_image"><a href="<?php if($plink!= ''){ echo $plink;}else{ echo 'javascript:void(0);';}?>"><img style="max-height:50px;" src="<?php echo $post_images[0];?>" /></a></div> 
+				<div class="geodir-bubble_image"><a href="<?php if($plink!= ''){ echo $plink;}else{ echo 'javascript:void(0);';}?>"><img alt="bubble image" style="max-height:50px;" src="<?php echo $post_images[0];?>" /></a></div>
 				<?php
 				}
 			} else {
@@ -1744,19 +1744,19 @@ function geodir_update_listing_info($updatingpost,$temppost){
 if (!function_exists('geodir_delete_listing_info')) {
 function geodir_delete_listing_info($deleted_postid, $force = false){
 	global $wpdb,$plugin_prefix;
-	
+
 	// check for multisite deletions
-	if (strpos($wpdb->prefix,$plugin_prefix) !== false) {}else{return;}
-	
+	if (strpos($plugin_prefix,$wpdb->prefix) !== false) {}else{return;}
+
 	$post_type = get_post_type( $deleted_postid );
-	
+
 	$all_postypes = geodir_get_posttypes();
 
 	if(!in_array($post_type, $all_postypes))
 		return false;
 	
 	$table = $plugin_prefix . $post_type . '_detail';
-	
+
 	/* Delete custom post meta*/	
 	$wpdb->query(
 		$wpdb->prepare(

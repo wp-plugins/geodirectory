@@ -50,6 +50,7 @@ function geodir_max_excerpt($charlength) {
 	if ($charlength=='0') {
 		return;
 	}
+	$out = '';
 	$excerpt = get_the_excerpt();
 	//return;
 	$charlength++;
@@ -61,32 +62,34 @@ function geodir_max_excerpt($charlength) {
 			if ($charlength > 0 && mb_strlen( $subex ) > $charlength) {
 				$subex = mb_substr( $subex, 0, $charlength );
 			}
-			echo $subex;
+			$out .= $subex;
 		} else {
 			$subex = mb_substr( $excerpt, 0, $charlength - 5 );
 			$exwords = explode( ' ', $subex );
 			$excut = - ( mb_strlen( $exwords[ count( $exwords ) - 1 ] ) );
 			if ( $excut < 0 ) {
-				echo mb_substr( $subex, 0, $excut );
+				$out .=  mb_substr( $subex, 0, $excut );
 			} else {
-				echo $subex;
+				$out .=  $subex;
 			}
 		}
-		echo ' <a class="excerpt-read-more" href="'.get_permalink().'" title="'.get_the_title().'">'; 
-		echo apply_filters('geodir_max_excerpt_end',__('Read more [...]',GEODIRECTORY_TEXTDOMAIN));
-		echo '</a>'; 
+		$out .= ' <a class="excerpt-read-more" href="'.get_permalink().'" title="'.get_the_title().'">';
+		$out .=  apply_filters('geodir_max_excerpt_end',__('Read more [...]',GEODIRECTORY_TEXTDOMAIN));
+		$out .=  '</a>';
 
 	} else {
 		if (mb_strlen($excerpt_more)>0 && mb_strpos($excerpt, $excerpt_more)!==false) {
 			$excut = - (mb_strlen($excerpt_more));
-			echo mb_substr( $excerpt, 0, $excut );
-			echo ' <a class="excerpt-read-more" href="'.get_permalink().'" title="'.get_the_title().'">'; 
-			echo apply_filters('geodir_max_excerpt_end',__('Read more [...]',GEODIRECTORY_TEXTDOMAIN));
-			echo '</a>';
+			$out .=  mb_substr( $excerpt, 0, $excut );
+			$out .=  ' <a class="excerpt-read-more" href="'.get_permalink().'" title="'.get_the_title().'">';
+			$out .=  apply_filters('geodir_max_excerpt_end',__('Read more [...]',GEODIRECTORY_TEXTDOMAIN));
+			$out .=  '</a>';
 		} else {
-			echo $excerpt;
+			$out .=  $excerpt;
 		}
 	}
+
+	return $out;
 }
 
 function geodir_post_package_info($package_info, $post='', $post_type = '')
@@ -526,7 +529,7 @@ function geodir_related_posts_display($request){
 									
 								}
 								$related_posts = true;
-								$template = apply_filters( "geodir_template_part-related-listing-listview", geodir_plugin_path() . '/geodirectory-templates/listing-listview.php' );
+								$template = apply_filters( "geodir_template_part-related-listing-listview", geodir_locate_template('listing-listview'));
 							
 								
 								include( $template );
@@ -572,7 +575,11 @@ function geodir_get_map_default_language()
 function geodir_add_meta_keywords()
 {
 	global $post, $wp_query, $wpdb, $geodir_addon_list;
-	
+
+	$is_geodir_page = geodir_is_geodir_page();
+
+	if(!$is_geodir_page){return;}// if non GD page, bail
+
 	$current_term = $wp_query->get_queried_object();
 	
 	$all_postypes = geodir_get_posttypes();
@@ -590,11 +597,17 @@ function geodir_add_meta_keywords()
 			the_post();
 			
 			if ( has_excerpt() ) {
+				$out_excerpt = strip_tags( strip_shortcodes( get_the_excerpt() ) );
+				if(empty($out_excerpt)) {
+					$out_excerpt = strip_tags( do_shortcode( get_the_excerpt() ) );
+				}
 				$out_excerpt = str_replace( array( "\r\n", "\r", "\n" ), "", $out_excerpt );
-				$out_excerpt = strip_tags( do_shortcode( get_the_excerpt() ) );
 			} else {
 				$out_excerpt = str_replace( array( "\r\n", "\r", "\n" ), "", $post->post_content );
-				$out_excerpt = strip_tags( do_shortcode( $out_excerpt ) ); // parse short code from content
+				$out_excerpt = strip_tags( strip_shortcodes( $out_excerpt  ) );
+				if(empty($out_excerpt)) {
+					$out_excerpt = strip_tags( do_shortcode( $out_excerpt ) ); // parse short code from content
+				}
 				$out_excerpt = trim( wp_trim_words( $out_excerpt, 35, '' ), '.!?,;:-' );
 			}
 			
@@ -612,7 +625,7 @@ function geodir_add_meta_keywords()
 		$meta_desc .= isset($current_term->description) ? $current_term->description : '';
 	}
 
-	$is_geodir_page = geodir_is_geodir_page();
+
 	$geodir_post_type = geodir_get_current_posttype();
 	$geodir_post_type_info = get_post_type_object($geodir_post_type);
 	$geodir_is_page_listing = geodir_is_page('listing') ? true : false;
@@ -1198,7 +1211,7 @@ function geodir_get_recent_reviews($g_size = 30, $no_comments = 10, $comment_len
 		}*/
 		
 		$review_table = GEODIR_REVIEW_TABLE;
-		$request = "SELECT r.id as ID, r.post_type, r.comment_id as comment_ID, r.post_date as comment_date,r.overall_rating, r.user_id, r.post_id FROM $review_table as r WHERE r.post_status = 1 AND r.status =1 $country_filter $region_filter $city_filter ORDER BY r.post_date DESC, r.id DESC LIMIT $no_comments";
+		$request = "SELECT r.id as ID, r.post_type, r.comment_id as comment_ID, r.post_date as comment_date,r.overall_rating, r.user_id, r.post_id FROM $review_table as r WHERE r.post_status = 1 AND r.status =1 AND r.overall_rating>1 $country_filter $region_filter $city_filter ORDER BY r.post_date DESC, r.id DESC LIMIT $no_comments";
 		
 		//$request = "SELECT r.*,c.* FROM $review_table r JOIN $wpdb->comments c ON r.comment_ID=c.comment_ID WHERE r.post_status = 1 AND r.status =1 $country_filter $region_filter $city_filter ORDER BY r.post_date DESC, r.id DESC LIMIT $no_comments";
 		//echo $request;

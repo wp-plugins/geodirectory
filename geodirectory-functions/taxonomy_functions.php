@@ -762,7 +762,7 @@ function geodir_addpost_categories_html( $request_taxonomy, $parrent, $selected 
     <?php $main_cat = get_term( $parrent, $request_taxonomy); ?>
     
     <div class="post_catlist_item" style="border:1px solid #CCCCCC; margin:5px auto; padding:5px;">
-    	<img src="<?php echo geodir_plugin_url().'/geodirectory-assets/images/move.png';?>" onclick="jQuery(this).closest('div').remove();update_listing_cat();" align="right" /> 
+    	<img alt="move icon" src="<?php echo geodir_plugin_url().'/geodirectory-assets/images/move.png';?>" onclick="jQuery(this).closest('div').remove();update_listing_cat();" align="right" />
 		<?php /* ?>
 		<img src="<?php echo geodir_plugin_url().'/geodirectory-assets/images/move.png';?>" onclick="jQuery(this).closest('div').remove();show_subcatlist();" align="right" /> 
 		<?php */ ?>
@@ -1055,17 +1055,17 @@ function geodir_listing_permalink_structure($post_link, $post_obj, $leavename, $
 {
 	//echo $post_link."<br />".$sample ;
 
-	
+
 	global $wpdb, $wp_query ,$plugin_prefix,$post,$comment_post_cache,$gd_permalink_cache;
 	if(isset($post_obj->ID) && isset($post->ID) && $post_obj->ID==$post->ID){}
 	elseif(isset($post_obj->post_status) && $post_obj->post_status=='auto-draft'){return $post_link;}
 	else{$orig_post = $post;$post = $post_obj;}
 
 		if(in_array( $post->post_type, geodir_get_posttypes() ) ){
-		
+
 		if(isset($comment_post_cache[$post->ID])){$post = $comment_post_cache[$post->ID];}
 		if(isset($gd_permalink_cache[$post->ID]) && $gd_permalink_cache[$post->ID] && !$sample){$post_id = $post->ID; if(isset($orig_post)){$post = $orig_post;} return $gd_permalink_cache[$post_id];}
-		
+
 		if(!isset($post->post_locations)){
 			$post_type= $post->post_type;
 			$ID = $post->ID;
@@ -1228,7 +1228,7 @@ function geodir_listing_permalink_structure($post_link, $post_obj, $leavename, $
 			//echo $post_link ;
 		}
 		// temp cache the permalink
-		if(!$sample){$gd_permalink_cache[$post->ID]=$post_link;}
+		if(!$sample && (!isset($_REQUEST['geodir_ajax']) || (isset($_REQUEST['geodir_ajax']) && $_REQUEST['geodir_ajax']!='add_listing' ))){$gd_permalink_cache[$post->ID]=$post_link;}
 	}	
 	if(isset($orig_post)){$post = $orig_post;}
 	//echo $post_link ;
@@ -1389,3 +1389,45 @@ function geodir_term_exists($term, $taxonomy = '', $parent = 0) {
 	return false;
 }
 
+function geodir_get_term_icon($term_id = false,$rebuild=false)
+{
+	if(!$rebuild){$terms_icons = get_option('gd_term_icons');}
+	else{$terms_icons = '';}
+
+	if(empty($terms_icons)){
+		$default_icon_url = get_option('geodir_default_marker_icon');
+		$taxonomy = geodir_get_taxonomies();
+		$terms = get_terms( $taxonomy );
+
+		foreach( $terms as $term ) {
+			$post_type = str_replace("category", "", $term->taxonomy);
+			$a_terms[$post_type][] = $term;
+
+		}
+
+		foreach ($a_terms as $pt=>$t2) {
+
+			foreach ($t2 as $term) {
+
+				//print_r($term);
+				$term_icon = get_tax_meta($term->term_id, 'ct_cat_icon', false, $pt);
+				if ($term_icon) {
+					$term_icon_url = $term_icon["src"];
+				} else {
+					$term_icon_url = $default_icon_url;
+				}
+				$terms_icons[$term->term_id] = $term_icon_url;
+			}
+		}
+
+		update_option('gd_term_icons',$terms_icons);
+	}
+
+	if ($term_id && isset($terms_icons[$term_id])) {
+		return $terms_icons[$term_id];
+	}elseif($term_id && !isset($terms_icons[$term_id])) {
+		return get_option('geodir_default_marker_icon');
+	}
+
+	return $terms_icons;
+}
