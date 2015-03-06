@@ -13,7 +13,7 @@ $geodir_settings['notifications_settings'] = apply_filters('geodir_notifications
 	
 	array(  
 		'name' => __( 'List of usable shortcodes', GEODIRECTORY_TEXTDOMAIN ),
-		'desc' 		=> __( '[#client_name#],[#listing_link#],[#posted_date#],[#number_of_days#],[#number_of_grace_days#],[#login_url#],[#username#],[#user_email#],[#site_name_url#],[#renew_link#],[#post_id#],[#site_name#],[#approve_listing_link#]', GEODIRECTORY_TEXTDOMAIN ),
+		'desc' 		=> __( '[#client_name#],[#listing_link#],[#posted_date#],[#number_of_days#],[#number_of_grace_days#],[#login_url#],[#username#],[#user_email#],[#site_name_url#],[#renew_link#],[#post_id#],[#site_name#]', GEODIRECTORY_TEXTDOMAIN ),
 		'id' 		=> 'geodir_list_of_usable_shordcodes',
 		'type' 		=> 'html_content',
 		'css' 		=> 'min-width:300px;',
@@ -188,6 +188,22 @@ $geodir_settings['notifications_settings'] = apply_filters('geodir_notifications
 		'css' 		=> 'width:500px; height: 150px;',
 		'type' 		=> 'textarea',
 		'std' 		=>  "<p>Dear [#client_name#],</p><p>You can log in  with the following information:</p><p>[#login_details#]</p><p>You can login here: [#login_url#]</p><p>Thank you,<br /><br />[#site_name_url#].</p>"
+	),
+	array(  
+		'name' => __( 'Listing published email', GEODIRECTORY_TEXTDOMAIN ),
+		'desc' 		=> '',
+		'id' 		=> 'geodir_post_published_email_subject',
+		'type' 		=> 'text',
+		'css' 		=> 'min-width:300px;',
+		'std' 		=> __('Listing Published Successfully', GEODIRECTORY_TEXTDOMAIN) // Default value for the page title - changed in settings
+	),
+	array(  
+		'name' => '',
+		'desc' 		=> '',
+		'id' 		=> 'geodir_post_published_email_content',
+		'css' 		=> 'width:500px; height: 150px;',
+		'type' 		=> 'textarea',
+		'std' 		=>  __("<p>Dear [#client_name#],</p><p>Your listing [#listing_link#] has been published. This email is just for your information.</p><p>[#listing_link#]</p><br><p>Thank you for your contribution.</p><p>[#site_name#]</p>", GEODIRECTORY_TEXTDOMAIN)
 	),
 	
 	array( 'type' => 'sectionend', 'id' => 'client_emails'),

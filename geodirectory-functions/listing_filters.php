@@ -28,7 +28,8 @@ function set_listing_request(){
 	global $wp_query,$wpdb,$geodir_post_type,$table, $dist, $mylat, $mylon, $s, $snear, $s, $s_A, $s_SA;
 	
 	if(get_query_var('ignore_sticky_posts')){
-		print_r($query);exit;}
+		//print_r($query);exit;
+	}
 		
 	// fix woocommerce shop products filtered by language for GD + WPML + Woocommerce
 	if(!geodir_is_geodir_page()){
@@ -272,17 +273,45 @@ function geodir_posts_fields($fields){
 		
 		//$fields .= ", ".$table.".*".", ".POST_LOCATION_TABLE.".* ";//===old code
 		$fields .= ", ".$table.".* ";
-		if($snear!=''){
+		if($snear!='' || isset($_SESSION['all_near_me'])){
 			$DistanceRadius = geodir_getDistanceRadius(get_option('geodir_search_dist_1'));
-			/*$lon1 = $mylon-$dist/abs(cos(deg2rad($mylat))*69); 
-			$lon2 = $mylon+$dist/abs(cos(deg2rad($mylat))*69);
-			$lat1 = $mylat-($dist/69);
-			$lat2 = $mylat+($dist/69);*/
+			if(isset($_SESSION['all_near_me'])){
+			$mylat = $_SESSION['user_lat'];
+			$mylon = $_SESSION['user_lon'];
 			
-			$fields .= " , (".$DistanceRadius." * 2 * ASIN(SQRT( POWER(SIN(($mylat - ABS(".$table.".post_latitude)) * pi()/180 / 2), 2) +COS($mylat * pi()/180) * COS( ABS(".$table.".post_latitude) * pi()/180) *POWER(SIN(($mylon - ".$table.".post_longitude) * pi()/180 / 2), 2) )))as distance ";
+			}
+			
+			$fields .= " , (".$DistanceRadius." * 2 * ASIN(SQRT( POWER(SIN((ABS($mylat) - ABS(".$table.".post_latitude)) * pi()/180 / 2), 2) +COS(ABS($mylat) * pi()/180) * COS( ABS(".$table.".post_latitude) * pi()/180) *POWER(SIN(($mylon - ".$table.".post_longitude) * pi()/180 / 2), 2) )))as distance ";
 		}
-	
-	return $fields;
+
+    global $s;
+    if ( is_search() && isset( $_REQUEST['geodir_search'] ) && $s && trim( $s ) != '' ) {
+        $keywords = explode(" ",$s);
+        if (count($keywords) > 1) {
+            $parts = array(
+                'AND' => 'gd_alltitlematch_part',
+                'OR' => 'gd_titlematch_part'
+            );
+            $gd_titlematch_part = "";
+            foreach ($parts as $key => $part) {
+                $gd_titlematch_part .= " CASE WHEN ";
+                $count = 0;
+                foreach ($keywords as $keyword) {
+                    $count++;
+                    if($count < count($keywords)) {
+                        $gd_titlematch_part .= $wpdb->posts . ".post_title LIKE '%%".$keyword."%%' ".$key." ";
+                    } else {
+                        $gd_titlematch_part .= $wpdb->posts . ".post_title LIKE '%%".$keyword."%%' ";
+                    }
+                }
+                $gd_titlematch_part .= "THEN 1 ELSE 0 END AS ".$part.",";
+            }
+        } else {
+            $gd_titlematch_part = "";
+        }
+        $fields .= $wpdb->prepare(", CASE WHEN " . $table . ".is_featured='1' THEN 1 ELSE 0 END AS gd_featured, CASE WHEN " . $wpdb->posts . ".post_title=%s THEN 1 ELSE 0 END AS gd_exacttitle,".$gd_titlematch_part." CASE WHEN " . $wpdb->posts . ".post_title LIKE %s THEN 1 ELSE 0 END AS gd_titlematch, CASE WHEN " . $wpdb->posts . ".post_content LIKE %s THEN 1 ELSE 0 END AS gd_content", array( $s, '%' . $s . '%', '%' . $s . '%' ) );
+    }
+    return $fields;
 }
 
 
@@ -353,6 +382,21 @@ function geodir_posts_orderby($orderby) {
 			$sort_by = $default_sort;
 	}
 	
+	/* 
+	if search by term & no location then order always "relevance"
+	if search by location then order always "nearest"
+	*/
+	if ( is_main_query() && geodir_is_page( 'search' ) ) {
+		$search_term = get_query_var( 's' );
+		
+		if ( trim( $search_term ) != '' && !isset($_REQUEST['sort_by'])) {
+			$sort_by = 'az';
+		}
+
+		if ( $snear != '' ) {
+			$sort_by = 'nearest';
+		}
+	}
 	
 	switch($sort_by):
 		case 'newest':
@@ -368,10 +412,10 @@ function geodir_posts_orderby($orderby) {
 			$orderby = "$wpdb->posts.comment_count desc, ";
 		break;
 		case 'low_rating':
-			$orderby = $table.".overall_rating asc, ";
+			$orderby = "( " . $table . ".overall_rating  ) asc, ";
 		break;
 		case 'high_rating':
-			$orderby = $table.".overall_rating desc, ";
+			$orderby = "( " . $table . ".overall_rating ) desc, ";
 		break;
 		case 'featured':
 			$orderby = $table.".is_featured asc, ";
@@ -393,10 +437,29 @@ function geodir_posts_orderby($orderby) {
 		break;
 	endswitch;
 	
+	global $s;
+
+    if ( is_search() && isset( $_REQUEST['geodir_search'] ) && $s && trim( $s ) != '' ) {
+        $keywords = explode(" ",$s);
+        if ( $sort_by == 'nearest' || $sort_by == 'farthest' ) {
+            if (count($keywords) > 1) {
+                $orderby = $orderby . " ( gd_titlematch * 1.5 + gd_featured * 5 + gd_exacttitle * 10 + gd_alltitlematch_part * 100 + gd_titlematch_part * 50 + gd_content * 2) DESC, ";
+            } else {
+                $orderby = $orderby . " ( gd_titlematch * 1.5 + gd_featured * 5 + gd_exacttitle * 10 + gd_content * 2) DESC, ";
+            }
+        } else {
+            if (count($keywords) > 1) {
+                $orderby = "( gd_titlematch * 1.5 + gd_featured * 5 + gd_exacttitle * 10 + gd_alltitlematch_part * 100 + gd_titlematch_part * 50 + gd_content * 2) DESC, " . $orderby;
+            } else {
+                $orderby = "( gd_titlematch * 1.5 + gd_featured * 5 + gd_exacttitle * 10 + gd_content * 2) DESC, " . $orderby;
+            }
+        }
+    }
+	
 	$orderby = apply_filters('geodir_posts_order_by_sort', $orderby, $sort_by, $table);
 	
 	$orderby .= $table.".is_featured asc, $wpdb->posts.post_date desc, $wpdb->posts.post_title ";
-	
+		
 	return $orderby;
 }
 
@@ -426,6 +489,11 @@ function geodir_posts_order_by_custom_sort($orderby, $sort_by, $table){
 				
 				case 'distance':
 					$orderby = $sort_by." ".$order.", ";
+				break;
+				
+				// sort by rating
+				case 'overall_rating':
+					$orderby = "( " . $table . "." . $sort_by . " ) ".$order.", ";
 				break;
 				
 				default:
@@ -597,20 +665,51 @@ function searching_filter_where($where) {
 		$post_types = $_REQUEST['stype'];
 	else
 		$post_types = 'gd_place';
+		
+	if ( trim( $s ) != '' ) {
+		$adv_search_arr = explode( " ", $s );
+		if ( !empty( $adv_search_arr ) ) {
+			foreach( $adv_search_arr as $adv_search_val ) {
+				$adv_search_val = trim( $adv_search_val );
+				if ( $adv_search_val != '' ) {
+					$better_search_terms .= ' OR '.$wpdb->posts.'.post_title LIKE "%' . $adv_search_val . '%"';
+				}
+			}
+		}
+	}
 	
 	
 	/* get taxonomy */
 	$taxonomies = geodir_get_taxonomies($post_types,true);
 	$taxonomies = implode("','",$taxonomies);	
 	$taxonomies = "'". $taxonomies ."'";
-		
+
+    $keywords = explode(" ",$s);
+    if (count($keywords) > 1) {
+        $gd_titlematch_part = " ";
+        foreach ($keywords as $keyword) {
+            $gd_titlematch_part .= "OR ($wpdb->posts.post_title LIKE \"%$keyword%\") ";
+        }
+    } else {
+        $gd_titlematch_part = "";
+    }
+
+	//if($snear!='' && strpos($snear,__('In:',GEODIRECTORY_TEXTDOMAIN)) !== false)
 	if($snear!='')
-	{
+	{		if(isset($_SESSION['near_me_range']) && is_numeric($_SESSION['near_me_range']) && !isset($_REQUEST['sdist'])){$dist = $_SESSION['near_me_range'];}
 			$lon1 = $mylon-$dist/abs(cos(deg2rad($mylat))*69); 
 			$lon2 = $mylon+$dist/abs(cos(deg2rad($mylat))*69);
 			$lat1 = $mylat-($dist/69);
 			$lat2 = $mylat+($dist/69);
+			
+			$rlon1 = is_numeric(min($lon1,$lon2)) ? min($lon1,$lon2) : '';
+			$rlon2 = is_numeric(max($lon1,$lon2)) ? max($lon1,$lon2) : '';
+			$rlat1 = is_numeric(min($lat1,$lat2)) ? min($lat1,$lat2) : '';
+			$rlat2 = is_numeric(max($lat1,$lat2)) ? max($lat1,$lat2) : '';
+
+
 			$where .= " AND ( ( $wpdb->posts.post_title LIKE \"%$s%\" $better_search_terms)
+			                    $gd_titlematch_part
 								OR ($wpdb->posts.post_content LIKE \"%$s%\") 
 								OR ($wpdb->posts.ID IN( 
 										SELECT $wpdb->term_relationships.object_id as post_id 
@@ -624,17 +723,18 @@ function searching_filter_where($where) {
 							)
 						AND $wpdb->posts.post_type in ('{$post_types}') 
 						AND ($wpdb->posts.post_status = 'publish') 
-						AND ( ".$table.".post_latitude between $lat1 and $lat2 ) 
-						AND ( ".$table.".post_longitude between $lon1 and $lon2 ) ";
+						AND ( ".$table.".post_latitude between $rlat1 and $rlat2 ) 
+						AND ( ".$table.".post_longitude between $rlon1 and $rlon2 ) ";
 						
 		if(isset($_REQUEST['sdist']) && $_REQUEST['sdist'] != 'all'){
 			$DistanceRadius = geodir_getDistanceRadius(get_option('geodir_search_dist_1'));
-			$where .= " AND CONVERT((".$DistanceRadius." * 2 * ASIN(SQRT( POWER(SIN(($mylat - ABS(".$table.".post_latitude)) * pi()/180 / 2), 2) +COS($mylat * pi()/180) * COS( ABS(".$table.".post_latitude) * pi()/180) *POWER(SIN(($mylon - ".$table.".post_longitude) * pi()/180 / 2), 2) ))),DECIMAL(64,4)) <= ".$dist;
+			$where .= " AND CONVERT((".$DistanceRadius." * 2 * ASIN(SQRT( POWER(SIN((ABS($mylat) - ABS(".$table.".post_latitude)) * pi()/180 / 2), 2) +COS(ABS($mylat) * pi()/180) * COS( ABS(".$table.".post_latitude) * pi()/180) *POWER(SIN(($mylon - ".$table.".post_longitude) * pi()/180 / 2), 2) ))),DECIMAL(64,4)) <= ".$dist;
 		}
 		
 	}else
 	{
-		$where .= " AND (	( $wpdb->posts.post_title LIKE \"%$s%\" $better_search_terms) 
+		$where .= " AND (	( $wpdb->posts.post_title LIKE \"%$s%\" $better_search_terms)
+                            $gd_titlematch_part
 							OR ( $wpdb->posts.post_content LIKE \"%$s%\") 
 							OR ( $wpdb->posts.ID IN(	
 									SELECT $wpdb->term_relationships.object_id as post_id                     

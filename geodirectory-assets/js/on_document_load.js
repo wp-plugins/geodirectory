@@ -9,9 +9,9 @@ function addToFavourite(post_id,action)
 	var fav_url; 
 	
 	if(action == 'add')
-	{	fav_url = geodir_all_js_msg.geodir_admin_ajax_url+'/?action=geodir_ajax_action&geodir_ajax=favorite&ajax_action=add&pid='+post_id; }
+	{	fav_url = geodir_all_js_msg.geodir_admin_ajax_url+'?action=geodir_ajax_action&geodir_ajax=favorite&ajax_action=add&pid='+post_id; }
 	else
-	{	fav_url = geodir_all_js_msg.geodir_admin_ajax_url+'/?action=geodir_ajax_action&geodir_ajax=favorite&ajax_action=remove&pid='+post_id; 
+	{	fav_url = geodir_all_js_msg.geodir_admin_ajax_url+'?action=geodir_ajax_action&geodir_ajax=favorite&ajax_action=remove&pid='+post_id; 
 	}
 	
 	jQuery.ajax({
@@ -59,6 +59,9 @@ function addToFavourite(post_id,action)
 			onSuccess : function(element, rate){
 				jQuery('#geodir_overallrating').val(rate);
 			},
+            onTouchstart : function(element, rate){
+                jQuery('#geodir_overallrating').val(rate);
+            },
 			onError : function(){
 				alert(geodir_all_js_msg.rating_error_msg);
 			}
