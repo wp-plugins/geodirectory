@@ -171,8 +171,10 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 	
 	$result_str = isset($request_field['field_id']) ? trim($request_field['field_id']) : '';
 	
-	geodir_add_column_if_not_exist(GEODIR_CUSTOM_FIELDS_TABLE, 'cat_sort', 'text NOT NULL');
-	geodir_add_column_if_not_exist(GEODIR_CUSTOM_FIELDS_TABLE, 'cat_filter', 'text NOT NULL');
+	//geodir_add_column_if_not_exist(GEODIR_CUSTOM_FIELDS_TABLE, 'cat_sort', 'text NOT NULL');
+	//geodir_add_column_if_not_exist(GEODIR_CUSTOM_FIELDS_TABLE, 'cat_filter', 'text NOT NULL');
+	// add column to store decimal point
+	//geodir_add_column_if_not_exist( GEODIR_CUSTOM_FIELDS_TABLE, 'decimal_point', 'VARCHAR( 10 ) NOT NULL');
 	
 	$cf = trim($result_str, '_');
 	
@@ -240,6 +242,9 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 		$show_on_listing = isset($request_field['show_on_listing']) ? $request_field['show_on_listing'] : '';
 		$show_on_detail = isset($request_field['show_on_detail']) ? $request_field['show_on_detail'] : '';
 		$show_as_tab = isset($request_field['show_as_tab']) ? $request_field['show_as_tab'] : '';
+		$decimal_point = isset( $request_field['decimal_point'] ) ? trim( $request_field['decimal_point'] ) : ''; // decimal point for DECIMAL data type
+		$decimal_point = $decimal_point > 0 ? ( $decimal_point > 10 ? 10 : $decimal_point ) : '';
+		$for_admin_use = isset( $request_field['for_admin_use'] ) ? $request_field['for_admin_use'] : '';
 		
 		if($field_type != 'address' && $field_type != 'taxonomy' && $field_type != 'fieldset'){
 			$htmlvar_name = 'geodir_'.$htmlvar_name;
@@ -556,36 +561,31 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 				break;
 				
 				default:
-				
-					if($data_type != 'VARCHAR' && $data_type != '')
-					{
-						
-						$default_value_add = "ALTER TABLE ".$detail_table." CHANGE `".$old_html_variable."` `".$htmlvar_name."` ".$data_type." NULL";
-					
-						if(is_numeric($default_value) && $default_value != '')
-						{
-							$default_value_add .= " DEFAULT '".$default_value."'";
+					if ( $data_type != 'VARCHAR' && $data_type != '' ) {
+						if ( $data_type == 'FLOAT' && $decimal_point > 0 ) {
+							$default_value_add = "ALTER TABLE " . $detail_table . " CHANGE `" . $old_html_variable . "` `" . $htmlvar_name . "` DECIMAL(11, " . (int)$decimal_point . ") NULL";
+						} else {
+							$default_value_add = "ALTER TABLE " . $detail_table . " CHANGE `" . $old_html_variable . "` `" . $htmlvar_name . "` " . $data_type . " NULL";
 						}
 						
-					}
-					else
-					{
-						
-						$default_value_add = "ALTER TABLE ".$detail_table." CHANGE `".$old_html_variable."` `".$htmlvar_name."` VARCHAR( 254 ) NULL";
-						
-						if($default_value != '')
-						{
-							$default_value_add .= " DEFAULT '".$default_value."'";
+						if ( is_numeric( $default_value ) && $default_value != '' ) {
+							$default_value_add .= " DEFAULT '" . $default_value . "'";
+						}
+					} else {
+						$default_value_add = "ALTER TABLE " . $detail_table . " CHANGE `" . $old_html_variable . "` `" . $htmlvar_name . "` VARCHAR( 254 ) NULL";
+						if ( $default_value != '' ) {
+							$default_value_add .= " DEFAULT '" . $default_value . "'";
 						}
 					}
 					
-					$wpdb->query($default_value_add);
-				
+					$wpdb->query( $default_value_add );
 				break;
 			endswitch;
 			
 			$extra_field_query = '';
 			if(!empty($extra_fields)){ $extra_field_query = serialize( $extra_fields ) ;  }
+			
+			$decimal_point = $field_type == 'text' && $data_type == 'FLOAT' ? $decimal_point : '';
 
 			$wpdb->query(
 				
@@ -616,10 +616,12 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 					cat_sort = %d, 
 					cat_filter = %s, 
 					data_type = %s,
-					extra_fields = %s 
+					extra_fields = %s,
+					decimal_point = %s,
+					for_admin_use = %s  
 					where id = %d",
 					
-					array($post_type,$admin_title,$site_title,$field_type,$htmlvar_name,$admin_desc,$clabels,$default_value,$sort_order,$is_active,$is_default,$is_required,$required_msg,$css_class,$field_icon,$field_icon,$show_on_listing,$show_on_detail,$show_as_tab,$option_values,$price_pkg,$cat_sort,$cat_filter,$data_type,$extra_field_query,$cf)
+					array($post_type,$admin_title,$site_title,$field_type,$htmlvar_name,$admin_desc,$clabels,$default_value,$sort_order,$is_active,$is_default,$is_required,$required_msg,$css_class,$field_icon,$field_icon,$show_on_listing,$show_on_detail,$show_as_tab,$option_values,$price_pkg,$cat_sort,$cat_filter,$data_type,$extra_field_query, $decimal_point, $for_admin_use, $cf)
 				)
 				
 			);
@@ -816,41 +818,34 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 				
 				default:
 				
-					if($data_type != 'VARCHAR' && $data_type != '')
-					{
+					if( $data_type != 'VARCHAR' && $data_type != '' ) {
+						$meta_field_add = $data_type . " NULL ";	
 						
-						//$default_value_add = " `".$htmlvar_name."` ".$data_type." NULL ";
-						$meta_field_add = $data_type." NULL ";	
-					
-						if(is_numeric($default_value) && $default_value != '')
-						{
-							$default_value_add .= " DEFAULT '".$default_value."'";
-							$meta_field_add .= " DEFAULT '".$default_value."'";
+						if ( $data_type == 'FLOAT' && $decimal_point > 0 ) {
+							$meta_field_add = "DECIMAL(11, " . (int)$decimal_point . ") NULL ";
 						}
-						
-					}
-					else
-					{
-						//$default_value_add = " `".$htmlvar_name."` VARCHAR( 254 ) NULL ";
+					
+						if ( is_numeric( $default_value ) && $default_value != '' ) {
+							$default_value_add .= " DEFAULT '" . $default_value . "'";
+							$meta_field_add .= " DEFAULT '" . $default_value . "'";
+						}						
+					} else {
 						$meta_field_add = " VARCHAR( 254 ) NULL ";	
 						
-						if($default_value != '')
-						{
-							$default_value_add .= " DEFAULT '".$default_value."'";
-							$meta_field_add .= " DEFAULT '".$default_value."'";
+						if ( $default_value != '' ) {
+							$default_value_add .= " DEFAULT '" . $default_value . "'";
+							$meta_field_add .= " DEFAULT '" . $default_value . "'";
 						}
 					}
 					
 					geodir_add_column_if_not_exist( $detail_table, $htmlvar_name, $meta_field_add );
-					
-					//$wpdb->query("ALTER TABLE ".$detail_table." ADD".$default_value_add);
-					
 				break;	
 			endswitch;	
 			
 			$extra_field_query = '';
 			if(!empty($extra_fields)){ $extra_field_query = serialize($extra_fields);  }
 						
+			$decimal_point = $field_type == 'text' && $data_type == 'FLOAT' ? $decimal_point : '';
 			
 			$wpdb->query(
 							
@@ -881,9 +876,11 @@ function geodir_custom_field_save( $request_field = array() , $default = false )
 					cat_sort = %s, 
 					cat_filter = %s, 
 					data_type = %s,
-					extra_fields = %s ",
+					extra_fields = %s,
+					decimal_point = %s,
+					for_admin_use = %s ",
 					
-					array($post_type,$admin_title,$site_title,$field_type,$htmlvar_name,$admin_desc,$clabels,$default_value,$sort_order,$is_active,$is_default,$is_admin,$is_required,$required_msg,$css_class,$field_icon,$show_on_listing,$show_on_detail,$show_as_tab,$option_values,$price_pkg,$cat_sort,$cat_filter,$data_type,$extra_field_query)
+					array($post_type,$admin_title,$site_title,$field_type,$htmlvar_name,$admin_desc,$clabels,$default_value,$sort_order,$is_active,$is_default,$is_admin,$is_required,$required_msg,$css_class,$field_icon,$show_on_listing,$show_on_detail,$show_as_tab,$option_values,$price_pkg,$cat_sort,$cat_filter,$data_type,$extra_field_query, $decimal_point, $for_admin_use )
 					
 				)
 			
@@ -955,6 +952,12 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom',$po
 		$required_msg = $val['required_msg'];
 		$extra_fields = unserialize($val['extra_fields']);
 		$value='';
+		
+		/* field available to site admin only for edit */
+		$for_admin_use = isset( $val['for_admin_use'] ) && (int)$val['for_admin_use'] == 1 ? true : false;
+		if ( $for_admin_use && !is_super_admin() ) {
+			continue;
+		}
 		
 		if(is_admin()){ 
 			
@@ -1276,107 +1279,107 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom',$po
 				<?php $site_title = __($site_title,GEODIRECTORY_TEXTDOMAIN); echo (trim($site_title)) ? $site_title : '&nbsp;'; ?>
 				<?php if($is_required) echo '<span>*</span>';?>
 			</label>
-			<select field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>" class="geodir_textfield textfield_x chosen_select" data-placeholder="<?php echo  __('Choose',GEODIRECTORY_TEXTDOMAIN ) .' '.$site_title .'&hellip;' ;?>" option-ajaxchosen="false" >
-	
-			<?php if($option_values){   $option_values_arr = explode(',',$option_values);
-			
-					for($i=0;$i<count($option_values_arr);$i++)   {   
-					
-					if(strstr($option_values_arr[$i],"/")){
-							$select_attr = explode("/",$option_values_arr[$i]);
-							$select_lable = ucfirst($select_attr[0]);
-							$select_value = $select_attr[1];
-						}else{
-							$select_lable = ucfirst($option_values_arr[$i]);
-							$select_value = $option_values_arr[$i];
-						}
-					
-					?>
-							<option value="<?php echo $select_value; ?>" <?php if($value==$select_value){ echo 'selected="selected"';}?>><?php echo $select_lable; ?></option>
-					<?php }
+			<?php
+			$option_values_arr = geodir_string_values_to_options( $option_values );
+			$select_options = '';
+			if ( !empty( $option_values_arr ) ) {
+				foreach( $option_values_arr as $option_row ) {
+					if ( isset( $option_row['optgroup'] ) && ( $option_row['optgroup'] == 'start' || $option_row['optgroup'] == 'end' ) ) {
+						$option_label = isset( $option_row['label'] ) ? $option_row['label'] : '';
+						
+						$select_options .= $option_row['optgroup'] == 'start' ? '<optgroup label="' . esc_attr( $option_label ) . '">' : '</optgroup>';
+					} else {
+						$option_label = isset( $option_row['label'] ) ? $option_row['label'] : '';
+						$option_value = isset( $option_row['value'] ) ? $option_row['value'] : '';
+						$selected = $option_value == $value ? 'selected="selected"' : '';
+						
+						$select_options .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . '>' . $option_label . '</option>';
+					}
 				}
+			}
 			?>
-			</select>
+			<select field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>" class="geodir_textfield textfield_x chosen_select" data-placeholder="<?php echo  __('Choose',GEODIRECTORY_TEXTDOMAIN ) .' '.$site_title .'&hellip;' ;?>" option-ajaxchosen="false"><?php echo $select_options;?></select>
 			<span class="geodir_message_note"><?php _e($admin_desc,GEODIRECTORY_TEXTDOMAIN);?></span>
 			<?php if($is_required) {?>
 			<span class="geodir_message_error"><?php _e($required_msg,GEODIRECTORY_TEXTDOMAIN);?></span> 
 			<?php } ?>
 		</div>
 			
-		<?php }
-		elseif($type=='multiselect'){ 
-				$multi_display = 'select';
-				if(!empty($val['extra_fields']))
-					$multi_display = unserialize($val['extra_fields']);	
-		?>
-		
-		<div id="<?php echo $name;?>_row" class="<?php if($is_required) echo 'required_field';?> geodir_form_row clearfix">
-			<label>
-				<?php $site_title = __($site_title,GEODIRECTORY_TEXTDOMAIN); echo (trim($site_title)) ? $site_title : '&nbsp;'; ?>
-				<?php if($is_required) echo '<span>*</span>';?>
-			</label>
-					<?php if($multi_display == 'select'){?>
-					<select field_type="<?php echo $type;?>" name="<?php echo $name;?>[]" id="<?php echo $name;?>" multiple="multiple" class="geodir_textfield textfield_x"><?php 
-					}else{
-					//echo '<input name="'. $name.'[]" value="" type="hidden" />';
-					echo  '<ul class="gd_multi_choice">';
-					}
-					if($option_values){ $option_values_arr = explode(',',$option_values);
-							for($i=0;$i<count($option_values_arr);$i++) { 
-									
-									if(strstr($option_values_arr[$i],"/")){
-										$multi_select_attr = explode("/",$option_values_arr[$i]);
-										$multi_select_lable = ucfirst($multi_select_attr[0]);
-										$multi_select_value = $multi_select_attr[1];
-									}else{
-										$multi_select_lable = ucfirst($option_values_arr[$i]);
-										$multi_select_value = $option_values_arr[$i];
+		<?php 
+		} else if( $type == 'multiselect' ) { 
+			$multi_display = 'select';
+			if( !empty( $val['extra_fields'] ) ) {
+				$multi_display = unserialize( $val['extra_fields'] );	
+			}
+			?>
+			<div id="<?php echo $name;?>_row" class="<?php if($is_required) echo 'required_field';?> geodir_form_row clearfix">
+				<label>
+					<?php $site_title = __($site_title,GEODIRECTORY_TEXTDOMAIN); echo (trim($site_title)) ? $site_title : '&nbsp;'; ?>
+					<?php if($is_required) echo '<span>*</span>';?>
+				</label>
+				<input type="hidden" name="gd_field_<?php echo $name;?>" value="1" />
+				<?php if ( $multi_display == 'select' ) { ?>
+				<div class="geodir_multiselect_list">
+					<select field_type="<?php echo $type;?>" name="<?php echo $name;?>[]" id="<?php echo $name;?>" multiple="multiple" class="geodir_textfield textfield_x chosen_select" data-placeholder="<?php _e( 'Select', GEODIRECTORY_TEXTDOMAIN );?>" option-ajaxchosen="false">					
+				<?php 
+				} else {
+					echo '<ul class="gd_multi_choice">';
+				}
+
+				$option_values_arr = geodir_string_values_to_options( $option_values );
+				$select_options = '';
+				if ( !empty( $option_values_arr ) ) {
+					foreach( $option_values_arr as $option_row ) {
+						if ( isset( $option_row['optgroup'] ) && ( $option_row['optgroup'] == 'start' || $option_row['optgroup'] == 'end' ) ) {
+							$option_label = isset( $option_row['label'] ) ? $option_row['label'] : '';
+							
+							if ( $multi_display == 'select' ) {
+								$select_options .= $option_row['optgroup'] == 'start' ? '<optgroup label="' . esc_attr( $option_label ) . '">' : '</optgroup>';
+							} else {
+								$select_options .= $option_row['optgroup'] == 'start' ? '<li>' . $option_label . '</li>' : '';
+							}
+						} else {
+							$option_label = isset( $option_row['label'] ) ? $option_row['label'] : '';
+							$option_value = isset( $option_row['value'] ) ? $option_row['value'] : '';
+							$selected = $option_value == $value ? 'selected="selected"' : '';
+							$selected = '';
+							$checked = '';
+							
+							if ( ( !is_array( $value ) && trim( $value ) != '' ) || ( is_array( $value ) && !empty( $value ) ) ) {
+								if ( !is_array( $value ) ) {
+									$value_array = explode( ',', $value );
+								} else {
+									$value_array = $value;
+								}
+								
+								if ( is_array( $value_array ) ) {
+									if ( in_array( $option_value, $value_array ) ) {
+										$selected = 'selected="selected"';
+										$checked = 'checked="checked"';
 									}
-									
-									$selected = '';
-									$checked = '';
-									if((!is_array($value) && trim($value) != '') || (is_array($value) && !empty($value)))
-									{
-										
-										if(!is_array($value)){
-											$value_array = explode(',',$value);
-										}else{
-											$value_array = $value;
-										}
-										
-										if(is_array($value_array)){
-										if(in_array($multi_select_value, $value_array))
-										{
-											$selected = 'selected="selected"';
-											$checked = 'checked="checked"';
-										}}
-									}
-										if($multi_display == 'select'){
-											?>
-											<option value="<?php echo $multi_select_value; ?>" <?php echo $selected; ?>><?php echo $multi_select_lable; ?></option>
-									
-							<?php }else{
-											?> 
-                                       
-                                            <li> 
-                                            <input  name="<?php echo $name;?>[]" <?php echo $checked;?>  value="<?php echo $multi_select_value; ?>" class="gd-<?php echo $multi_display; ?>" field_type="<?php echo $multi_display;?>" type="<?php echo $multi_display; ?>" /> <?php echo $multi_select_lable; ?>
-                                            </li> 
-                                      
-											<?php
-										}
+								}
+							}
+							
+							if ( $multi_display == 'select' ) {
+								$select_options .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . '>' . $option_label . '</option>';
+							} else {
+								$select_options .= '<li><input name="'. $name .'[]" ' . $checked . ' value="' . esc_attr( $option_value ) . '" class="gd-' . $multi_display . '" field_type="' . $multi_display . '" type="' . $multi_display . '" />&nbsp;' . $option_label . ' </li>';
 							}
 						}
-						if($multi_display == 'select'){?>
-					</select>
-					<?php }else{ echo '</ul>';}?>
+					}
+				}
+				echo $select_options;
+			
+				if ( $multi_display == 'select' ) { ?></select></div>
+				<?php } else { ?></ul><?php } ?>
 			<span class="geodir_message_note"><?php _e($admin_desc,GEODIRECTORY_TEXTDOMAIN);?></span>
 			<?php if($is_required) {?>
 			<span class="geodir_message_error"><?php _e($required_msg,GEODIRECTORY_TEXTDOMAIN);?></span> 
 			<?php } ?>
 		</div>
-			<?php
-			}
-		elseif($type=='html'){?>
+		<?php
+		} else if( $type=='html' ) {
+		?>
 
 		<div id="<?php echo $name;?>_row" class="<?php if($is_required) echo 'required_field';?> geodir_form_row clearfix">
 			<label>
@@ -1544,7 +1547,8 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom',$po
 					if($cat_display == 'multiselect')
 						$multiple = 'multiple="multiple"';
 							
-					echo '<select id="'.$name.'" '.$multiple.' type="'.$name.'" name="post_category['.$name.'][]" alt="'.$name.'" field_type="'.$cat_display.'">';
+					echo '<select id="'.$name.'" '.$multiple.' type="'.$name.'" name="post_category['.$name.'][]" alt="'.$name.'" field_type="'.$cat_display.'" class="geodir_textfield textfield_x chosen_select" data-placeholder="'.__( 'Select Category', GEODIRECTORY_TEXTDOMAIN ).'">';
+					
 					
 					if($cat_display == 'select')
 						echo '<option value="">'.__('Select Category',GEODIRECTORY_TEXTDOMAIN).'</option>';
@@ -1579,7 +1583,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom',$po
 		
 			 
 			// adjust values here
-			$file_id = $name; // this will be the name of form field. Image url(s) will be submitted in $_POST using this key. So if $id == “img1” then $_POST[“img1”] will have all the image urls
+			$file_id = $name; // this will be the name of form field. Image url(s) will be submitted in $_POST using this key. So if $id == ï¿½img1ï¿½ then $_POST[ï¿½img1ï¿½] will have all the image urls
 			 
 			if($value != ''){
 				
@@ -1598,9 +1602,9 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom',$po
 			else
 				$file_image_limit = 1;	
 			 
-			$file_width = 800; // If you want to automatically resize all uploaded images then provide width here (in pixels)
+			$file_width = geodir_media_image_large_width(); // If you want to automatically resize all uploaded images then provide width here (in pixels)
 			 
-			$file_height = 800; // If you want to automatically resize all uploaded images then provide height here (in pixels)
+			$file_height = geodir_media_image_large_height(); // If you want to automatically resize all uploaded images then provide height here (in pixels)
 			
 			if(!empty($file_value)){
 				$curImages = explode(',',$file_value);
@@ -1694,10 +1698,10 @@ function geodir_show_listing_info($fields_location=''){
 	$package_info = array();
 	
 	$package_info = geodir_post_package_info($package_info , $post);
-	
+	//return;
 	$post_package_id = $package_info->pid;
-	
-	ob_start();	$fields_info = geodir_post_custom_fields($post_package_id,'default',geodir_get_current_posttype(), $fields_location);
+	$p_type = (geodir_get_current_posttype()) ? geodir_get_current_posttype() : $post->post_type;
+	ob_start();	$fields_info = geodir_post_custom_fields($post_package_id,'default',$p_type , $fields_location);
 	
 	if(!empty($fields_info))
 	{
@@ -1716,10 +1720,9 @@ function geodir_show_listing_info($fields_location=''){
 			
 			$variables_array = array();
 			
-			if ($fields_location == 'detail' && isset($type['show_as_tab']) && (int)$type['show_as_tab']==1 && in_array($type['type'], array('text', 'datepicker', 'textarea', 'time', 'phone', 'email', 'select', 'multiselect', 'url', 'html'))) {
+			if ( $fields_location == 'detail' && isset( $type['show_as_tab'] ) && (int)$type['show_as_tab'] == 1 && in_array( $type['type'], array( 'text', 'datepicker', 'textarea', 'time', 'phone', 'email', 'select', 'multiselect', 'url', 'html', 'fieldset', 'radio', 'checkbox', 'file' ) ) ) {
 				continue;
-			}
-			
+			}			
 			
 			if($type['type'] != 'fieldset'):
 				$variables_array['post_id'] = $post->ID;
@@ -1943,7 +1946,7 @@ function geodir_show_listing_info($fields_location=''){
 							
 							$html = '<div class="geodir_more_info '.$geodir_odd_even.' '.$type['css_class'].' '.$type['htmlvar_name'].'" style="clear:both;"><span class="geodir-i-contact" style="'.$field_icon.'">'.$field_icon_af.
 							$html .= (trim($type['site_title'])) ? __($type['site_title'],GEODIRECTORY_TEXTDOMAIN).': ' : '&nbsp;';
-							$html .= '</span>'.stripslashes($post->$type['htmlvar_name']).'</div>';
+							$html .= '</span><a href="tel:'.stripslashes($post->$type['htmlvar_name']).'">'.stripslashes($post->$type['htmlvar_name']).'</a></div>';
 										
 						endif;
 						
@@ -1997,9 +2000,12 @@ function geodir_show_listing_info($fields_location=''){
 							
 							$date_format = str_replace($search, $replace, $date_format);
 							
+							$post_htmlvar_value = $date_format == 'd/m/Y' ? str_replace( '/', '-', $post->$type['htmlvar_name'] ) : $post->$type['htmlvar_name']; // PHP doesn't work well with dd/mm/yyyy format
+							
 							$value = '';
-							if($post->$type['htmlvar_name'] != '')
-								$value = date($date_format,strtotime($post->$type['htmlvar_name']));
+							if( $post->$type['htmlvar_name'] != '' ) {
+								$value = date( $date_format, strtotime( $post_htmlvar_value ) );
+							}
 							
 							if (strpos($field_icon,'http') !== false) {$field_icon_af = '';}
 							elseif($field_icon==''){$field_icon_af = '<i class="fa fa-calendar"></i>';}
@@ -2027,7 +2033,7 @@ function geodir_show_listing_info($fields_location=''){
 				
 						$html_var = $type['htmlvar_name'];
 						
-						if($post->$type['htmlvar_name'] != '' && $type['htmlvar_name'] == 'geodir_timing'):
+						if( isset( $post->$type['htmlvar_name'] ) && $post->$type['htmlvar_name'] != '' && $type['htmlvar_name'] == 'geodir_timing'):
 							
 							if (strpos($field_icon,'http') !== false) {$field_icon_af = '';}
 							elseif($field_icon==''){$field_icon_af = '<i class="fa fa-clock-o"></i>';}
@@ -2047,7 +2053,7 @@ function geodir_show_listing_info($fields_location=''){
 							$html .= (trim($type['site_title'])) ? __($type['site_title'],GEODIRECTORY_TEXTDOMAIN).': ' : '&nbsp;';
 							$html .= '</span>'.stripslashes($post->$type['htmlvar_name']).'</div>';
 							
-						elseif($post->$type['htmlvar_name']):
+						elseif( isset( $post->$type['htmlvar_name'] ) && $post->$type['htmlvar_name'] ):
 							
 							if (strpos($field_icon,'http') !== false) {$field_icon_af = '';}
 							elseif($field_icon==''){$field_icon_af = '';}
@@ -2324,6 +2330,7 @@ function geodir_show_listing_info($fields_location=''){
 						
 				break;
 				
+
 				case 'file':
 					$html_var = $type['htmlvar_name'];
 						
@@ -2441,6 +2448,69 @@ function geodir_show_listing_info($fields_location=''){
 							
 						}
 				break;
+				case 'taxonomy': {
+					$html_var = $type['htmlvar_name'];
+					if ( $html_var == $post->post_type . 'category' && !empty( $post->$html_var ) ) {
+						$post_taxonomy = $post->post_type . 'category';
+						$field_value = $post->$html_var;
+						$links = array();
+                        $terms = array();
+						$termsOrdered = array();
+						if ( !is_array( $field_value ) ) {
+							$field_value = explode( ",", trim( $field_value, "," ) );
+						}
+						
+						$field_value = array_unique( $field_value );
+						
+						if ( !empty( $field_value ) ) {
+							foreach ( $field_value as $term ){
+								$term = trim( $term );
+								
+								if( $term != '' ) {
+									$term = get_term_by( 'id', $term, $html_var ); 
+									if ( is_object ( $term ) ) {
+										$links[] = "<a href='" . esc_attr( get_term_link( $term,$post_taxonomy ) ) . "'>" . $term->name . "</a>";
+										$terms[] = $term;
+									}
+								}
+							}
+							if ( !empty( $links ) ) {
+								// order alphabetically
+								asort( $links );
+								foreach ( array_keys( $links ) as $key ) {
+									$termsOrdered[$key] = $terms[$key];
+								}
+								$terms = $termsOrdered;
+							}
+						}
+						$html_value = !empty( $links ) && !empty( $terms ) ? wp_sprintf( '%l', $links, (object)$terms ) : '';
+						
+						if ( $html_value != '' ) {						
+							if ( strpos( $field_icon, 'http') !== false ) {
+								$field_icon_af = '';
+							} else if ( $field_icon == '' ) {
+								$field_icon_af = '';
+							} else {
+								$field_icon_af = $field_icon;
+								$field_icon = '';
+							}
+								
+							$geodir_odd_even = '';
+							if ( $fields_location == 'detail' ) {
+								$geodir_odd_even = 'geodir_more_info_odd';
+								if ( $i%2 == 0 ) {
+									$geodir_odd_even = 'geodir_more_info_even';
+								}
+								$i++;
+							}
+								
+							$html = '<div class="geodir_more_info ' . $geodir_odd_even . ' ' . $type['css_class'] . ' ' . $html_var . '" style="clear:both;"><span class="geodir-i-taxonomy geodir-i-category" style="' . $field_icon . '">' . $field_icon_af;
+							$html .= ( trim( $type['site_title'] ) ) ? __( $type['site_title'], GEODIRECTORY_TEXTDOMAIN ) . ': ' : '';
+							$html .= '</span> '. $html_value . '</div>';	
+						}
+					}
+				}
+				break;
 				
 			}
 			
@@ -2478,14 +2548,14 @@ function geodir_default_date_format(){
 }
 }
 
-if(!function_exists('get_formated_date')){
-function get_formated_date($date)
+if(!function_exists('geodir_get_formated_date')){
+function geodir_get_formated_date($date)
 {
 	return mysql2date(get_option('date_format'), $date);
 }}
 
-if(!function_exists('get_formated_time')){
-function get_formated_time($time)
+if(!function_exists('geodir_get_formated_time')){
+function geodir_get_formated_time($time)
 {
 	return mysql2date(get_option('time_format'), $time, $translate=true);
 }}
@@ -2694,11 +2764,19 @@ function geodir_get_special_offers($post_id){
 		
 }
 
-if(!function_exists('geodir_max_upload_size')) {
-function geodir_max_upload_size() {
-	//return  '2mb'; 
-	return apply_filters('geodir_default_image_upload_size_limit', '2mb');
-}}
+if (!function_exists( 'geodir_max_upload_size' ) ) {
+	function geodir_max_upload_size() {
+		$max_filesize = (float)get_option( 'geodir_upload_max_filesize', 2 );
+		
+		if ( $max_filesize > 0 && $max_filesize < 1 ) {
+			$max_filesize = (int)( $max_filesize * 1024 ) . 'kb';
+		} else {
+			$max_filesize = $max_filesize > 0 ? $max_filesize . 'mb' : '2mb';
+		}
+		
+		return apply_filters( 'geodir_default_image_upload_size_limit', $max_filesize );
+	}
+}
 
 
 
@@ -3142,4 +3220,91 @@ function check_field_visibility($package_id, $field_name, $post_type) {
 	}
 	return false;
 }
+}
+
+/*
+ * Parse label & values from string
+ */
+function geodir_string_to_options( $input = '' ) {
+	$return = array();
+	if ( $input != '' ) {
+		$input = trim( $input );
+		$input = rtrim( $input, "," );
+		$input = ltrim( $input, "," );
+		$input = trim( $input );
+	}
+	
+	$input_arr = explode( ',', $input );
+
+	if ( !empty( $input_arr ) ) {
+		foreach( $input_arr as $input_str ) {
+			$input_str = trim( $input_str );
+			
+			if ( strpos( $input_str, "/" ) !== false ) {
+				$input_str = explode( "/", $input_str, 2 );
+				$label = trim( $input_str[0] );
+				$label = ucfirst( $label );
+				$value = trim( $input_str[1] );
+			} else {
+				$label = ucfirst( $input_str );
+				$value = $input_str;
+			}
+			
+			if ( $label != '' ) {
+				$return[] = array( 'label' => $label, 'value' => $value, 'optgroup' => NULL );
+			}
+		}
+	}
+	
+	return $return;
+}
+
+/*
+ * Parse option values string to array
+ */
+function geodir_string_values_to_options( $option_values = '' ) {
+	$options = array();
+	if ( $option_values == '' ) {
+		return NULL;
+	}
+	
+	if ( strpos( $option_values, "{/optgroup}" ) !== false ) {
+		$option_values_arr = explode( "{/optgroup}", $option_values );
+		
+		foreach( $option_values_arr as $optgroup ) {
+			if ( strpos( $optgroup, "{optgroup}" ) !== false ) {
+				$optgroup_arr = explode( "{optgroup}", $optgroup );
+	
+				$count = 0;
+				foreach( $optgroup_arr as $optgroup_str ) {
+					$count++;
+					$optgroup_str = trim( $optgroup_str );
+					
+					$optgroup_label = '';
+					if ( strpos( $optgroup_str, "|" ) !== false ) {
+						$optgroup_str_arr = explode( "|", $optgroup_str, 2 );
+						$optgroup_label = trim( $optgroup_str_arr[0] );
+						$optgroup_label = ucfirst( $optgroup_label );
+						$optgroup_str = $optgroup_str_arr[1];
+					}
+					
+					$optgroup3 = geodir_string_to_options( $optgroup_str );
+								
+					if ( $count > 1 && $optgroup_label != '' && !empty( $optgroup3 ) ) {
+						$optgroup_start = array( array( 'label' => $optgroup_label, 'value' => NULL, 'optgroup' => 'start' ) );
+						$optgroup_end = array( array( 'label' => $optgroup_label, 'value' => NULL, 'optgroup' => 'end' ) );
+						$optgroup3 = array_merge( $optgroup_start, $optgroup3, $optgroup_end );
+					}
+					$options = array_merge( $options, $optgroup3 );
+				}
+			} else {
+				$optgroup1 = geodir_string_to_options( $optgroup );
+				$options = array_merge( $options, $optgroup1 );
+			}
+		}
+	} else {
+		$options = geodir_string_to_options( $option_values );
+	}
+	
+	return $options;
 }

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Language constants
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
+
 // ***** NOTE: when editing text in this file, a single apostrophe ( ' ) can cause the site to break
 // ***** Use an escaped apostrophe ( \' ) inside text in ALL cases
 // ***** Good Example: define('EXAMPLE_TEXT',__('It\'s a nice day.',GEODIRECTORY_TEXTDOMAIN));
@@ -183,6 +190,7 @@ define('FORGOT_PW_TEXT',__('Forgot Password?',GEODIRECTORY_TEXTDOMAIN));
 define('USERNAME_EMAIL_TEXT',__('E-mail',GEODIRECTORY_TEXTDOMAIN));
 define('USERNAME_TEXT',__('Email',GEODIRECTORY_TEXTDOMAIN));
 define('PASSWORD_TEXT',__('Password',GEODIRECTORY_TEXTDOMAIN));
+define('CONFIRM_PASSWORD_TEXT',__('Confirm Password',GEODIRECTORY_TEXTDOMAIN));
 
 define('PASSWORD_LENGTH_MSG',__('Enter your user password, must be 7 characters or more',GEODIRECTORY_TEXTDOMAIN));
 define('PASSWORD_LENGTH_TEXT',__('Password must be 7 characters or more',GEODIRECTORY_TEXTDOMAIN));
@@ -194,7 +202,7 @@ define('GET_NEW_PW_TEXT',__('Get New Password',GEODIRECTORY_TEXTDOMAIN));
 define('REGISTRATION_NOW_TEXT',__('Sign Up Now',GEODIRECTORY_TEXTDOMAIN));
 define('PERSONAL_INFO_TEXT',__('Personal Information',GEODIRECTORY_TEXTDOMAIN));
 define('FIRST_NAME_TEXT',__('Full Name',GEODIRECTORY_TEXTDOMAIN));
-define('REGISTRATION_MESSAGE',__('(note: A password will be e-mailed to you for future usage.)',GEODIRECTORY_TEXTDOMAIN));
+define('REGISTRATION_MESSAGE',__('(Note: A password will be e-mailed to you for future usage)',GEODIRECTORY_TEXTDOMAIN));
 define('REGISTER_NOW_TEXT',__('Register Now',GEODIRECTORY_TEXTDOMAIN));
 define('SIGN_IN_BUTTON',__('Sign In',GEODIRECTORY_TEXTDOMAIN));
 define('REGISTER_BUTTON',__('Register',GEODIRECTORY_TEXTDOMAIN));
@@ -506,8 +514,8 @@ __('Vanuatu',GEODIRECTORY_TEXTDOMAIN);
 __('Venezuela',GEODIRECTORY_TEXTDOMAIN);
 __('Vietnam',GEODIRECTORY_TEXTDOMAIN);
 __('Virgin Islands',GEODIRECTORY_TEXTDOMAIN);
-__('Virgin Islands (UK)',GEODIRECTORY_TEXTDOMAIN);
-__('Virgin Islands (US)',GEODIRECTORY_TEXTDOMAIN);
+//__('Virgin Islands (UK)',GEODIRECTORY_TEXTDOMAIN); // duplicate removed
+//__('Virgin Islands (US)',GEODIRECTORY_TEXTDOMAIN); // duplicate removed
 __('Wake Island',GEODIRECTORY_TEXTDOMAIN);
 __('Wallis and Futuna',GEODIRECTORY_TEXTDOMAIN);
 __('West Bank',GEODIRECTORY_TEXTDOMAIN);
