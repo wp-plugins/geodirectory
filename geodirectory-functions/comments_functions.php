@@ -327,6 +327,21 @@ function geodir_get_review_total($post_id = 0){
 		return false; 	
 }
 
+function geodir_get_review_count_by_user_id($user_id = 0){
+	global $wpdb;
+	$results =	$wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT COUNT(overall_rating) FROM ".GEODIR_REVIEW_TABLE." WHERE user_id = %d AND status=1 AND overall_rating>0",
+			array($user_id)
+		)
+	);
+
+	if(!empty($results))
+		return $results;
+	else
+		return false;
+}
+
 function geodir_get_post_rating($post_id = 0, $force_query = 0){
 	global $wpdb,$post;
 	
@@ -524,9 +539,9 @@ function geodir_get_rating_stars($rating, $post_id, $small=false){
 
 	/* fix rating star for safari */
 	$star_width = 23 * 5;
-	global $is_safari, $is_iphone, $ios, $is_chrome;
-	$attach_style = ( $is_safari || $is_iphone || $ios || $is_chrome ) && $star_width > 0 ? 'width:' . $star_width . 'px;max-width:none' : '';
-	
+	//global $is_safari, $is_iphone, $ios, $is_chrome;
+	//$attach_style = ( $is_safari || $is_iphone || $ios || $is_chrome ) && $star_width > 0 ? 'width:' . $star_width . 'px;max-width:none' : '';
+	if($star_width>0){$attach_style = 'max-width:'.$star_width.'px';}else{$attach_style ='';}
 	$r_html = '<div class="geodir-rating" style="' . $attach_style . '"><div class="gd_rating_show" data-average="'.$rating.'" data-id="'.$post_id.'"><div class="geodir_RatingAverage" style="width: '.$a_rating.'%;"></div><div class="geodir_Star">'.$rating_img.$rating_img.$rating_img.$rating_img.$rating_img.'</div></div></div>';
 	}
 	return $r_html;   
