@@ -1,6 +1,6 @@
 <?php
 /**
- * Hook and filter actions
+ * Hook and filter actions used by the plugin
  *
  * @since 1.0.0
  * @package GeoDirectory
@@ -45,6 +45,15 @@ add_action('init', 'geodir_custom_post_status');
 add_action('widgets_init', 'geodir_register_sidebar'); // Takes care of widgets
 
 global $geodir_addon_list;
+/**
+ * Build an array of installed addons.
+ *
+ * This filter builds an array of installed addons which can be used to check what exactly is installed.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $geodir_addon_list The array of installed plugins $geodir_addon_list['geodir_location_manager'].
+ */
 apply_filters('geodir_build_addon_list', $geodir_addon_list);
 
 add_action('wp_ajax_geodir_ajax_action', "geodir_ajax_handler");
@@ -147,8 +156,8 @@ if (!is_admin()) {
     /** Exclude Virtual Pages From Pages List **/
     add_action('pre_get_posts', 'set_listing_request', 0);
     add_action('pre_get_posts', 'geodir_listing_loop_filter', 1);
-	add_filter('excerpt_more', 'geodir_excerpt_more', 1000);
-	add_filter('excerpt_length', 'geodir_excerpt_length', 1000);
+    add_filter('excerpt_more', 'geodir_excerpt_more', 1000);
+    add_filter('excerpt_length', 'geodir_excerpt_length', 1000);
     add_action('the_post', 'create_marker_jason_of_posts'); // Add marker in json array, Map related filter
 }
 
@@ -157,7 +166,7 @@ add_action('set_object_terms', 'geodir_set_post_terms', 10, 4);
 
 add_action('transition_post_status', 'geodir_update_poststatus', 10, 3);
 
-add_action('before_delete_post', 'geodir_delete_listing_info',10,1);
+add_action('before_delete_post', 'geodir_delete_listing_info', 10, 1);
 
 
 ////////////////////////
@@ -199,18 +208,14 @@ add_action('wp_footer', 'geodir_add_sharelocation_scripts');
 //}
 
 
-
-
 /**
  * Save and update GeoDirectory navigation settings per theme.
  *
- * @param $newname
- * @param $newtheme
+ * @param string $newname The theme name.
  * @ignore
  */
-function geodir_unset_prev_theme_nav_location($newname, $newtheme)
+function geodir_unset_prev_theme_nav_location($newname)
 {
-
     $geodir_theme_location = get_option('geodir_theme_location_nav_' . $newname);
     if ($geodir_theme_location) {
         update_option('geodir_theme_location_nav', $geodir_theme_location);
@@ -222,10 +227,19 @@ function geodir_unset_prev_theme_nav_location($newname, $newtheme)
 /// add action for theme switch to blank previous theme navigation location setting
 add_action("switch_theme", "geodir_unset_prev_theme_nav_location", 10, 2);
 
-
+/**
+ * Contains functions/hooks for setting up the CPT and taxonomies for the plugin.
+ *
+ * @since 1.0.0
+ */
 require_once('geodirectory-functions/custom_taxonomy_hooks_actions.php');
 
-
+/**
+ * Includes the file that adds filters/functions to change the database queries.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_add_post_filters()
 {
     include_once('geodirectory-functions/listing_filters.php');
@@ -233,6 +247,12 @@ function geodir_add_post_filters()
 
 
 if (!function_exists('geodir_init_defaults')) {
+    /**
+     * Calls the function to register the GeoDirectory default CPT and taxonomies.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     function geodir_init_defaults()
     {
         if (function_exists('geodir_register_defaults')) {
@@ -243,15 +263,6 @@ if (!function_exists('geodir_init_defaults')) {
 
     }
 }
-
-
-/* Header Scripts loader */
-//add_action( 'admin_head', 'geodir_header_scripts');
-
-
-/* Content Wrappers */
-//add_action( 'geodir_before_main_content', 'geodir_output_content_wrapper', 10);
-//add_action( 'geodir_after_main_content', 'geodir_output_content_wrapper_end', 10);
 
 
 /* Sidebar */
@@ -272,6 +283,14 @@ add_filter('post_updated_messages', 'geodir_custom_update_messages');
 // CALLED ON 'sidebars_widgets' FILTER
 
 if (!function_exists('geodir_restrict_widget')) {
+    /**
+     * Sets global values to be able to tell if the current page is a GeoDirectory listing page or a GeoDirectory details page.
+     *
+     * @global bool $is_listing Sets the global value to true if on a GD category page. False if not.
+     * @global bool $is_single_place Sets the global value to true if on a GD details (post) page. False if not.
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     function geodir_restrict_widget()
     {
         global $is_listing, $is_single_place;
@@ -286,33 +305,6 @@ if (!function_exists('geodir_restrict_widget')) {
     }
 }
 
-add_filter('sidebars_widgets', 'geodir_widget_logic_filter_sidebars_widgets', 10);
-if (!function_exists('geodir_widget_logic_filter_sidebars_widgets')) {
-    function geodir_widget_logic_filter_sidebars_widgets($sidebars_widgets)
-    {
-        global $is_listing, $is_single_place;
-
-        if (!empty($sidebars_widgets)):
-            // loop through every widget in every sidebar (barring 'wp_inactive_widgets') checking WL for each one
-            foreach ($sidebars_widgets as $widget_area => $widget_list) {
-                if ($widget_area == 'wp_inactive_widgets' || empty($widget_list)) continue;
-
-                foreach ($widget_list as $pos => $widget_id) {
-                    if (!$is_listing && strstr($widget_id, 'geodir_map_listingpage')) {
-                        unset($sidebars_widgets[$widget_area][$pos]);
-                        continue;
-                    }
-
-                    if (!$is_single_place && strstr($widget_id, 'geodir_single_place_map')) {
-                        unset($sidebars_widgets[$widget_area][$pos]);
-                        continue;
-                    }
-                }
-            }
-        endif;
-        return $sidebars_widgets;
-    }
-}
 
 /////// GEO DIRECOTORY CUSTOM HOOKS ///
 
@@ -321,9 +313,28 @@ add_action('geodir_after_tab_content', 'geodir_after_tab_content');// this funct
 
 // Detail page sidebar content 
 add_action('geodir_detail_page_sidebar', 'geodir_detail_page_sidebar_content_sorting', 1);
+/**
+ * Builds an array of elements for the details (post) page sidebar.
+ *
+ * Builds an array fo functions to be called in the details page (post) sidebar, this array can be changed via hook or filter.
+ *
+ * @see geodir_detail_page_sidebar_content filter.
+ * @see geodir_detail_page_sidebar action.
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_detail_page_sidebar_content_sorting()
 {
     $arr_detail_page_sidebar_content =
+        /**
+         * An array of functions to be called to be displayed on the details (post) page sidebar.
+         *
+         * This filter can be used to remove sections of the details page sidebar,
+         * add new sections or rearrange the order of the sections.
+         *
+         * @param array array('geodir_social_sharing_buttons','geodir_share_this_button','geodir_detail_page_google_analytics','geodir_edit_post_link','geodir_detail_page_review_rating','geodir_detail_page_more_info') The array of functions that will be called.
+         * @since 1.0.0
+         */
         apply_filters('geodir_detail_page_sidebar_content',
             array('geodir_social_sharing_buttons',
                 'geodir_share_this_button',
@@ -343,6 +354,15 @@ function geodir_detail_page_sidebar_content_sorting()
 }
 
 add_action('geodir_after_edit_post_link', 'geodir_add_to_favourite_link', 1);
+
+/**
+ * Outputs the add to favourite line for the current post if not add listing preview page.
+ *
+ * @global object $post The current post object.
+ * @global bool $preview True if the current page is add listing preview page. False if not.
+ * since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_add_to_favourite_link()
 {
     global $post, $preview;
@@ -355,41 +375,78 @@ function geodir_add_to_favourite_link()
     }
 }
 
+/**
+ * Outputs social buttons.
+ *
+ * Outputs social sharing buttons twitter,facebook and google plus into a containing div if not on the add listing preview page.
+ *
+ * @global bool $preview True if the current page is add listing preview page. False if not.
+ * since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_social_sharing_buttons()
 {
-    global $post, $preview, $post_images;
+    global $preview;
     ob_start(); // Start  buffering;
     do_action('geodir_before_social_sharing_buttons');
     if (!$preview) {
         ?>
         <div class="likethis">
-	        <?php geodir_twitter_tweet_button(); ?>
-	        <?php geodir_fb_like_button(); ?>
-	        <?php geodir_google_plus_button(); ?>
+            <?php geodir_twitter_tweet_button(); ?>
+            <?php geodir_fb_like_button(); ?>
+            <?php geodir_google_plus_button(); ?>
         </div>
     <?php
     }// end of if, if its a preview or not
+
+    /**
+     * This action is called after the social buttons twitter,facebook and google plus are output in a containing div.
+     *
+     * @since 1.0.0
+     */
     do_action('geodir_after_social_sharing_buttons');
     $content_html = ob_get_clean();
     if (trim($content_html) != '')
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-social-sharing">' . $content_html . '</div>';
-	if( (int)get_option( 'geodir_disable_tfg_buttons_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_social_sharing_buttons_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_tfg_buttons_section') != 1) {
+        /**
+         * Filter the geodir_social_sharing_buttons() function content.
+         *
+         * @param string $content_html The output html of the geodir_social_sharing_buttons() function.
+         * @see geodir_social_sharing_buttons function.
+         * @see geodir_after_social_sharing_buttons action.
+         */
+        echo $content_html = apply_filters('geodir_social_sharing_buttons_html', $content_html);
+    }
 
 
 }
 
-
+/**
+ * Outputs the share this button.
+ *
+ * Outputs the share this button html into a containing div if not on the add listing preview page.
+ *
+ * @global bool $preview True if the current page is add listing preview page. False if not.
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_share_this_button()
 {
-    global $post, $preview, $post_images;
+    global $preview;
     ob_start(); // Start buffering;
+    /**
+     * This is called before the share this html in the function geodir_share_this_button()
+     *
+     * @since 1.0.0
+     * @see geodir_share_this_button function.
+     * @see geodir_share_this_button_html filter.
+     */
     do_action('geodir_before_share_this_button');
     if (!$preview) {
         ?>
         <div class="share clearfix">
-			<?php geodir_share_this_button_code(); ?>
+            <?php geodir_share_this_button_code(); ?>
         </div>
     <?php
     }// end of if, if its a preview or not
@@ -397,17 +454,44 @@ function geodir_share_this_button()
     $content_html = ob_get_clean();
     if (trim($content_html) != '')
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-sharethis">' . $content_html . '</div>';
-	if( (int)get_option( 'geodir_disable_sharethis_button_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_share_this_button_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_sharethis_button_section') != 1) {
+        /**
+         * Filter the geodir_share_this_button() function content.
+         *
+         * @param string $content_html The output html of the geodir_share_this_button() function.
+         * @see geodir_share_this_button function.
+         * @see geodir_before_share_this_button action.
+         */
+        echo $content_html = apply_filters('geodir_share_this_button_html', $content_html);
+    }
 
 }
 
-
+/**
+ * Outputs the edit post link.
+ *
+ * Outputs the edit post link if the current logged in user owns the post.
+ *
+ * @global bool $preview True if the current page is add listing preview page. False if not.
+ * @global WP_Post|null $post The current post, if available.
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @see geodir_before_edit_post_link action.
+ * @see geodir_edit_post_link_html filter.
+ * @see geodir_after_edit_post_link action.
+ */
 function geodir_edit_post_link()
 {
-    global $post, $preview, $post_images;
+    global $post, $preview;
     ob_start(); // Start buffering;
+    /**
+     * This is called before the edit post link html in the function geodir_edit_post_link()
+     *
+     * @since 1.0.0
+     * @see geodir_edit_post_link function.
+     * @see geodir_edit_post_link_html filter.
+     * @see geodir_after_edit_post_link action.
+     */
     do_action('geodir_before_edit_post_link');
     if (!$preview) {
         //if(is_user_logged_in() && $post->post_author == get_current_user_id())
@@ -427,26 +511,60 @@ function geodir_edit_post_link()
             echo ' <p class="edit_link"><i class="fa fa-pencil"></i> <a href="' . $editlink . '">' . __('Edit this Post', GEODIRECTORY_TEXTDOMAIN) . '</a></p>';
         }
     }// end of if, if its a preview or not
+    /**
+     * This is called after the edit post link html in the function geodir_edit_post_link()
+     *
+     * @since 1.0.0
+     * @see geodir_edit_post_link function.
+     * @see geodir_edit_post_link_html filter.
+     * @see geodir_before_edit_post_link action.
+     */
     do_action('geodir_after_edit_post_link');
     $content_html = ob_get_clean();
     if (trim($content_html) != '')
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-user-links">' . $content_html . '</div>';
-	if( (int)get_option( 'geodir_disable_user_links_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_edit_post_link_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_user_links_section') != 1) {
+        /**
+         * Filter the geodir_edit_post_link() function content.
+         *
+         * @param string $content_html The output html of the geodir_edit_post_link() function.
+         * @see geodir_edit_post_link function.
+         * @see geodir_before_edit_post_link action.
+         * @see geodir_after_edit_post_link action.
+         */
+        echo $content_html = apply_filters('geodir_edit_post_link_html', $content_html);
+    }
 
 
 }
 
-
+/**
+ * Outputs the google analytics section on details page.
+ *
+ * Outputs the google analytics html if the current logged in user owns the post.
+ *
+ * @global WP_Post|null $post The current post, if available.
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @see geodir_before_google_analytics action.
+ * @see geodir_after_google_analytics action.
+ * @see geodir_google_analytic_html filter.
+ */
 function geodir_detail_page_google_analytics()
 {
-    global $post, $preview, $post_images;
+    global $post;
     $package_info = array();
     $package_info = geodir_post_package_info($package_info, $post);
-    //if(isset($package_info->google_analytics))
-    //	$package_info->google_analytics = false;
+
     ob_start(); // Start buffering;
+    /**
+     * This is called before the edit post link html in the function geodir_detail_page_google_analytics()
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_google_analytics function.
+     * @see geodir_google_analytic_html filter.
+     * @see geodir_after_google_analytics action.
+     */
     do_action('geodir_before_google_analytics');
     if (get_option('geodir_ga_stats') && get_edit_post_link() && is_user_logged_in() && (isset($package_info->google_analytics) && $package_info->google_analytics == '1')) {
         $page_url = $_SERVER['REQUEST_URI'];
@@ -463,37 +581,89 @@ function geodir_detail_page_google_analytics()
 
     <?php
     }
+    /**
+     * This is called after the edit post link html in the function geodir_detail_page_google_analytics()
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_google_analytics function.
+     * @see geodir_google_analytic_html filter.
+     * @see geodir_before_google_analytics action.
+     */
     do_action('geodir_after_google_analytics');
     $content_html = ob_get_clean();
     if (trim($content_html) != '')
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-google-analytics">' . $content_html . '</div>';
-	if( (int)get_option( 'geodir_disable_google_analytics_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_google_analytic_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_google_analytics_section') != 1) {
+        /**
+         * Filter the geodir_edit_post_link() function content.
+         *
+         * @param string $content_html The output html of the geodir_edit_post_link() function.
+         * @see geodir_detail_page_google_analytics function.
+         * @see geodir_before_google_analytics action.
+         * @see geodir_after_google_analytics action.
+         */
+        echo $content_html = apply_filters('geodir_google_analytic_html', $content_html);
+    }
 }
 
+/**
+ * Output the current post overall review and a small image compatible with google hreviews.
+ *
+ * @global WP_Post|null $post The current post, if available.
+ * @global bool $preview True if the current page is add listing preview page. False if not.
+ * @global object $post_images An array of post image objects of current post images if exist.
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @see geodir_before_detail_page_review_rating action.
+ * @see geodir_before_review_rating_stars_on_detail action.
+ * @see geodir_after_review_rating_stars_on_detail action.
+ * @see geodir_after_detail_page_review_rating action.
+ * @see geodir_detail_page_review_rating_html filter.
+ */
 function geodir_detail_page_review_rating()
 {
     global $post, $preview, $post_images;
     ob_start(); // Start  buffering;
+    /**
+     * This is called before the rating html in the function geodir_detail_page_review_rating().
+     *
+     * This is called outside the check for an actual rating and the check for preview page.
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_review_rating function.
+     * @see geodir_before_review_rating_stars_on_detail action.
+     * @see geodir_after_review_rating_stars_on_detail action.
+     * @see geodir_after_detail_page_review_rating action.
+     * @see geodir_detail_page_review_rating_html filter.
+     */
     do_action('geodir_before_detail_page_review_rating');
 
     $comment_count = geodir_get_review_count_total($post->ID);
     $post_avgratings = geodir_get_post_rating($post->ID);
 
     if ($post_avgratings != 0 && !$preview) {
-
+        /**
+         * This is called before the rating html in the function geodir_detail_page_review_rating().
+         *
+         * This is called inside the check for an actual rating and the check for preview page.
+         *
+         * @since 1.0.0
+         * @see geodir_detail_page_review_rating function.
+         * @see geodir_before_detail_page_review_rating action.
+         * @see geodir_after_review_rating_stars_on_detail action.
+         * @see geodir_after_detail_page_review_rating action.
+         * @see geodir_detail_page_review_rating_html filter.
+         */
         do_action('geodir_before_review_rating_stars_on_detail', $post_avgratings, $post->ID);
 
         $html = '<p style=" float:left;">';
         $html .= geodir_get_rating_stars($post_avgratings, $post->ID);
         $html .= '<div class="average-review" itemscope itemtype="http://data-vocabulary.org/Review-aggregate">';
         $post_avgratings = (is_float($post_avgratings) || (strpos($post_avgratings, ".", 1) == 1 && strlen($post_avgratings) > 3)) ? number_format($post_avgratings, 1, '.', '') : $post_avgratings;
-        if ($comment_count > 1) {
-            $html .= '<span itemprop="rating" itemscope itemtype="http://data-vocabulary.org/Rating"><span class="rating" itemprop="average">' . $post_avgratings . '</span> /  <span itemprop="best">5</span> ' . __("based on", GEODIRECTORY_TEXTDOMAIN) . ' <span class="count" itemprop="count">' . $comment_count . '</span> ' . __("reviews", GEODIRECTORY_TEXTDOMAIN) . '</span><br />';
-        } else {
-            $html .= '<span itemprop="rating" itemscope itemtype="http://data-vocabulary.org/Rating"><span class="rating" itemprop="average">' . $post_avgratings . '</span> /  <span itemprop="best">5</span> ' . __("based on", GEODIRECTORY_TEXTDOMAIN) . ' <span class="count" itemprop="count">' . $comment_count . '</span> ' . __("review", GEODIRECTORY_TEXTDOMAIN) . '</span><br />';
-        }
+       
+	   $reviews_text = $comment_count > 1 ? __("reviews", GEODIRECTORY_TEXTDOMAIN) : __("review", GEODIRECTORY_TEXTDOMAIN);
+	   
+	   $html .= '<span itemprop="rating" itemscope itemtype="http://data-vocabulary.org/Rating"><span class="rating" itemprop="average" content="' . $post_avgratings . '">' . $post_avgratings . '</span> / <span itemprop="best" content="5">5</span> ' . __("based on", GEODIRECTORY_TEXTDOMAIN) . ' </span><span class="count" itemprop="count" content="' . $comment_count . '">' . $comment_count . ' ' . $reviews_text . '</span><br />';
 
         $html .= '<span class="item">';
         $html .= '<span class="fn" itemprop="itemreviewed">' . $post->post_title . '</span>';
@@ -506,45 +676,125 @@ function geodir_detail_page_review_rating()
         }
 
         if (isset($post_img) && $post_img) {
-            $html .= '<br /><img src="' . $post_img . '" class="photo hreview-img"  alt="' . $post->post_title . '" itemprop="photo" />';
+            $html .= '<br /><img src="' . $post_img . '" class="photo hreview-img" alt="' . esc_attr($post->post_title) . '" itemprop="photo" content="' . $post_img . '" class="photo hreview-img" />';
         }
 
         $html .= '</span>';
 
         echo $html .= '</div>';
-
+        /**
+         * This is called after the rating html in the function geodir_detail_page_review_rating().
+         *
+         * This is called inside the check for an actual rating and the check for preview page.
+         *
+         * @since 1.0.0
+         * @see geodir_detail_page_review_rating function.
+         * @see geodir_before_detail_page_review_rating action.
+         * @see geodir_before_review_rating_stars_on_detail action.
+         * @see geodir_after_detail_page_review_rating action.
+         * @see geodir_detail_page_review_rating_html filter.
+         */
         do_action('geodir_after_review_rating_stars_on_detail', $post_avgratings, $post->ID);
     }
-
+    /**
+     * This is called before the rating html in the function geodir_detail_page_review_rating().
+     *
+     * This is called outside the check for an actual rating and the check for preview page.
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_review_rating function.
+     * @see geodir_before_review_rating_stars_on_detail action.
+     * @see geodir_after_review_rating_stars_on_detail action.
+     * @see geodir_before_detail_page_review_rating action.
+     * @see geodir_detail_page_review_rating_html filter.
+     */
     do_action('geodir_after_detail_page_review_rating');
     $content_html = ob_get_clean();
     if (trim($content_html) != '') {
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-rating">' . $content_html . '</div>';
     }
-	if( (int)get_option( 'geodir_disable_rating_info_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_detail_page_review_rating_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_rating_info_section') != 1) {
+        /**
+         * Filter the geodir_detail_page_review_rating() function content.
+         *
+         * @since 1.0.0
+         * @param string $content_html The output html of the geodir_detail_page_review_rating() function.
+         * @see geodir_detail_page_review_rating function.
+         * @see geodir_before_review_rating_stars_on_detail action.
+         * @see geodir_after_review_rating_stars_on_detail action.
+         * @see geodir_before_detail_page_review_rating action.
+         * @see geodir_after_detail_page_review_rating action.
+         */
+        echo $content_html = apply_filters('geodir_detail_page_review_rating_html', $content_html);
+    }
 }
 
-
+/**
+ * This outputs the info section of the details page.
+ *
+ * This outputs the info section fo the details page which includes all the post custom fields.
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @see geodir_show_listing_info function.
+ * @see geodir_before_detail_page_more_info action.
+ * @see geodir_after_detail_page_more_info action.
+ * @see geodir_detail_page_more_info_html filter.
+ */
 function geodir_detail_page_more_info()
 {
-    global $post, $preview, $post_images;
     ob_start(); // Start  buffering;
+    /**
+     * This is called before the info section html.
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_more_info function.
+     * @see geodir_show_listing_info function.
+     * @see geodir_after_detail_page_more_info action.
+     * @see geodir_detail_page_more_info_html filter.
+     */
     do_action('geodir_before_detail_page_more_info');
     if ($geodir_post_detail_fields = geodir_show_listing_info()) {
         echo $geodir_post_detail_fields;
     }
+    /**
+     * This is called after the info section html.
+     *
+     * @since 1.0.0
+     * @see geodir_detail_page_more_info function.
+     * @see geodir_show_listing_info function.
+     * @see geodir_before_detail_page_more_info action.
+     * @see geodir_detail_page_more_info_html filter.
+     */
     do_action('geodir_after_detail_page_more_info');
 
     $content_html = ob_get_clean();
     if (trim($content_html) != '')
         $content_html = '<div class="geodir-company_info geodir-details-sidebar-listing-info">' . $content_html . '</div>';
-	if( (int)get_option( 'geodir_disable_listing_info_section' ) != 1 ) {
-		echo $content_html = apply_filters( 'geodir_detail_page_more_info_html', $content_html );
-	}
+    if ((int)get_option('geodir_disable_listing_info_section') != 1) {
+        /**
+         * Filter the output html for function geodir_detail_page_more_info().
+         *
+         * @since 1.0.0
+         * @param string $content_html The output html of the geodir_detail_page_more_info() function.
+         * @see geodir_detail_page_more_info function.
+         * @see geodir_show_listing_info function.
+         * @see geodir_before_detail_page_more_info action.
+         * @see geodir_after_detail_page_more_info action.
+         */
+        echo $content_html = apply_filters('geodir_detail_page_more_info_html', $content_html);
+    }
 }
 
+
+/**
+ * Outputs translated JS text strings.
+ *
+ * This function outputs text strings used in JS fils as a json array of strings so they can be translated and still be used in JS files.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @see geodir_all_js_msg filter.
+ */
 function geodir_localize_all_js_msg()
 {// check_ajax_referer function is used to make sure no files are uplaoded remotly but it will fail if used between https and non https so we do the check below of the urls
     if (str_replace("https", "http", admin_url('admin-ajax.php')) && !empty($_SERVER['HTTPS'])) {
@@ -559,49 +809,27 @@ function geodir_localize_all_js_msg()
     $arr_alert_msg = array(
         'geodir_plugin_url' => geodir_plugin_url(),
         'geodir_admin_ajax_url' => $ajax_url,
-
         'custom_field_not_blank_var' => __('HTML Variable Name must not be blank', GEODIRECTORY_TEXTDOMAIN),
-
         'custom_field_not_special_char' => __('Please do not use special character and spaces in HTML Variable Name.', GEODIRECTORY_TEXTDOMAIN),
-
         'custom_field_unique_name' => __('HTML Variable Name should be a unique name.', GEODIRECTORY_TEXTDOMAIN),
-
         'custom_field_delete' => __('Are you wish to delete this field?', GEODIRECTORY_TEXTDOMAIN),
-
         //start not show alert msg
-
         'tax_meta_class_succ_del_msg' => __('File has been successfully deleted.', GEODIRECTORY_TEXTDOMAIN),
-
         'tax_meta_class_not_permission_to_del_msg' => __('You do NOT have permission to delete this file.', GEODIRECTORY_TEXTDOMAIN),
-
         'tax_meta_class_order_save_msg' => __('Order saved!', GEODIRECTORY_TEXTDOMAIN),
-
         'tax_meta_class_not_permission_record_img_msg' => __('You do not have permission to reorder images.', GEODIRECTORY_TEXTDOMAIN),
-
         'address_not_found_on_map_msg' => __('Address not found for:', GEODIRECTORY_TEXTDOMAIN),
-
         // end not show alert msg
-
         'my_place_listing_del' => __('Are you wish to delete this listing?', GEODIRECTORY_TEXTDOMAIN),
-
         //start not show alert msg
-
         'rating_error_msg' => __('Error : please retry', GEODIRECTORY_TEXTDOMAIN),
-
         'listing_url_prefix_msg' => __('Please enter listing url prefix', GEODIRECTORY_TEXTDOMAIN),
-
         'invalid_listing_prefix_msg' => __('Invalid character in listing url prefix', GEODIRECTORY_TEXTDOMAIN),
-
         'location_url_prefix_msg' => __('Please enter location url prefix', GEODIRECTORY_TEXTDOMAIN),
-
         'invalid_location_prefix_msg' => __('Invalid character in location url prefix', GEODIRECTORY_TEXTDOMAIN),
-
         'location_and_cat_url_separator_msg' => __('Please enter location and category url separator', GEODIRECTORY_TEXTDOMAIN),
-
         'invalid_char_and_cat_url_separator_msg' => __('Invalid character in location and category url separator', GEODIRECTORY_TEXTDOMAIN),
-
         'listing_det_url_separator_msg' => __('Please enter listing detail url separator', GEODIRECTORY_TEXTDOMAIN),
-
         'invalid_char_listing_det_url_separator_msg' => __('Invalid character in listing detail url separator', GEODIRECTORY_TEXTDOMAIN),
         'loading_listing_error_favorite' => __('Error loading listing.', GEODIRECTORY_TEXTDOMAIN),
         'geodir_field_id_required' => __('This field is required.', GEODIRECTORY_TEXTDOMAIN),
@@ -619,12 +847,21 @@ function geodir_localize_all_js_msg()
         'geodir_onoff_dragging' => get_option('geodir_map_onoff_dragging') ? true : false,
         'geodir_on_dragging_text' => __('Enable Dragging', GEODIRECTORY_TEXTDOMAIN),
         'geodir_off_dragging_text' => __('Disable Dragging', GEODIRECTORY_TEXTDOMAIN),
-		'geodir_err_max_file_size' => __( 'File size error : You tried to upload a file over %s', GEODIRECTORY_TEXTDOMAIN ),
-		'geodir_err_file_upload_limit' => __( 'You have reached your upload limit of %s files.', GEODIRECTORY_TEXTDOMAIN ),
-		'geodir_err_pkg_upload_limit' => __( 'You may only upload %s files with this package, please try again.', GEODIRECTORY_TEXTDOMAIN ),
-		'geodir_action_remove' => __( 'Remove', GEODIRECTORY_TEXTDOMAIN ),
+        'geodir_err_max_file_size' => __('File size error : You tried to upload a file over %s', GEODIRECTORY_TEXTDOMAIN),
+        'geodir_err_file_upload_limit' => __('You have reached your upload limit of %s files.', GEODIRECTORY_TEXTDOMAIN),
+        'geodir_err_pkg_upload_limit' => __('You may only upload %s files with this package, please try again.', GEODIRECTORY_TEXTDOMAIN),
+        'geodir_action_remove' => __('Remove', GEODIRECTORY_TEXTDOMAIN),
     );
 
+    /**
+     * Filters the translated JS strings from function geodir_localize_all_js_msg().
+     *
+     * With this filter you can add, remove or change translated JS strings.
+     * You should add your own translations to this if you are building an addon rather than adding another script block.
+     *
+     * @since 1.0.0
+     * @see geodir_localize_all_js_msg function.
+     */
     $arr_alert_msg = apply_filters('geodir_all_js_msg', $arr_alert_msg);
 
     foreach ($arr_alert_msg as $key => $value) {
@@ -640,6 +877,16 @@ function geodir_localize_all_js_msg()
 }
 
 add_action('admin_bar_menu', 'geodir_admin_bar_site_menu', 31);
+/**
+ * Add GeoDirectory link to the WordPress admin bar.
+ *
+ * This function adds a link to the GeoDirectory backend to the WP admin bar via a hook.
+ *    add_action('admin_bar_menu', 'geodir_admin_bar_site_menu', 31);
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param object $wp_admin_bar The admin bar object.
+ */
 function geodir_admin_bar_site_menu($wp_admin_bar)
 {
     if (get_option("geodir_installed")) {
@@ -655,6 +902,16 @@ add_filter('geodir_advance_custom_fields_heading', 'geodir_advance_customfields_
 
 
 add_action('switch_theme', 'geodir_store_sidebars');
+/**
+ * Stores the GeoDirectory widget locations in the theme widget areas.
+ *
+ * This function loops through the GeoDirectory widgets and saves their locations in the widget areas to an option
+ * so they can be restored later. This is called via hook.
+ *    add_action('switch_theme', 'geodir_store_sidebars');
+ *
+ * since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_store_sidebars()
 {
     global $geodir_sidebars;
