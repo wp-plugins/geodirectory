@@ -153,7 +153,12 @@ function geodir_get_addlisting_link($post_type = '')
 }
 
 /**
- * @return string
+ * Get the current page URL.
+ *
+ * @since 1.0.0
+ * @since 1.4.2 Removed the port number from the URL if port 80 is not being used.
+ * @package GeoDirectory
+ * @return string The current URL.
  */
 function geodir_curPageURL()
 {
@@ -162,12 +167,13 @@ function geodir_curPageURL()
         $pageURL .= "s";
     }
     $pageURL .= "://";
-    if ($_SERVER["SERVER_PORT"] != "80") {
-        $pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
-    } else {
-        $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
-    }
-    //return str_replace("www.", "", $pageURL);
+    $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+    /**
+     * Filter the current page URL returned by function geodir_curPageURL().
+     *
+     * @since 1.4.1
+     * @param string $pageURL The URL of the current page.
+     */
     return apply_filters('geodir_curPageURL', $pageURL);
 }
 
@@ -559,12 +565,12 @@ if (!function_exists('geodir_sendEmail')) {
             $fromEmailName = get_option('site_email_name');
         }
 
-        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]');
-        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date);
+        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]','[#from_email#]');
+        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date,$fromEmail);
         $message = str_replace($search_array, $replace_array, $message);
 
-        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]');
-        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date);
+        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]','[#from_email#]');
+        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date,$fromEmail);
         $subject = str_replace($search_array, $replace_array, $subject);
 
         $headers = 'MIME-Version: 1.0' . "\r\n";
@@ -1379,7 +1385,7 @@ function geodir_widget_listings_get_order($query_args)
             $orderby = $wpdb->posts . ".post_title ASC, ";
             break;
         case 'high_review':
-            $orderby = $wpdb->posts . ".comment_count DESC, ";
+			$orderby = $table . ".rating_count DESC, " . $table . ".overall_rating DESC, ";
             break;
         case 'high_rating':
             $orderby = "( " . $table . ".overall_rating  ) DESC, ";
@@ -1396,10 +1402,16 @@ function geodir_widget_listings_get_order($query_args)
 }
 
 /**
- * @param array $query_args
+ * Retrive lisitngs/count using requested filter parameters.
+ *
+ * @since 1.0.0
+ * @since 1.4.2 New paramater $count_only added
+ *
+ * @param  array $query_args
+ * @param  int|bool $count_only If true returns listings count only, otherwise returns array
  * @return mixed
  */
-function geodir_get_widget_listings($query_args = array())
+function geodir_get_widget_listings($query_args = array(), $count_only = false)
 {
     global $wpdb, $plugin_prefix, $table_prefix;
     $GLOBALS['gd_query_args_widgets'] = $query_args;
@@ -1422,7 +1434,6 @@ function geodir_get_widget_listings($query_args = array())
         if ($lang_code) {
             $join .= " JOIN " . $table_prefix . "icl_translations icl_t ON icl_t.element_id = " . $table_prefix . "posts.ID";
         }
-
     }
 
     ########### WPML ###########
@@ -1447,25 +1458,34 @@ function geodir_get_widget_listings($query_args = array())
     $groupby = " GROUP BY $wpdb->posts.ID ";
     $groupby = apply_filters('geodir_filter_widget_listings_groupby', $groupby, $post_type);
 
-    $orderby = geodir_widget_listings_get_order($query_args);
-    $orderby = apply_filters('geodir_filter_widget_listings_orderby', $orderby, $table, $post_type);
-    $orderby .= $wpdb->posts . ".post_title ASC";
-    $orderby = $orderby != '' ? " ORDER BY " . $orderby : '';
-
-    $limit = !empty($query_args['posts_per_page']) ? $query_args['posts_per_page'] : 5;
-    $limit = apply_filters('geodir_filter_widget_listings_limit', $limit, $post_type);
-
-    $limit = $limit > 0 ? " LIMIT " . (int)$limit : "";
-
-    $sql = "SELECT SQL_CALC_FOUND_ROWS " . $fields . " FROM " . $wpdb->posts . "
-		" . $join . "
-		" . $where . "
-		" . $groupby . "
-		" . $orderby . "
-		" . $limit;
-    //echo '<pre>sql : '; print_r($sql); echo '</pre>';// exit;
-
-    $rows = $wpdb->get_results($sql);
+    if ($count_only) {
+		$sql = "SELECT COUNT(DISTINCT(" . $wpdb->posts . ".ID)) AS total FROM " . $wpdb->posts . "
+			" . $join . "
+			" . $where;
+		$rows = (int)$wpdb->get_var($sql);
+	} else {
+		$orderby = geodir_widget_listings_get_order($query_args);
+		$orderby = apply_filters('geodir_filter_widget_listings_orderby', $orderby, $table, $post_type);
+		$orderby .= $wpdb->posts . ".post_title ASC";
+		$orderby = $orderby != '' ? " ORDER BY " . $orderby : '';
+			
+		$limit = !empty($query_args['posts_per_page']) ? $query_args['posts_per_page'] : 5;
+		$limit = apply_filters('geodir_filter_widget_listings_limit', $limit, $post_type);
+		
+		$page = !empty($query_args['pageno']) ? absint($query_args['pageno']) : 1;
+		if ( !$page )
+			$page = 1;
+		
+		$limit = (int)$limit > 0 ? " LIMIT " . absint( ( $page - 1 ) * (int)$limit ) . ", " . (int)$limit : "";
+		
+		$sql = "SELECT SQL_CALC_FOUND_ROWS " . $fields . " FROM " . $wpdb->posts . "
+			" . $join . "
+			" . $where . "
+			" . $groupby . "
+			" . $orderby . "
+			" . $limit;	
+		$rows = $wpdb->get_results($sql);
+	}
 
     unset($GLOBALS['gd_query_args_widgets']);
     unset($gd_query_args_widgets);
@@ -2607,4 +2627,171 @@ function geodir_sort_by_review_count_obj($a, $b)
     return $a->review_count < $b->review_count;
 }
 
+/**
+ * Load geodirectory plugin textdomain.
+ *
+ * @since 1.4.2
+ */
+function geodir_load_textdomain() {
+	$locale = apply_filters('plugin_locale', get_locale(), GEODIRECTORY_TEXTDOMAIN);
+	
+	load_textdomain(GEODIRECTORY_TEXTDOMAIN, WP_LANG_DIR . '/' . GEODIRECTORY_TEXTDOMAIN . '/' . GEODIRECTORY_TEXTDOMAIN . '-' . $locale . '.mo');
+	load_plugin_textdomain(GEODIRECTORY_TEXTDOMAIN, false, dirname(plugin_basename(__FILE__)) . '/geodirectory-languages');
+	
+	/**
+	 * Define language constants.
+	 *
+	 * @since 1.0.0
+	 */
+	require_once(geodir_plugin_path() . '/language.php');
+	
+	$language_file = geodir_plugin_path() . '/db-language.php';
+	
+	// Load language string file if not created yet
+	if (!file_exists($language_file)) {
+		geodirectory_load_db_language();
+	}
+	
+	if (file_exists($language_file)) {
+		/**
+		 * Language strings from database.
+		 *
+		 * @since 1.4.2
+		 */
+		try {
+			require_once($language_file);
+		} catch(Exception $e) {
+			error_log('Language Error: ' . $e->getMessage());
+		}
+	}
+}
 
+/**
+ * Load language strings in to file to translate via po editor
+ *
+ * @since 1.4.2
+ *
+ * @global null|object $wp_filesystem WP_Filesystem object.
+ * 
+ * @return bool True if file created otherwise false
+ */
+function geodirectory_load_db_language() {
+	global $wp_filesystem;
+	if( empty( $wp_filesystem ) ) {
+		require_once( ABSPATH .'/wp-admin/includes/file.php' );
+		WP_Filesystem();
+		global $wp_filesystem;
+	}
+	
+	$language_file = geodir_plugin_path() . '/db-language.php';
+	
+	if(is_file($language_file) && !is_writable($language_file))
+		return false; // Not possible to create.
+	
+	if(!is_file($language_file) && !is_writable(dirname($language_file)))
+		return false; // Not possible to create.
+		
+	$contents_strings = array();
+	
+	/**
+	 * Filter the language string from database to translate via po editor
+	 *
+	 * @since 1.4.2
+	 *
+	 * @param array $contents_strings Array of strings.
+	 */
+	$contents_strings = apply_filters('geodir_load_db_language', $contents_strings);
+	
+	$contents_strings = array_unique($contents_strings);
+	
+	$contents_head = array();
+	$contents_head[] = "<?php";
+	$contents_head[] = "/**";
+	$contents_head[] = " * Translate language string stored in database. Ex: Custom Fields";
+	$contents_head[] = " *";
+	$contents_head[] = " * @since 1.4.2";
+	$contents_head[] = " * @package GeoDirectory";
+	$contents_head[] = " */";
+	$contents_head[] = "";
+	$contents_head[] = "// Language keys";
+	
+	$contents_foot = array();
+	$contents_foot[] = "";
+	$contents_foot[] = "?>";
+	
+	$contents = implode(PHP_EOL, $contents_head);
+	
+	if (!empty($contents_strings)) {
+		foreach ( $contents_strings as $string ) {
+			if (is_scalar($string) && $string != '') {
+				$string = str_replace("'", "\'", $string);
+				$contents .= PHP_EOL . "__('" . $string . "', GEODIRECTORY_TEXTDOMAIN);";
+			}
+		}
+	}
+	
+	$contents .= implode(PHP_EOL, $contents_foot);
+		
+	if($wp_filesystem->put_contents( $language_file, $contents, FS_CHMOD_FILE))
+		return false; // Failure; could not write file.
+	
+	return true;
+}
+
+/**
+ * Get the custom fields texts for translation
+ *
+ * @since 1.4.2
+ *
+ * @global object $wpdb WordPress database abstraction object.
+ *
+ * @param  array $translation_texts Array of text strings.
+ * @return array
+ */
+function geodir_load_custom_field_translation($translation_texts = array()) {
+	global $wpdb;
+	
+	// Custom fields table
+	$sql = "SELECT admin_title, admin_desc, site_title, clabels, required_msg FROM " . GEODIR_CUSTOM_FIELDS_TABLE;
+	$rows = $wpdb->get_results($sql);
+	
+	if (!empty($rows)) {
+		foreach($rows as $row) {
+			if (!empty($row->admin_title))
+				$translation_texts[] = stripslashes_deep($row->admin_title);
+				
+			if (!empty($row->admin_desc))
+				$translation_texts[] = stripslashes_deep($row->admin_desc);
+				
+			if (!empty($row->site_title))
+				$translation_texts[] = stripslashes_deep($row->site_title);
+				
+			if (!empty($row->clabels))
+				$translation_texts[] = stripslashes_deep($row->clabels);
+				
+			if (!empty($row->required_msg))
+				$translation_texts[] = stripslashes_deep($row->required_msg);
+		}
+	}
+	
+	// Custom sorting fields table
+	$sql = "SELECT site_title, asc_title, desc_title FROM " . GEODIR_CUSTOM_SORT_FIELDS_TABLE;
+	$rows = $wpdb->get_results($sql);
+	
+	if (!empty($rows)) {
+		foreach($rows as $row) {
+			if (!empty($row->site_title))
+				$translation_texts[] = stripslashes_deep($row->site_title);
+				
+			if (!empty($row->asc_title))
+				$translation_texts[] = stripslashes_deep($row->asc_title);
+				
+			if (!empty($row->desc_title))
+				$translation_texts[] = stripslashes_deep($row->desc_title);
+		}
+	}
+	
+	$contents_strings = !empty($contents_strings) ? array_unique($contents_strings) : $contents_strings;
+	
+	return $translation_texts;
+}

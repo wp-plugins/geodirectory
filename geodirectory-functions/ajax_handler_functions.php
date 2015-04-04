@@ -292,7 +292,10 @@ function geodir_ajax_handler()
                     break;
             endswitch;
 
+            if (isset($_SESSION['listing'])) unset($_SESSION['listing']);
+
         } else {
+            if (isset($_SESSION['listing'])) unset($_SESSION['listing']);
             wp_redirect(home_url() . '/?geodir_signup=true');
             exit();
         }
@@ -307,6 +310,19 @@ function geodir_ajax_handler()
 
     if (isset($_REQUEST['ajax_action']) && $_REQUEST['ajax_action'] == 'geodir_get_term_list') {
         $terms_o = get_terms(sanitize_text_field($_REQUEST['term']));
+		
+		// Skip terms which has no listing
+		if (!empty($terms_o)) {
+			$filter_terms = array();
+			
+			foreach ($terms_o as $term) {	
+				if ($term->count > 0) {
+					$filter_terms[] = $term;
+				}
+			}
+			$terms_o = $filter_terms;
+		}
+		
         $terms = geodir_sort_terms($terms_o, 'count');
         geodir_helper_cat_list_output($terms, intval($_REQUEST['limit']));
         exit();

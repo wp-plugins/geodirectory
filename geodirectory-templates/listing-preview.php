@@ -1,7 +1,18 @@
 <?php
+/**
+ * Template for the add listing preview page
+ *
+ * You can make most changes via hooks or see the link below for info on how to replace the template in your theme.
+ *
+ * @link http://docs.wpgeodirectory.com/customizing-geodirectory-templates/
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
+
 header("X-XSS-Protection: 0");
 get_header();
 
+/** This action is documented in geodirectory-templates/add-listing.php */
 do_action('geodir_before_main_content', 'listing-preview-page');
 
 
@@ -17,7 +28,7 @@ foreach ($_REQUEST as $pkey => $pval) {
     } else {
         $tags = '';
     }
-
+    /** This action is documented in geodirectory_template_actions.php */
     $tags = apply_filters('geodir_save_post_key', $tags, $pkey);
     if ($tags != 'skip_field') {
         $_REQUEST[$pkey] = strip_tags($_REQUEST[$pkey], $tags);
@@ -105,7 +116,15 @@ $_SESSION['listing'] = serialize($_REQUEST);
         <div class="clearfix geodir-common">
             <div id="geodir_content">
 
-                <?php do_action('geodir_before_post_preview', $post); ?>
+                <?php
+                /**
+                 * Called before the slider on the add listing preview template.
+                 *
+                 * @since 1.1.0
+                 * @param object $post The post object.
+                 * @see 'geodir_after_post_preview'
+                 */
+                do_action('geodir_before_post_preview', $post); ?>
 
                 <h1><?php echo(stripslashes($post->post_title)); ?></h1>
 
@@ -283,10 +302,18 @@ $_SESSION['listing'] = serialize($_REQUEST);
                 <?php } ?>
                 <!-- Post info tabs start -->
                 <?php geodir_show_detail_page_tabs(); ?>
-                <?php do_action('geodir_after_post_preview', $post); ?>
+                <?php
+                /**
+                 * Called after the tabs section on the add listing preview template.
+                 *
+                 * @since 1.1.0
+                 * @param object $post The post object.
+                 * @see 'geodir_before_post_preview'
+                 */
+                do_action('geodir_after_post_preview', $post); ?>
             </div>
             <?php
-
+            /** This action is documented in geodirectory-templates/add-listing.php */
             do_action('geodir_after_main_content');
 
             geodir_get_template_part('detail', 'sidebar');
