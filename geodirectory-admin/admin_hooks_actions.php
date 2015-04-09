@@ -22,6 +22,11 @@ if (!function_exists('geodir_admin_init')) {
             $current_tab = (isset($_GET['tab']) && $_GET['tab'] != '') ? $_GET['tab'] : 'general_settings';
             if (!(isset($_REQUEST['action']))) // this will avoide Ajax requests
                 geodir_handle_option_form_submit($current_tab); // located in admin function.php
+            /**
+             * Called on the WordPress 'admin_init' hook this hookis used to call everything for the GD settings pages in the admin area.
+             *
+             * @since 1.0.0
+             */
             do_action('admin_panel_init');
             add_action('geodir_admin_option_form', 'geodir_get_admin_option_form', 1);
 
@@ -48,7 +53,7 @@ function geodir_get_admin_option_form($current_tab)
 add_action('geodir_update_options_compatibility_settings', 'geodir_update_options_compatibility_settings');
 add_action('geodir_update_options_default_location_settings', 'geodir_location_form_submit');
 add_action('geodir_before_admin_panel', 'geodir_before_admin_panel'); // this function is in admin_functions.php
-add_action('geodir_before_update_options', 'geodir_before_update_options');
+add_action('geodir_before_update_options', 'geodir_before_update_options',10,2);
 
 //add_action('geodir_before_admin_panel', 'geodir_autoinstall_admin_header');
 
@@ -174,6 +179,8 @@ function geodir_meta_box_add()
 }
 
 add_action('save_post', 'geodir_post_information_save');
+
+
 
 
 //add_filter('geodir_design_settings' , 'geodir_show_hide_location_switcher_nav' ) ;
@@ -1593,6 +1600,7 @@ function geodir_ajax_import_csv()
 
                     $gd_post_info['package_id'] = $package_id;
 
+                    /** This action is documented in geodirectory-functions/post-functions.php */
                     do_action('geodir_after_save_listing', $last_postid, $gd_post_info);
 
                     if (!empty($buffer[5])) {

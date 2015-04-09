@@ -15,6 +15,11 @@ if (!function_exists('geodir_admin_panel')) {
 
         <div id="gd-wrapper-main" class="wrap geodirectory">
             <?php
+            /**
+             * Called just after the opening wrapper div for the GD settings page in the admin area.
+             *
+             * @since 1.0.0
+             */
             do_action('geodir_before_admin_panel');
             ?>
 
@@ -62,11 +67,32 @@ if (!function_exists('geodir_admin_panel')) {
                             $tab_active = '';
                             if ($current_tab == $name)
                                 $tab_active = ' class="tab-active" ';
+                            /**
+                             * Called before the individual settings tabs are output.
+                             *
+                             * @since 1.0.0
+                             * @param string $name The name of the settings tab.
+                             * @see 'geodir_after_settings_tabs'
+                             */
                             do_action('geodir_before_settings_tabs', $name);
                             echo '<li ' . $tab_active . ' ><a href="' . $tab_link . '"  ' . $tab_target . ' >' . $label . '</a></li>';
+                            /**
+                             * Called after the individual settings tabs are output.
+                             *
+                             * @since 1.0.0
+                             * @param string $name The name of the settings tab.
+                             * @see 'geodir_before_settings_tabs'
+                             */
                             do_action('geodir_after_settings_tabs', $name);
                         endforeach;
 
+                        /**
+                         * Called after the GD settings tabs have been output.
+                         *
+                         * Called before the closing `ul` so can be used to add new settings tab links.
+                         *
+                         * @since 1.0.0
+                         */
                         do_action('geodir_settings_tabs');
                         ?>
                     </ul>
@@ -125,7 +151,13 @@ if (!function_exists('geodir_admin_panel')) {
                                        } ?>"/>
                                 <?php wp_nonce_field('geodir-settings', '_wpnonce', true, true); ?>
                                 <?php wp_nonce_field('geodir-settings-' . $current_tab, '_wpnonce-' . $current_tab, true, true); ?>
-                                <?php do_action('geodir_admin_option_form', $current_tab); ?>
+                                <?php
+                                /**
+                                 * Used to call the content of each GD settings tab page.
+                                 *
+                                 * @since 1.0.0
+                                 */
+                                do_action('geodir_admin_option_form', $current_tab); ?>
                             </form>
                         </div>
 
@@ -611,6 +643,12 @@ function geodir_update_options_compatibility_settings()
     $theme_arr = get_option('gd_theme_compats');
     update_option('gd_theme_compat', $theme_name);
 
+    /**
+     * Called before the theme compatibility settings are saved to the DB.
+     *
+     * @since 1.4.0
+     * @param array $theme_settings The theme compatibility settings as an array.
+     */
     do_action('gd_compat_save_settings', $theme_settings);
 
 //if($_POST['gd_theme_compat'])==
@@ -1240,7 +1278,15 @@ function geodir_theme_compatibility_setting_page()
 
 
 
-                <?php do_action('gd_compat_other_filters');?>
+                <?php
+                /**
+                 * Allows more filter setting to be added to theme compatibility settings page.
+                 *
+                 * Called after the last setting in "Other filters" section of theme compatibility settings.
+                 *
+                 * @since 1.4.0
+                 */
+                do_action('gd_compat_other_filters');?>
 
                 </tbody>
             </table>
@@ -1313,7 +1359,14 @@ function geodir_custom_post_type_form()
 
                     <div id="gt-form-builder-tab" class="gt-tabs-panel">
 
-                        <?php do_action('geodir_manage_available_fields', $sub_tab); ?>
+                        <?php
+                        /**
+                         * Adds the available fields to the custom fields settings page per post type.
+                         *
+                         * @since 1.0.0
+                         * @param string $sub_tab The current settings tab name.
+                         */
+                        do_action('geodir_manage_available_fields', $sub_tab); ?>
 
                         <div style="clear:both"></div>
                     </div>
@@ -1334,7 +1387,14 @@ function geodir_custom_post_type_form()
 
                     <div id="gt-form-builder-tab" class="gt-tabs-panel">
                         <div class="field_row_main">
-                            <?php do_action('geodir_manage_selected_fields', $sub_tab); ?>
+                            <?php
+                            /**
+                             * Adds the selected fields and setting to the custom fields settings page per post type.
+                             *
+                             * @since 1.0.0
+                             * @param string $sub_tab The current settings tab name.
+                             */
+                            do_action('geodir_manage_selected_fields', $sub_tab); ?>
                         </div>
                         <div style="clear:both"></div>
                     </div>
@@ -1452,7 +1512,14 @@ function geodir_diagnostic_tools_setting_page()
 						<input type="button" value="<?php _e('Run', GEODIRECTORY_TEXTDOMAIN);?>" class="button-primary geodir_diagnosis_button" data-diagnose="load_db_language"/>
 					</td>
 				</tr>
-                <?php do_action('geodir_diagnostic_tool');?>
+                <?php
+                /**
+                 * Allows you to add more setting to the GD>Tools settings page.
+                 *
+                 * Called after the last setting on the GD>Tools page.
+                 * @since 1.0.0
+                 */
+                do_action('geodir_diagnostic_tool');?>
 
                 </tbody>
             </table>
