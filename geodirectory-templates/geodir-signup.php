@@ -1,37 +1,68 @@
-<?php 
-if(get_current_user_id()){wp_redirect( home_url(), 302 ); exit;}
+<?php
+/**
+ * Template for the GD register/signup page
+ *
+ * You can make most changes via hooks or see the link below for info on how to replace the template in your theme.
+ *
+ * @link http://docs.wpgeodirectory.com/customizing-geodirectory-templates/
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
+
+/*
+ * If user is not signed in, redirect home.
+ */
+if (get_current_user_id()) {
+    wp_redirect(home_url(), 302);
+    exit;
+}
 
 // call header
-get_header(); 
+get_header();
 
 ###### WRAPPER OPEN ######
-// this adds the opening html tags to the primary div, this required the closing tag below :: ($type='',$id='',$class='')
-do_action( 'geodir_wrapper_open', 'signup-page', 'geodir-wrapper','');
-	
-	###### TOP CONTENT ######
-	// action called before the main content and the page specific content
-	do_action('geodir_top_content', 'signup-page');
-	// template specific, this can add the sidebar top section and breadcrums
-	do_action('geodir_signin_before_main_content');
-	// action called before the main content
-	do_action('geodir_before_main_content', 'signup-page');
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_wrapper_open', 'signup-page', 'geodir-wrapper', '');
 
-			###### MAIN CONTENT WRAPPERS OPEN ######
-			// this adds the opening html tags to the content div, this required the closing tag below :: ($type='',$id='',$class='')
-			do_action( 'geodir_wrapper_content_open', 'signup-page', 'geodir-wrapper-content','geodir-content-fullwidth');
-			
-			// this action adds the top sidebar
-			do_action( 'geodir_sidebar_signup_top');
+###### TOP CONTENT ######
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_top_content', 'signup-page');
 
-					###### MAIN CONTENT ######
-					// this call the main page content
-					do_action( 'geodir_signup_forms');
+/**
+ * Calls the top section widget area and the breadcrumbs on the register/signin page.
+ *
+ * @since 1.1.0
+ */
+do_action('geodir_signin_before_main_content');
 
-			###### MAIN CONTENT WRAPPERS CLOSE ######
-			// this adds the closing html tags to the wrapper_content div :: ($type='')
-			do_action( 'geodir_wrapper_content_close', 'signup-page');
-			   
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_before_main_content', 'signup-page');
+
+###### MAIN CONTENT WRAPPERS OPEN ######
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_wrapper_content_open', 'signup-page', 'geodir-wrapper-content', 'geodir-content-fullwidth');
+
+/**
+ * Adds the register/signin page top section widget area to the register/signin template page if active.
+ *
+ * @since 1.1.0
+ */
+do_action('geodir_sidebar_signup_top');
+
+###### MAIN CONTENT ######
+/**
+ * Adds the register/signin page main content like the signin box and the register box to the register/signin template page.
+ *
+ * @since 1.1.0
+ */
+do_action('geodir_signup_forms');
+
+###### MAIN CONTENT WRAPPERS CLOSE ######
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_wrapper_content_close', 'signup-page');
+
 ###### WRAPPER CLOSE ######	
-// this adds the closing html tags to the wrapper div :: ($type='')
-do_action( 'geodir_wrapper_close', 'signup-page');
+/** This action is documented in geodirectory-templates/add-listing.php */
+do_action('geodir_wrapper_close', 'signup-page');
+
 get_footer();  
