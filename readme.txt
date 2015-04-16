@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=payments
 Tags:  address book, addressbook, addresses, bio, biographies, bios, business, business directory plugin, business-directory, businesses, church, directories, directory, directory plugin, directory widget, geodirectory, googlemap, googlemaps, google maps, list, listings, lists, member directory, members directories, members directory, microformat, microformats, multisite, profile, profiles, staff, user, users, vcard, wordpress business directory, wordpress directory, wordpress directory plugin, yelp clone, tripadvisor clone, yellow pages clone, wordpress business directory plugin, wordpress directory theme, wordpress business directory theme, wordpress city directory plugin, wordpress local directory plugin
 Requires at least: 3.1
 Tested up to: 4.1.1
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -61,6 +61,7 @@ Premium [Addons](http://wpgeodirectory.com/addons/ "Premium addons for GeoDirect
 * [MultiRatings and Reviews](http://wpgeodirectory.com/addons/multiratings-and-reviews/ "Allows you to extend your rating and reviews categorization") - Extend the review system allowing multiple rating categories (example service, quality, price) and other cool features.
 * [Advance search filters](http://wpgeodirectory.com/addons/advanced-search-filters/ "Allows you to extended search with custom filters") - Adds advance filters to the search widget, search autocompleter, geolocation and much more (example: "pet friendly" filter).
 * [Buddypress Integration](http://wpgeodirectory.com/addons/buddypress-integration/ "integrates Buddypress with GeoDirectory") - Integrates GeoDirectory with Buddypress.
+* [AffiliateWP Integration](http://wpgeodirectory.com/addons/affiliatewp-integration/ "integrates AffiliateWP with GeoDirectory") - Integrates GeoDirectory with AffiliateWP.
 * [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allows business owners to take control of their listing.
 * [Marker Cluster](http://wpgeodirectory.com/addons/marker-cluster/ "To avoid overcrowded maps") - Adds numbered markers at high zoom levels.
 * [Duplicate alert](http://wpgeodirectory.com/addons/ajax-duplicate-alert/ "Listing already exists?") - Alert users when adding a listing with the same title as another listing.
@@ -123,9 +124,13 @@ GeoDirectory comes with some dummy data you can use to see how listings look. Yo
 
 == Changelog ==
 
+= 1.4.4 =
+
+[GeoDirectory changelog for version 1.4.4](http://wpgeodirectory.com/change-logs/#v1.4.4).
+
 = 1.4.3 =
 
-[GeoDirectory changelog for version 1.4.2](http://wpgeodirectory.com/change-logs/#v1.4.3).
+[GeoDirectory changelog for version 1.4.3](http://wpgeodirectory.com/change-logs/#v1.4.3).
 
 = 1.4.2 =
 

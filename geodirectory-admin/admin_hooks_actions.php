@@ -862,6 +862,12 @@ function geodir_diagnose_version_clear()
         'Events Manager' => 'geodirevents_db_version',
     );
 
+    /**
+     * Filter the array of plugins to clear the version numbers for in the GD >Tools : clear all version numbers.
+     *
+     * @since 1.0.0
+     * @param array $gd_arr The array or addons to clear, array('GeoDirectory' => 'geodirectory_db_version',...
+     */
     $ver_arr = apply_filters('geodir_db_version_name', $gd_arr);
 
     if (!empty($ver_arr)) {
@@ -975,6 +981,15 @@ function geodir_diagnose_multisite_conversion()
     );
 
     // allow other addons to hook in and add their checks
+
+    /**
+     * Filter the array of tables.
+     *
+     * Filter the array of tables to check during the GD>Tools multisite DB conversion tool check, this allows adons to add their DB tables to the checks.
+     *
+     * @since 1.0.0
+     * @param array $table_arr The array of tables to check, array('geodir_countries' => __('Countries', GEODIRECTORY_TEXTDOMAIN),...
+     */
     $table_arr = apply_filters('geodir_diagnose_multisite_conversion', $table_arr);
 
     foreach ($table_arr as $table => $table_name) {
@@ -1286,6 +1301,8 @@ function geodir_ajax_import_csv()
     global $wpdb, $plugin_prefix, $current_user;
     $uploads = wp_upload_dir();
     ini_set('auto_detect_line_endings', true);
+	
+	$wp_post_statuses = get_post_statuses(); // All of the WordPress supported post statuses.
 
     $task = isset($_POST['task']) ? $_POST['task'] : '';
     $uploadedFile = isset($_POST['gddata']['uploadedFile']) ? $_POST['gddata']['uploadedFile'] : NULL;
@@ -1305,17 +1322,25 @@ function geodir_ajax_import_csv()
 
         if (!empty($wp_filetype) && isset($wp_filetype['ext']) && strtolower($wp_filetype['ext']) == 'csv') {
             $return['error'] = NULL;
-            $response = wp_remote_get($uploadedFile, array('sslverify' => false, 'timeout' => 360000));
 
             $return['rows'] = 0;
 
-            if (!is_wp_error($response) && 200 == wp_remote_retrieve_response_code($response)) {
-                $file_contents = wp_remote_retrieve_body($response);
-                $file_contents = trim($file_contents);
-                $file = explode(PHP_EOL, $file_contents);
 
-                $return['rows'] = (!empty($file) && count($file) > 1) && strpos($file_contents, PHP_EOL) !== false ? count($file) - 1 : 0;
-            }
+
+                if (($handle = fopen($target_path, "r")) !== FALSE) {
+                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        if(is_array($data) && !empty($data)) {
+                            $file[] = '"' . implode('","', $data) . '"';
+                        }
+                    }
+                    fclose($handle);
+                    $file = $file;
+                }
+
+
+
+                $return['rows'] = (!empty($file) && count($file) > 1) ? count($file) - 1 : 0;
+
 
             if (!$return['rows'] > 0) {
                 $return['error'] = __('No data found in csv file.', GEODIRECTORY_TEXTDOMAIN);
@@ -1476,6 +1501,11 @@ function geodir_ajax_import_csv()
                         if ($customKeyarray[$c] == 'post_longitude') {
                             $post_longitude = addslashes($buffer[$c]);
                         }
+						
+						// Post status
+						if ($customKeyarray[$c] == 'post_status') {
+                            $post_status = sanitize_key( $buffer[$c] );
+                        }
                     }
 
                     /* ================ before array create ============== */
@@ -1489,18 +1519,23 @@ function geodir_ajax_import_csv()
                             continue;
                         }
                     }
+					
+					// Default post status
+					$default_status = 'publish';
+					$post_status = !empty( $post_status ) ? sanitize_key( $post_status ) : $default_status;
+					$post_status = !empty( $wp_post_statuses ) && !isset( $wp_post_statuses[$post_status] ) ? $default_status : $post_status;
 
                     $my_post['post_title'] = $post_title;
                     $my_post['post_content'] = $post_desc;
                     $my_post['post_type'] = addslashes($buffer[5]);
                     $my_post['post_author'] = $current_post_author;
-                    $my_post['post_status'] = 'publish';
+                    $my_post['post_status'] = $post_status;
                     $my_post['post_category'] = $catids_arr;
                     $my_post['post_tags'] = $tag_arr;
 
                     $gd_post_info['post_tags'] = $tag_arr;
                     $gd_post_info['post_title'] = $post_title;
-                    $gd_post_info['post_status'] = 'publish';
+                    $gd_post_info['post_status'] = $post_status;
                     $gd_post_info['submit_time'] = time();
                     $gd_post_info['submit_ip'] = $_SERVER['REMOTE_ADDR'];
 

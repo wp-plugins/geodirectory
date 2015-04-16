@@ -33,6 +33,12 @@ if (!function_exists('geodir_admin_panel')) {
                     <ul>
                         <?php
                         $tabs = array();
+                        /**
+                         * Filter the GD admin settings tabs on the left of the admin menu.
+                         *
+                         * @since 1.0.0
+                         * @param array $tabs The array of tabs to display.
+                         */
                         $tabs = apply_filters('geodir_settings_tabs_array', $tabs);
                         update_option('geodir_tabs', $tabs);// Important to show settings menu dropdown
 
@@ -296,6 +302,12 @@ function geodir_admin_option_form($tab_name)
             else
                 $hide_save_button = '';
 
+            /**
+             * Filter weather the default save button in the GD admin settings pages should be shown.
+             *
+             * @since 1.0.0
+             * @param string $hide_save_button The style element, either blank or: style='display:none;'.
+             */
             $hide_save_button = apply_filters('geodir_hide_save_button', $hide_save_button);
             ?>
 
@@ -700,7 +712,7 @@ function geodir_theme_compatibility_setting_page()
 
             <?php if (str_replace("_custom", "", get_option('gd_theme_compat')) == 'Avada') { ?>
                 <div id="gd-compat-warnings">
-                    <h3><?php _e('Avada theme has no hooks for compatibility, because of this you must add two small changes to the header.php. <a href="http://docs.wpgeodirectory.com/avada-compatibility-header-php/" target="_blank">Instructions</a>', GEODIRECTORY_TEXTDOMAIN); ?></h3>
+                    <h3><?php _e('Since Avada 3.8+ they have added hooks for compatibility for GeoDirectory so the header.php modification is no longer required. <a href="http://docs.wpgeodirectory.com/avada-compatibility-header-php/" target="_blank">See here</a>', GEODIRECTORY_TEXTDOMAIN); ?></h3>
                 </div>
             <?php }?>
 
