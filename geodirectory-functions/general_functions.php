@@ -145,7 +145,7 @@ function geodir_get_addlisting_link($post_type = '')
     $check_pkg = 1;
     if (post_type_exists($post_type) && $check_pkg) {
 
-        $add_listing_link = get_page_link(get_option('geodir_add_listing_page'));
+        $add_listing_link = get_page_link(geodir_add_listing_page_id());
 
         return esc_url( add_query_arg(array('listing_type' => $post_type), $add_listing_link) );
     } else
@@ -210,6 +210,7 @@ function geodir_get_weeks()
 }
 
 
+
 /**
  * Check that page is
  **/
@@ -222,21 +223,21 @@ function geodir_is_page($gdpage = '')
     switch ($gdpage):
         case 'add-listing':
 
-            if (is_page() && get_query_var('page_id') == get_option('geodir_add_listing_page')) {
+            if (is_page() && get_query_var('page_id') == geodir_add_listing_page_id()) {
                 return true;
-            } elseif (is_page() && isset($post->post_content) && has_shortcode($post->post_content, 'add_listing')) {
+            } elseif (is_page() && isset($post->post_content) && has_shortcode($post->post_content, 'gd_add_listing')) {
                 return true;
             }
 
             break;
         case 'preview':
-            if ((is_page() && get_query_var('page_id') == get_option('geodir_preview_page')) && isset($_REQUEST['listing_type'])
+            if ((is_page() && get_query_var('page_id') == geodir_preview_page_id()) && isset($_REQUEST['listing_type'])
                 && in_array($_REQUEST['listing_type'], geodir_get_posttypes())
             )
                 return true;
             break;
         case 'listing-success':
-            if (is_page() && get_query_var('page_id') == get_option('geodir_success_page'))
+            if (is_page() && get_query_var('page_id') == geodir_success_page_id())
                 return true;
             break;
         case 'detail':
@@ -254,7 +255,8 @@ function geodir_is_page($gdpage = '')
 
             break;
         case 'location':
-            if (is_page() && get_query_var('page_id') == get_option('geodir_location_page'))
+
+            if (is_page() && get_query_var('page_id') == geodir_location_page_id())
                 return true;
             break;
         case 'author':
@@ -291,10 +293,10 @@ function geodir_set_is_geodir_page($wp)
 
         if (!isset($wp->query_vars['gd_is_geodir_page']) && isset($wp->query_vars['page_id'])) {
             if (
-                $wp->query_vars['page_id'] == get_option('geodir_add_listing_page')
-                || $wp->query_vars['page_id'] == get_option('geodir_preview_page')
-                || $wp->query_vars['page_id'] == get_option('geodir_success_page')
-                || $wp->query_vars['page_id'] == get_option('geodir_location_page')
+                $wp->query_vars['page_id'] == geodir_add_listing_page_id()
+                || $wp->query_vars['page_id'] == geodir_preview_page_id()
+                || $wp->query_vars['page_id'] == geodir_success_page_id()
+                || $wp->query_vars['page_id'] == geodir_location_page_id()
             )
                 $wp->query_vars['gd_is_geodir_page'] = true;
         }
@@ -303,10 +305,10 @@ function geodir_set_is_geodir_page($wp)
             $page = get_page_by_path($wp->query_vars['pagename']);
 
             if (!empty($page) && (
-                    $page->ID == get_option('geodir_add_listing_page')
-                    || $page->ID == get_option('geodir_preview_page')
-                    || $page->ID == get_option('geodir_success_page')
-                    || $page->ID == get_option('geodir_location_page'))
+                    $page->ID == geodir_add_listing_page_id()
+                    || $page->ID == geodir_preview_page_id()
+                    || $page->ID == geodir_success_page_id()
+                    || $page->ID == geodir_location_page_id())
             )
                 $wp->query_vars['gd_is_geodir_page'] = true;
         }
@@ -687,7 +689,7 @@ function geodir_breadcrumb()
         $listing_link .= '/';
 
         $post_type_for_location_link = $listing_link;
-        $location_terms = geodir_get_current_location_terms('query_vars');
+        $location_terms = geodir_get_current_location_terms('query_vars', $gd_post_type);
         $location_link = $post_type_for_location_link;
 
         if (geodir_is_page('detail') || geodir_is_page('listing')) {
@@ -1331,7 +1333,7 @@ function geodir_get_wpml_element_id($page_id, $post_type)
 }
 
 /**
- *
+ * @deprecated 1.4.6 No longer needed as we handel translating GD pages as normal now.
  */
 function geodir_wpml_check_element_id()
 {
@@ -1455,7 +1457,7 @@ function geodir_get_widget_listings($query_args = array(), $count_only = false)
     $groupby = apply_filters('geodir_filter_widget_listings_groupby', $groupby, $post_type);
 
     if ($count_only) {
-		$sql = "SELECT COUNT(DISTINCT(" . $wpdb->posts . ".ID)) AS total FROM " . $wpdb->posts . "
+		$sql = "SELECT COUNT(" . $wpdb->posts . ".ID) AS total FROM " . $wpdb->posts . "
 			" . $join . "
 			" . $where;
 		$rows = (int)$wpdb->get_var($sql);
@@ -1776,7 +1778,7 @@ function geodir_googlemap_script_extra_details_page($extra)
 {
     global $post;
     $add_google_places_api = false;
-    if (isset($post->post_content) && has_shortcode($post->post_content, 'add_listing')) {
+    if (isset($post->post_content) && has_shortcode($post->post_content, 'gd_add_listing')) {
         $add_google_places_api = true;
     }
     if (!str_replace('libraries=places', '', $extra) && (geodir_is_page('detail') || $add_google_places_api)) {
@@ -1903,7 +1905,7 @@ function geodir_helper_cat_list_output($terms, $category_limit)
     $geodir_post_category_str = array();
 
 
-    foreach ($terms as $cat) {// print_r($cat);
+    foreach ($terms as $cat) {
         $post_type = str_replace("category", "", $cat->taxonomy);
         $term_icon_url = !empty($term_icons) && isset($term_icons[$cat->term_id]) ? $term_icons[$cat->term_id] : '';
 
@@ -1914,7 +1916,18 @@ function geodir_helper_cat_list_output($terms, $category_limit)
         $class_row = $cat_count > $category_limit ? 'geodir-pcat-hide geodir-hide' : 'geodir-pcat-show';
         $total_post = $cat->count;
 
-        echo '<li class="' . $class_row . '"><a href="' . get_term_link($cat, $cat->taxonomy) . '">';
+        $term_link = get_term_link( $cat, $cat->taxonomy );
+		/**
+		 * Filer the category term link.
+		 *
+		 * @since 1.4.5
+		 * @param string $term_link The term permalink.
+		 * @param int    $cat->term_id The term id.
+		 * @param string $post_type Wordpress post type.
+		 */
+		$term_link = apply_filters( 'geodir_category_term_link', $term_link, $cat->term_id, $post_type );
+
+        echo '<li class="' . $class_row . '"><a href="' . $term_link . '">';
         echo '<img alt="' . $cat->name . ' icon" class="" style="height:20px;vertical-align:middle;" src="' . $term_icon_url . '"/> ';
         echo ucwords($cat->name) . ' (<span class="geodir_term_class geodir_link_span geodir_category_class_' . $post_type . '_' . $cat->term_id . '" >' . $total_post . '</span>) ';
         echo '</a></li>';
@@ -2105,7 +2118,7 @@ function geodir_loginwidget_output($args = '', $instance = '')
         global $current_user;
 
         $login_url = geodir_getlink(home_url(), array('geodir_signup' => 'true'), false);
-        $add_listurl = get_permalink(get_option('geodir_add_listing_page'));
+        $add_listurl = get_permalink(geodir_add_listing_page_id());
         $add_listurl = geodir_getlink($add_listurl, array('listing_type' => 'gd_place'));
         $author_link = get_author_posts_url($current_user->data->ID);
         $author_link = geodir_getlink($author_link, array('geodir_dashbord' => 'true'), false);
@@ -2459,7 +2472,8 @@ function geodir_popular_postview_output($args = '', $instance = '')
             $geodir_is_widget_listing = false;
 
             $GLOBALS['post'] = $current_post;
-            setup_postdata($current_post);
+            if (!empty($current_post))
+				setup_postdata($current_post);
             $map_jason = $current_map_jason;
             $map_canvas_arr = $current_map_canvas_arr;
             ?>

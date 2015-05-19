@@ -3,8 +3,8 @@ Contributors: stiofansisland, paoltaia
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=payments@nomaddevs.com&item_name=Donation+for+WPGD
 Tags:  address book, addressbook, addresses, bio, biographies, bios, business, business directory plugin, business-directory, businesses, church, directories, directory, directory plugin, directory widget, geodirectory, googlemap, googlemaps, google maps, list, listings, lists, member directory, members directories, members directory, microformat, microformats, multisite, profile, profiles, staff, user, users, vcard, wordpress business directory, wordpress directory, wordpress directory plugin, yelp clone, tripadvisor clone, yellow pages clone, wordpress business directory plugin, wordpress directory theme, wordpress business directory theme, wordpress city directory plugin, wordpress local directory plugin
 Requires at least: 3.1
-Tested up to: 4.2
-Stable tag: 1.4.5
+Tested up to: 4.2.2
+Stable tag: 1.4.6
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -37,10 +37,10 @@ GeoDirectory was developed to work with any theme. If you need help getting your
 * Our optimized database structure allows for hundreds of thousands of businesses to be listed. 
 * GeoDirectory is 100% WPML compatible for multilanguage directories.
 * GeoDirectory is multisite compatible.
-* New Theme Compatibility admin page to make it easier to set GD to properly work with any theme.
-* New set of Shortcodes available
-* New Yelp Like Best of Widget
-  
+* NEW - Theme Compatibility admin page to make it easier to set GD to properly work with any theme.
+* NEW - set of Shortcodes available
+* NEW - Yelp Like Best of Widget
+* NEW - CSV bulk lisiting Import/Export/re-Import and update!   
 
 = GDF - Directory Theme Framework =
 
@@ -54,10 +54,10 @@ GeoDirectory Framework is 100% responsive and adapts perfectly to any device scr
 
 Premium [Addons](http://wpgeodirectory.com/addons/ "Premium addons for GeoDirectory") are provided to extend GeoDirectory and make it a money making global directory toolkit.
 
-* [Events](http://wpgeodirectory.com/addons/events/ "Adds an events manager to your directory") - Adds professional events directory capability.
+* [Events](http://wpgeodirectory.com/addons/events/ "Adds an events manager to your directory") - Adds professional events directory capability. All kind of recurring events options available.
 * [MultiLocation](http://wpgeodirectory.com/addons/multilocation/ "Allows to create a global directory") - Create a global directory with Countries, Regions, Cities and Neighbourhoods.
 * [Prices and Payments](http://wpgeodirectory.com/addons/prices-and-payments/ "Allows to monetize your directory") - Allows to monetize your website using several payment systems. 
-* [Custom Post Types](http://wpgeodirectory.com/addons/custom-post-types/ "Allows to extend your directory categorization") - Adds any custom post type you want as well as "Places" 
+* [Custom Post Types](http://wpgeodirectory.com/addons/custom-post-types/ "Allows to extend your directory categorization") - Adds any custom post type you want as well as "Places", also create Custom post Types with locationless ability. 
 * [MultiRatings and Reviews](http://wpgeodirectory.com/addons/multiratings-and-reviews/ "Allows you to extend your rating and reviews categorization") - Extend the review system allowing multiple rating categories (example service, quality, price) and other cool features.
 * [Advance search filters](http://wpgeodirectory.com/addons/advanced-search-filters/ "Allows you to extended search with custom filters") - Adds advance filters to the search widget, search autocompleter, geolocation and much more (example: "pet friendly" filter).
 * [Buddypress Integration](http://wpgeodirectory.com/addons/buddypress-integration/ "integrates Buddypress with GeoDirectory") - Integrates GeoDirectory with Buddypress.
@@ -123,6 +123,10 @@ GeoDirectory comes with some dummy data you can use to see how listings look. Yo
 7. GD WordPress Admin Page.
 
 == Changelog ==
+
+= 1.4.6 =
+
+[GeoDirectory changelog for version 1.4.6](http://wpgeodirectory.com/change-logs/#v1.4.6).
 
 = 1.4.5 =
 

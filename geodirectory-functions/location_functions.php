@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Returns current city latitude.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @todo fix location variable
+ * @return string
+ */
 function geodir_get_current_city_lat()
 {
     $location = geodir_get_default_location();
@@ -8,6 +15,14 @@ function geodir_get_current_city_lat()
     return $lat;
 }
 
+/**
+ * Returns current city longitude.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @todo fix location variable
+ * @return string
+ */
 function geodir_get_current_city_lng()
 {
     $location = geodir_get_default_location();
@@ -16,11 +31,33 @@ function geodir_get_current_city_lng()
 }
 
 
+/**
+ * Returns the default location.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @return object
+ */
 function geodir_get_default_location()
 {
+    /**
+     * Filter the default location.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     *
+     * @param string $location_result The default location object.
+     */
     return $location_result = apply_filters('geodir_get_default_location', get_option('geodir_default_location'));
 }
 
+/**
+ * Checks whether the default location is set or not.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @return bool
+ */
 function geodir_is_default_location_set()
 {
     $default_location = geodir_get_default_location();
@@ -30,6 +67,14 @@ function geodir_is_default_location_set()
         return false;
 }
 
+/**
+ * Returns location slug using location string.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $location_string The location string.
+ * @return string The location slug.
+ */
 function create_location_slug($location_string)
 {
 
@@ -48,16 +93,48 @@ function create_location_slug($location_string)
     $lvalue = strtolower (strtr($lvalue, $spec_arr));
     $slug = str_replace(" ", "_", $lvalue);*/
 
-
+    /**
+     * Filter the location slug.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     *
+     * @param string $location_string Sanitized location string.
+     */
     return urldecode(apply_filters('geodir_location_slug_check', sanitize_title($location_string)));
 
 }
 
+/**
+ * Returns location object using location id.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $id The location ID.
+ * @return object The location object.
+ */
 function geodir_get_location($id = '')
 {
+    /**
+     * Filter the location information.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     *
+     * @param string $id The location ID.
+     */
     return $location_result = apply_filters('geodir_get_location_by_id', get_option('geodir_default_location'), $id);
 }
 
+/**
+ * Returns country selection dropdown box.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @param string $post_country The dropdown default selected country.
+ * @param string $prefix Not yet implemented.
+ */
 function geodir_get_country_dl($post_country = '', $prefix = '')
 {
     global $wpdb;
@@ -89,6 +166,14 @@ function geodir_get_country_dl($post_country = '', $prefix = '')
 }
 
 
+/**
+ * Handles location form submitted data.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix WordPress plugin prefix.
+ */
 function geodir_location_form_submit()
 {
 
@@ -108,6 +193,8 @@ function geodir_location_form_submit()
         $old_location = geodir_get_default_location();
 
         $locationid = geodir_add_new_location($location_info);
+		
+		$default_location = geodir_get_location($locationid);
 
         //UPDATE AND DELETE LISTING
         $posttype = geodir_get_posttypes();
@@ -146,8 +233,8 @@ function geodir_location_form_submit()
 
                 $sql = $wpdb->prepare(
                     "UPDATE " . $plugin_prefix . $posttypeobj . "_detail SET post_city=%s, post_region=%s, post_country=%s, post_locations=%s
-						WHERE post_location_id=%d AND ( post_city!=%s OR post_region!=%s OR post_country!=%s)",
-                    array($_REQUEST['city'], $_REQUEST['region'], $_REQUEST['country'], $post_locations, $locationid, $_REQUEST['city'], $_REQUEST['region'], $_REQUEST['country'])
+						WHERE post_location_id=%d AND ( post_city!=%s OR post_region!=%s OR post_country!=%s OR post_locations!=%s OR post_locations IS NULL)",
+                    array($_REQUEST['city'], $_REQUEST['region'], $_REQUEST['country'], $post_locations, $locationid, $_REQUEST['city'], $_REQUEST['region'], $_REQUEST['country'], $post_locations)
                 );
                 $wpdb->query($sql);
             }
@@ -156,7 +243,22 @@ function geodir_location_form_submit()
 }
 
 /**
- * Save add new location
+ * Adds new location using location info.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @param array $location_info {
+ *     Array of location info arguments.
+ *
+ *     @type string         $city               The city string.
+ *     @type string         $region             The region string.
+ *     @type string         $country            The country string.
+ *     @type string         $geo_lat            The latitude string.
+ *     @type string         $geo_lng            The longitude string.
+ *     @type string|bool    $is_default         Is this the default location?.
+ * }
+ * @return string|bool Location ID on success. False when Fail.
  */
 function geodir_add_new_location($location_info = array())
 {
@@ -209,11 +311,29 @@ function geodir_add_new_location($location_info = array())
     }
 }
 
+/**
+ * Returns random float number.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param int $min The minimum number. Default: 0.
+ * @param int $max The maximum number. Default: 1.
+ * @return float
+ */
 function geodir_random_float($min = 0, $max = 1)
 {
     return $min + mt_rand() / mt_getrandmax() * ($max - $min);
 }
 
+/**
+ * Returns address using latitude and longitude.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $lat Latitude string.
+ * @param string $lng Longitude string.
+ * @return string|bool Returns address on success.
+ */
 function geodir_get_address_by_lat_lan($lat, $lng)
 {
     $url = 'http://maps.googleapis.com/maps/api/geocode/json?latlng=' . trim($lat) . ',' . trim($lng) . '&sensor=true';
@@ -234,8 +354,17 @@ function geodir_get_address_by_lat_lan($lat, $lng)
         return false;
 }
 
-/// New location functions added on 23-06-2014
-function geodir_get_current_location_terms($location_array_from = 'session')
+/**
+ * Returns current location terms.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp WordPress object.
+ * @param string $location_array_from Place to look for location array. Default: 'session'.
+ * @param string $gd_post_type The post type.
+ * @return array The location term array.
+ */
+function geodir_get_current_location_terms($location_array_from = 'session', $gd_post_type = '')
 {
     global $wp;
     $location_array = array();
@@ -280,20 +409,40 @@ function geodir_get_current_location_terms($location_array_from = 'session')
 			$location_array = geodir_get_current_location_terms('session');
 		}
     }
+	
+	/**
+	 * Filter the location terms.
+	 *
+	 * @since 1.4.6
+     * @package GeoDirectory
+	 *
+	 * @param array $location_array Array of location terms. Default empty.
+	 * @param string $location_array_from Source type of location terms. Default session.
+	 * @param string $gd_post_type WP post type.
+	 */
+	$location_array = apply_filters( 'geodir_current_location_terms', $location_array, $location_array_from, $gd_post_type );
 
     return $location_array;
 
 }
 
+/**
+ * Returns location link based on location type.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $which_location Location link type. Default: 'current'.
+ * @return bool|string
+ */
 function geodir_get_location_link($which_location = 'current')
 {
 
-    $location_link = get_permalink(get_option('geodir_location_page'));
+    $location_link = get_permalink(geodir_location_page_id());
 
     if (get_option('permalink_structure') != '') {
 
-        $location_prefix = get_option('geodir_location_prefix');
-        $location_link = substr_replace($location_link, $location_prefix, strpos($location_link, 'location'), strlen('location'));
+        //$location_prefix = get_option('geodir_location_prefix');
+        //$location_link = substr_replace($location_link, $location_prefix, strpos($location_link, 'location'), strlen('location'));
 
     }
 
