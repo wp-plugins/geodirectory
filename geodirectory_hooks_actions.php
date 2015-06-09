@@ -899,6 +899,13 @@ function geodir_detail_page_google_analytics()
         </script>
 
         <style>
+            #ga_stats #gd-active-users-container {
+                float: right;
+                margin: 0 0 10px;
+            }
+            #gdga-select-analytic {
+                clear: both;
+            }
             #ga_stats #ga-analytics-title{
                 float: left;
                 font-weight: bold;
