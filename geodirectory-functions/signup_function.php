@@ -11,8 +11,8 @@
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $current_user Current user object.
  * @param bool $redirect Optional. Do you want to redirect to signup page, if user not logged in? Default: false.
- * @global object $current_user WordPress Current User object.
  * @return bool
  */
 function geodir_is_login($redirect = false)

@@ -1,8 +1,19 @@
 <?php
-
+/**
+ * Notification tab settings.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global array $geodir_settings Geodirectory settings array.
+ */
 global $geodir_settings;
 
-
+/**
+ * Filter GD Notifications Settings array.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 $geodir_settings['notifications_settings'] = apply_filters('geodir_notifications_settings', array(
 
 

@@ -1,16 +1,18 @@
 <?php
 /**
- * Geodirectory custom db table related functions.
+ * GeoDirectory custom db table related functions.
  *
  * @since 1.0.0
  * @package GeoDirectory
  */
 if (!function_exists('geodir_create_tables')) {
     /**
-     * Creates custom db tables for storing geodirectory plugin data.
+     * Creates custom db tables for storing GeoDirectory plugin data.
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix GeoDirectory plugin table prefix.
      */
     function geodir_create_tables()
     {
@@ -25,7 +27,12 @@ if (!function_exists('geodir_create_tables')) {
             if (!empty($wpdb->collate)) $collate .= " COLLATE $wpdb->collate";
         }
 
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		/**
+		 * Include any functions needed for upgrades.
+		 *
+		 * @since 1.0.0
+		 */
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
 
 // rename tables if we need to

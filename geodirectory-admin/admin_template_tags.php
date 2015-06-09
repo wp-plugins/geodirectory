@@ -1,10 +1,22 @@
 <?php
 /**
- * Geodirectory Backend Admin Panel
+ * Admin template tag functions.
  *
- * Handles the display of the main geodirectory admin panel.
+ * @since 1.0.0
+ * @package GeoDirectory
  */
+
 if (!function_exists('geodir_admin_panel')) {
+    /**
+     * GeoDirectory Backend Admin Panel.
+     *
+     * Handles the display of the main GeoDirectory admin panel.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     * @global string $current_tab Current tab in geodirectory settings.
+     * @global object $geodirectory GeoDirectory plugin object.
+     */
     function geodir_admin_panel()
     {
         global $geodirectory;
@@ -271,6 +283,15 @@ if (!function_exists('geodir_admin_panel')) {
 }
 
 
+/**
+ * Displays setting form for the given tab.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global array $geodir_settings Geodirectory settings array.
+ * @global object $wpdb WordPress Database object.
+ * @param string $tab_name Tab name.
+ */
 function geodir_admin_option_form($tab_name)
 {
 
@@ -553,6 +574,13 @@ $wp_filesystem->put_contents(
 */
 
 
+/**
+ * Updates theme compatibility settings.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function geodir_update_options_compatibility_settings()
 {
 
@@ -675,6 +703,13 @@ function geodir_update_options_compatibility_settings()
 
 }
 
+/**
+ * Displays theme compatibility settings.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function geodir_theme_compatibility_setting_page()
 {
     global $wpdb;
@@ -1348,6 +1383,12 @@ function geodir_theme_compatibility_setting_page()
 }
 
 
+/**
+ * Displays settings form for the custom post type.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_custom_post_type_form()
 {
     $listing_type = ($_REQUEST['listing_type'] != '') ? $_REQUEST['listing_type'] : 'gd_place';
@@ -1358,15 +1399,41 @@ function geodir_custom_post_type_form()
     ?>
 
     <div class="gd-content-heading">
+        <?php
+        /**
+         * Filter custom fields panel heading.
+         *
+         * @since 1.0.0
+         * @param string $sub_tab Sub tab name.
+         * @param string $listing_type Post type.
+         */
+        ?>
         <h3><?php echo apply_filters('geodir_custom_fields_panel_head', '', $sub_tab, $listing_type);?></h3>
     </div>
     <div id="container_general" class="clearfix">
         <div class="general-form-builder-frame">
 
             <div class="side-sortables" id="geodir-available-fields">
+                <?php
+                /**
+                 * Filter custom field available fields heading.
+                 *
+                 * @since 1.0.0
+                 * @param string $sub_tab Sub tab name.
+                 * @param string $listing_type Post type.
+                 */
+                ?>
                 <h3 class="hndle"><span><?php echo apply_filters('geodir_cf_panel_available_fields_head', '', $sub_tab, $listing_type);?>
 							</span></h3>
-
+                <?php
+                /**
+                 * Filter custom field available fields note text.
+                 *
+                 * @since 1.0.0
+                 * @param string $sub_tab Sub tab name.
+                 * @param string $listing_type Post type.
+                 */
+                ?>
                 <p><?php echo apply_filters('geodir_cf_panel_available_fields_note', '', $sub_tab, $listing_type);?></p>
 
                 <div class="inside">
@@ -1392,9 +1459,26 @@ function geodir_custom_post_type_form()
 
             <div class="side-sortables" id="geodir-selected-fields">
                 <h3 class="hndle">
+                    <?php
+                    /**
+                     * Filter custom field selected fields heading.
+                     *
+                     * @since 1.0.0
+                     * @param string $sub_tab Sub tab name.
+                     * @param string $listing_type Post type.
+                     */
+                    ?>
                     <span><?php echo apply_filters('geodir_cf_panel_selected_fields_head', '', $sub_tab, $listing_type);?></span>
                 </h3>
-
+                <?php
+                /**
+                 * Filter custom field selected fields note text.
+                 *
+                 * @since 1.0.0
+                 * @param string $sub_tab Sub tab name.
+                 * @param string $listing_type Post type.
+                 */
+                ?>
                 <p><?php echo apply_filters('geodir_cf_panel_selected_fields_note', '', $sub_tab, $listing_type);?></p>
 
                 <div class="inside">
@@ -1423,6 +1507,12 @@ function geodir_custom_post_type_form()
 <?php
 }
 
+/**
+ * Displays 'GD Diagnostic Tools' page.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_diagnostic_tools_setting_page()
 {
     ?>

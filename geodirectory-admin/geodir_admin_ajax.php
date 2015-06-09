@@ -1,7 +1,18 @@
 <?php
+/**
+ * Admin ajax.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 
 if (isset($_REQUEST['create_field'])) {
-    include_once(geodir_plugin_path() . '/geodirectory-admin/option-pages/create_field.php');
+	/**
+	 * Used to create custom fields.
+	 *
+	 * @since 1.0.0
+	 */
+	include_once(geodir_plugin_path() . '/geodirectory-admin/option-pages/create_field.php');
     die;
 }
 

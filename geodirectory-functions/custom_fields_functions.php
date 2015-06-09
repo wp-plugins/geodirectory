@@ -4,9 +4,9 @@
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
  */
-
-
 global $wpdb, $table_prefix;
 
 if (!function_exists('geodir_column_exist')) {
@@ -15,6 +15,7 @@ if (!function_exists('geodir_column_exist')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
 	 * @param string $db The table name.
 	 * @param string $column The column name.
 	 * @return bool If column exists returns true. Otherwise false.
@@ -40,6 +41,7 @@ if (!function_exists('geodir_add_column_if_not_exist')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
 	 * @param string $db The table name.
 	 * @param string $column The column name.
 	 * @param string $column_attr The column attributes.
@@ -60,6 +62,7 @@ if (!function_exists('geodir_add_column_if_not_exist')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param int|string $package_id The package ID.
  * @param string $default Optional. When set to "default" it will display only default fields.
  * @param string $post_type Optional. The wordpress post type.
@@ -131,6 +134,16 @@ function geodir_post_custom_fields($package_id = '', $default = 'all', $post_typ
     $geodir_post_custom_fields_cache[$cache_stored] = $return_arr;
 
     if (has_filter('geodir_filter_geodir_post_custom_fields')) {
+        /**
+         * Filter the post custom fields array.
+         *
+         * @since 1.0.0
+         *
+         * @param array $return_arr Post custom fields array.
+         * @param int|string $package_id The package ID.
+         * @param string $post_type Optional. The wordpress post type.
+         * @param string $fields_location Optional. Where exactly are you going to place this custom fields?.
+         */
         $return_arr = apply_filters('geodir_filter_geodir_post_custom_fields', $return_arr, $package_id, $post_type, $fields_location);
     }
 
@@ -143,6 +156,7 @@ if (!function_exists('geodir_custom_field_adminhtml')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
 	 * @param string $field_type The form field type.
 	 * @param object|int $result_str The custom field results object or row id.
 	 * @param string $field_ins_upd When set to "submit" displays form.
@@ -171,6 +185,8 @@ if (!function_exists('geodir_custom_field_delete')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
 	 * @param string $field_id The custom field ID.
 	 * @return int|string If field deleted successfully, returns field id. Otherwise returns 0.
 	 */
@@ -235,6 +251,8 @@ if (!function_exists('geodir_custom_field_save')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
 	 * @param array $request_field The request field array.
 	 * @param bool $default Not yet implemented.
 	 * @return int|string If field is unique returns inserted row id. Otherwise returns error string.
@@ -1024,6 +1042,7 @@ if (!function_exists('geodir_custom_field_save')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param array $field_ids List of field ids.
  * @return array|bool Returns field ids when success, else returns false.
  */
@@ -1061,6 +1080,9 @@ function godir_set_field_order($field_ids = array())
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $post The current post object.
+ * @global array $geodir_addon_list List of active GeoDirectory extensions.
  * @param int|string $package_id The package ID.
  * @param string $default Optional. When set to "default" it will display only default fields.
  * @param string $post_type Optional. The wordpress post type.
@@ -1076,7 +1098,8 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
     $custom_fields = geodir_post_custom_fields($package_id, $default, $post_type);
 
     foreach ($custom_fields as $key => $val) {
-        $name = $val['name'];
+        $val = stripslashes_deep($val); // strip slashes from labels
+		$name = $val['name'];
         $site_title = $val['site_title'];
         $type = $val['type'];
         $admin_desc = $val['desc'];
@@ -1184,8 +1207,23 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
             if (empty($lat)) $lat = isset($location->city_latitude) ? $location->city_latitude : '';
             if (empty($lng)) $lng = isset($location->city_longitude) ? $location->city_longitude : '';
 
-
+            /**
+             * Filter the default latitude.
+             *
+             * @since 1.0.0
+             *
+             * @param float $lat Default latitude.
+             * @param bool $is_admin For admin use only?.
+             */
             $lat = apply_filters('geodir_default_latitude', $lat, $is_admin);
+            /**
+             * Filter the default longitude.
+             *
+             * @since 1.0.0
+             *
+             * @param float $lat Default longitude.
+             * @param bool $is_admin For admin use only?.
+             */
             $lng = apply_filters('geodir_default_longitude', $lng, $is_admin);
 
             ?>
@@ -1310,7 +1348,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
 
             <?php if (isset($extra_fields['show_mapzoom']) && $extra_fields['show_mapzoom']) { ?>
                 <input type="hidden" value="<?php if (isset($mapzoom)) {
-                    echo $mapzoom;
+                    echo esc_attr($mapzoom);
                 } ?>" name="<?php echo $prefix . 'mapzoom'; ?>" id="<?php echo $prefix . 'mapzoom'; ?>"/>
             <?php }?>
         <?php } elseif ($type == 'text') {
@@ -1324,7 +1362,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                     <?php if ($is_required) echo '<span>*</span>';?>
                 </label>
                 <input field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>"
-                       value="<?php echo stripslashes($value);?>" type="text" class="geodir_textfield"/>
+                       value="<?php echo esc_attr(stripslashes($value));?>" type="text" class="geodir_textfield"/>
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
                     <span class="geodir_message_error"><?php _e($required_msg, GEODIRECTORY_TEXTDOMAIN); ?></span>
@@ -1344,7 +1382,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                     <?php if ($is_required) echo '<span>*</span>';?>
                 </label>
                 <input field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>"
-                       value="<?php echo stripslashes($value);?>" type="text" class="geodir_textfield"/>
+                       value="<?php echo esc_attr(stripslashes($value));?>" type="text" class="geodir_textfield"/>
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
                     <span class="geodir_message_error"><?php _e($required_msg, GEODIRECTORY_TEXTDOMAIN); ?></span>
@@ -1364,7 +1402,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                     <?php if ($is_required) echo '<span>*</span>';?>
                 </label>
                 <input field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>"
-                       value="<?php echo stripslashes($value);?>" type="text" class="geodir_textfield"/>
+                       value="<?php echo esc_attr(stripslashes($value));?>" type="text" class="geodir_textfield"/>
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
                     <span class="geodir_message_error"><?php _e($required_msg, GEODIRECTORY_TEXTDOMAIN); ?></span>
@@ -1384,7 +1422,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                     <?php if ($is_required) echo '<span>*</span>';?>
                 </label>
                 <input field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>"
-                       value="<?php echo stripslashes($value);?>" type="text" class="geodir_textfield"/>
+                       value="<?php echo esc_attr(stripslashes($value));?>" type="text" class="geodir_textfield"/>
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
                     <span class="geodir_message_error"><?php _e($required_msg, GEODIRECTORY_TEXTDOMAIN); ?></span>
@@ -1442,7 +1480,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                 <?php if ($value != '1') {
                     $value = '0';
                 }?>
-                <input type="hidden" name="<?php echo $name;?>" id="<?php echo $name;?>" value="<?php echo $value;?>"/>
+                <input type="hidden" name="<?php echo $name;?>" id="<?php echo $name;?>" value="<?php echo esc_attr($value);?>"/>
                 <input  <?php if ($value == '1') {
                     echo 'checked="checked"';
                 }?>  value="1" class="gd-checkbox" field_type="<?php echo $type;?>" type="checkbox"
@@ -1656,7 +1694,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                 </label>
 
                 <input field_type="<?php echo $type;?>" name="<?php echo $name;?>" id="<?php echo $name;?>"
-                       value="<?php echo $value;?>" type="text" class="geodir_textfield"/>
+                       value="<?php echo esc_attr($value);?>" type="text" class="geodir_textfield"/>
 
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
@@ -1688,7 +1726,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                     <?php if ($is_required) echo '<span>*</span>';?>
                 </label>
                 <input readonly="readonly" field_type="<?php echo $type;?>" name="<?php echo $name;?>"
-                       id="<?php echo $name;?>" value="<?php echo $value;?>" type="text" class="geodir_textfield"/>
+                       id="<?php echo $name;?>" value="<?php echo esc_attr($value);?>" type="text" class="geodir_textfield"/>
 
                 <span class="geodir_message_note"><?php _e($admin_desc, GEODIRECTORY_TEXTDOMAIN);?></span>
                 <?php if ($is_required) { ?>
@@ -1771,7 +1809,7 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                             $required_limit_msg = $required_msg;
                         }
 
-                        echo '<input type="hidden" cat_limit="' . $catadd_limit . '" id="cat_limit" value="' . $required_limit_msg . '" name="cat_limit[' . $name . ']"  />';
+                        echo '<input type="hidden" cat_limit="' . $catadd_limit . '" id="cat_limit" value="' . esc_attr($required_limit_msg) . '" name="cat_limit[' . $name . ']"  />';
 
 
                         if ($cat_display == 'select' || $cat_display == 'multiselect') {
@@ -1865,16 +1903,16 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
                         echo $site_title; ?><?php if ($is_required) echo '<span>*</span>';?></label>
                     <input class="geodir-custom-file-upload" field_type="file" type="hidden"
                            name="<?php echo $file_id; ?>" id="<?php echo $file_id; ?>"
-                           value="<?php echo $file_value; ?>"/>
+                           value="<?php echo esc_attr($file_value); ?>"/>
                     <input type="hidden" name="<?php echo $file_id; ?>image_limit"
                            id="<?php echo $file_id; ?>image_limit" value="<?php echo $file_image_limit; ?>"/>
 					<?php if ($allowed_file_types != '') { ?>
 					<input type="hidden" name="<?php echo $file_id; ?>_allowed_types"
-                           id="<?php echo $file_id; ?>_allowed_types" value="<?php echo $allowed_file_types; ?>" data-exts="<?php echo $display_file_types;?>"/>
+                           id="<?php echo $file_id; ?>_allowed_types" value="<?php echo esc_attr($allowed_file_types); ?>" data-exts="<?php echo esc_attr($display_file_types);?>"/>
 					<?php } ?>
                     <input type="hidden" name="<?php echo $file_id; ?>totImg" id="<?php echo $file_id; ?>totImg"
                            value="<?php if (isset($file_totImg)) {
-                               echo $file_totImg;
+                               echo esc_attr($file_totImg);
                            } else {
                                echo '0';
                            } ?>"/>
@@ -1941,6 +1979,7 @@ if (!function_exists('geodir_get_field_infoby')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
 	 * @param string $key The key you want to look for.
 	 * @param string $value The value of the key you want to look for.
 	 * @param string $geodir_post_type The post type.
@@ -1974,6 +2013,8 @@ if (!function_exists('geodir_show_listing_info')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global object $post The current post object.
 	 * @param string $fields_location In which page you are going to place this custom fields?. Ex: listing, detail etc.
 	 * @return string Returns listing info html.
 	 */
@@ -2002,6 +2043,7 @@ if (!function_exists('geodir_show_listing_info')) {
 
                 $i = 1;
             foreach ($fields_info as $type) {
+				$type = stripslashes_deep($type); // strip slashes
                 $html = '';
                 $html_var = '';
                 $field_icon = '';
@@ -2054,7 +2096,11 @@ if (!function_exists('geodir_show_listing_info')) {
                             $addition_fields = '';
 
                             if (!empty($extra_fields)) {
-
+                                /**
+                                 * Filter "show city in address" value.
+                                 *
+                                 * @since 1.0.0
+                                 */
                                 $show_city_in_address = apply_filters('geodir_show_city_in_address', false);
                                 if (isset($extra_fields['show_city']) && $extra_fields['show_city'] && $show_city_in_address) {
                                     $field = $type['htmlvar_name'] . '_city';
@@ -2219,7 +2265,15 @@ if (!function_exists('geodir_show_listing_info')) {
 
                             // all search engines that use the nofollow value exclude links that use it from their ranking calculation
                             $rel = strpos($website, get_site_url()) !== false ? '' : 'rel="nofollow"';
-
+                            /**
+                             * Filter custom field website name.
+                             *
+                             * @since 1.0.0
+                             *
+                             * @param string $type['site_title'] Website Title.
+                             * @param string $website Website URL.
+                             * @param int $post->ID Post ID.
+                             */
                             $html = '<div class="geodir_more_info ' . $geodir_odd_even . ' ' . $type['css_class'] . ' ' . $type['htmlvar_name'] . '"><span class="geodir-i-website" style="' . $field_icon . '">' . $field_icon_af . '<a href="' . $website . '" target="_blank" ' . $rel . ' ><strong>' . apply_filters('geodir_custom_field_website_name', stripslashes(__($type['site_title'], GEODIRECTORY_TEXTDOMAIN)), $website, $post->ID) . '</strong></a></span></div>';
 
                         endif;
@@ -2595,11 +2649,13 @@ if (!function_exists('geodir_show_listing_info')) {
 
 
                     case 'email':
-
-
-                        if ($type['htmlvar_name'] == 'geodir_email' && ((isset($package_info->sendtofriend) && $package_info->sendtofriend) || $post->$type['htmlvar_name'])) {
-
-                            $b_send_inquiry = '';
+					
+						if ($type['htmlvar_name'] == 'geodir_email' && !(geodir_is_page('detail') || geodir_is_page('preview'))) {
+							continue; // Remove Send Enquiry | Send To Friend from listings page
+						}
+                       
+					    if ($type['htmlvar_name'] == 'geodir_email' && ((isset($package_info->sendtofriend) && $package_info->sendtofriend) || $post->$type['htmlvar_name'])) {
+						    $b_send_inquiry = '';
                             $b_sendtofriend = '';
 
                             $html = '';
@@ -2897,6 +2953,15 @@ if (!function_exists('geodir_show_listing_info')) {
                      * @param string $html_var The HTML variable name for the field.
                      */
                     do_action('geodir_before_show_' . $html_var);
+                    /**
+                     * Filter custom field output.
+                     *
+                     * @since 1.0.0
+                     *
+                     * @param string $html_var The HTML variable name for the field.
+                     * @param string $html Custom field unfiltered HTML.
+                     * @param array $variables_array Custom field variables array.
+                     */
                     if ($html) echo apply_filters('geodir_show_' . $html_var, $html, $variables_array);
 
                     /**
@@ -2976,6 +3041,9 @@ if (!function_exists('geodir_save_post_file_fields')) {
 	 * @since 1.0.0
 	 * @since 1.4.7 Added `$extra_fields` parameter.
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
+     * @global object $current_user Current user object.
 	 * @param int $post_id
 	 * @param string $field_id
 	 * @param array $post_image
@@ -3124,6 +3192,7 @@ if (!function_exists('geodir_plupload_action')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $current_user Current user object.
 	 * @param array $upload Array of upload directory data with keys of 'path','url', 'subdir, 'basedir', and 'error'.
 	 * @return mixed Returns upload directory details as an array.
 	 */
@@ -3176,6 +3245,8 @@ if (!function_exists('geodir_plupload_action')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param int $post_id The post ID.
  * @return mixed Returns video.
  */
@@ -3200,6 +3271,8 @@ function geodir_get_video($post_id)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param int $post_id The post ID.
  * @return mixed Returns special offers.
  */
@@ -3236,7 +3309,7 @@ if (!function_exists('geodir_max_upload_size')) {
         } else {
             $max_filesize = $max_filesize > 0 ? $max_filesize . 'mb' : '2mb';
         }
-
+        /** Filter documented in geodirectory-functions/general_functions.php **/
         return apply_filters('geodir_default_image_upload_size_limit', $max_filesize);
     }
 }
@@ -3249,6 +3322,7 @@ add_filter('geodir_add_custom_sort_options', 'geodir_add_custom_sort_options', 0
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param array $fields The sorting fields array
  * @param string $post_type The post type.
  * @return array Returns the fields.
@@ -3290,6 +3364,7 @@ function geodir_add_custom_sort_options($fields, $post_type)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param string $post_type The post type.
  * @return bool|mixed|void Returns sort options when post type available. Otherwise returns false.
  */
@@ -3344,7 +3419,13 @@ function geodir_get_custom_sort_options($post_type = '')
             'htmlvar_name' => 'post_title'
         );
 
-
+        /**
+         * Hook to add custom sort options.
+         *
+         * @since 1.0.0
+         * @param array $fields Unmodified sort options array.
+         * @param string $post_type Post type.
+         */
         return $fields = apply_filters('geodir_add_custom_sort_options', $fields, $post_type);
 
     }
@@ -3358,6 +3439,7 @@ function geodir_get_custom_sort_options($post_type = '')
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param array $field_ids List of field ids.
  * @return array|bool Returns field ids. If no field id, returns false.
  */
@@ -3396,6 +3478,8 @@ if (!function_exists('geodir_custom_sort_field_save')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
 	 * @param array $request_field The request field array.
 	 * @param bool $default Not yet implemented.
 	 * @return int Returns the last affected db table row id.
@@ -3522,6 +3606,8 @@ if (!function_exists('geodir_custom_sort_field_delete')) {
 	 * Delete a custom sort field using field id.
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
 	 * @param string $field_id The field ID.
 	 * @return int|string Returns field id when successful deletion, else returns 0.
 	 */
@@ -3549,6 +3635,7 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
 	 * @param string $field_type The form field type.
 	 * @param object|int $result_str The custom field results object or row id.
 	 * @param string $field_ins_upd When set to "submit" displays form.
@@ -3566,7 +3653,8 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
             $field_info = $cf;
             $result_str = $cf->id;
         }
-
+		
+		$field_info = stripslashes_deep($field_info); // strip slashes
 
         if (!isset($field_info->post_type)) {
             $post_type = $_REQUEST['listing_type'];
@@ -3587,8 +3675,9 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
             $fields = geodir_get_custom_sort_options($post_type);
 
             foreach ($fields as $val) {
-
-                if ($val['field_type'] == $field_type && $val['htmlvar_name'] == $htmlvar_name) {
+				$val = stripslashes_deep($val); // strip slashes
+                
+				if ($val['field_type'] == $field_type && $val['htmlvar_name'] == $htmlvar_name) {
                     $site_title = isset($val['site_title']) ? $val['site_title'] : '';
                 }
 
@@ -3640,7 +3729,7 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
 
                     <?php if ($field_type != 'random') { ?>
 
-                        <input type="hidden" name="site_title" id="site_title" value="<?php echo $site_title; ?>"/>
+                        <input type="hidden" name="site_title" id="site_title" value="<?php echo esc_attr($site_title); ?>"/>
 
                         <tr>
                             <td>Select Ascending</td>
@@ -3651,9 +3740,9 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
                                 } ?>/>
 
                                 <input type="text" name="asc_title" id="asc_title"
-                                       placeholder="<?php _e('Ascending title', GEODIRECTORY_TEXTDOMAIN); ?>"
+                                       placeholder="<?php esc_attr_e('Ascending title', GEODIRECTORY_TEXTDOMAIN); ?>"
                                        value="<?php if (isset($field_info->asc_title)) {
-                                           echo $field_info->asc_title;
+                                           echo esc_attr($field_info->asc_title);
                                        } ?>" style="width:45%;"/>
 
                                 <input type="radio" name="is_default"
@@ -3675,9 +3764,9 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
                                 } ?>/>
 
                                 <input type="text" name="desc_title" id="desc_title"
-                                       placeholder="<?php _e('Descending title', GEODIRECTORY_TEXTDOMAIN); ?>"
+                                       placeholder="<?php esc_attr_e('Descending title', GEODIRECTORY_TEXTDOMAIN); ?>"
                                        value="<?php if (isset($field_info->desc_title)) {
-                                           echo $field_info->desc_title;
+                                           echo esc_attr($field_info->desc_title);
                                        } ?>" style="width:45%;"/>
                                 <input type="radio" name="is_default"
                                        value="<?php echo $htmlvar_name; ?>_desc" <?php if (isset($field_info->default_order) && $field_info->default_order == $htmlvar_name . '_desc') {
@@ -3694,7 +3783,7 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
                         <tr>
                             <td><strong><?php _e('Frontend title :', GEODIRECTORY_TEXTDOMAIN); ?></strong></td>
                             <td align="left">
-                                <input type="text" name="site_title" id="site_title" value="<?php echo $site_title; ?>"
+                                <input type="text" name="site_title" id="site_title" value="<?php echo esc_attr($site_title); ?>"
                                        size="50"/>
                                 <br/><span><?php _e('Section title which you wish to display in frontend', GEODIRECTORY_TEXTDOMAIN); ?></span>
                             </td>
@@ -3736,7 +3825,7 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
                         <td><strong><?php _e('Display order :', GEODIRECTORY_TEXTDOMAIN);?></strong></td>
                         <td align="left"><input type="text" readonly="readonly" name="sort_order" id="sort_order"
                                                 value="<?php if (isset($field_info->sort_order)) {
-                                                    echo $field_info->sort_order;
+                                                    echo esc_attr($field_info->sort_order);
                                                 }?>" size="50"/>
                             <br/>
                             <span><?php _e('Enter the display order of this field in backend. e.g. 5', GEODIRECTORY_TEXTDOMAIN);?></span>
@@ -3746,10 +3835,10 @@ if (!function_exists('geodir_custom_sort_field_adminhtml')) {
                     <tr>
                         <td>&nbsp;</td>
                         <td align="left">
-                            <input type="button" class="button" name="save" id="save" value="Save"
+                            <input type="button" class="button" name="save" id="save" value="<?php esc_attr_e('Save', GEODIRECTORY_TEXTDOMAIN);?>"
                                    onclick="save_sort_field('<?php echo $result_str;?>')"/>
 
-                            <a href="javascript:void(0)"><input type="button" name="delete" value="Delete"
+                            <a href="javascript:void(0)"><input type="button" name="delete" value="<?php esc_attr_e('Delete', GEODIRECTORY_TEXTDOMAIN);?>"
                                                                 onclick="delete_sort_field('<?php echo $result_str;?>', '<?php echo $nonce;?>', this)"
                                                                 class="button_n"/></a>
 
@@ -3769,6 +3858,8 @@ if (!function_exists('check_field_visibility')) {
 	 *
 	 * @since 1.0.0
 	 * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global array $geodir_addon_list List of active GeoDirectory extensions.
 	 * @param int|string $package_id The package ID.
 	 * @param string $field_name The field name.
 	 * @param string $post_type Optional. The wordpress post type.
@@ -3780,7 +3871,6 @@ if (!function_exists('check_field_visibility')) {
         if (!(isset($geodir_addon_list['geodir_payment_manager']) && $geodir_addon_list['geodir_payment_manager'] == 'yes')) {
             return true;
         }
-        global $wpdb;
         if (!$package_id || !$field_name || !$post_type) {
             return true;
         }

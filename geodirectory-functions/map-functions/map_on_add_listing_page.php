@@ -16,9 +16,19 @@ global $mapzoom;
  *
  * @since 1.0.0
  *
- * @param bool Whether to ristrict the map for specific address only.
+ * @param bool $var Whether to ristrict the map for specific address only.
  */
 $is_map_restrict = apply_filters('geodir_add_listing_map_restrict', true);
+
+/**
+ * Filter the auto change address fields values when moving the map pin
+ *
+ * @since 1.4.8
+ *
+ * @param bool $var Whether to change the country, state, city values in fields.
+ */
+$auto_change_address_fields_pin_move = apply_filters('geodir_auto_change_address_fields_pin_move', true);
+
 $default_location = geodir_get_default_location();
 $defaultcity = isset($default_location->city) ? $default_location->city : '';
 $lat_lng_blank = false;
@@ -43,7 +53,7 @@ if (is_admin() && isset($_REQUEST['tab']) && $mapzoom == '') {
  *
  * @since 1.0.0
  *
- * @param bool Whether to auto fill country, state, city values in fields.
+ * @param bool $var Whether to auto fill country, state, city values in fields.
  */
 $auto_change_map_fields = apply_filters('geodir_auto_change_map_fields', true);
 ?>
@@ -402,7 +412,7 @@ $auto_change_map_fields = apply_filters('geodir_auto_change_map_fields', true);
         echo $updateMarkerAddress = ob_get_clean();
         ?>
     }
-    function codeAddress(set_on_map) {
+    function geodir_codeAddress(set_on_map) {
         var address = jQuery('#<?php echo $prefix.'address';?>').val();
         var zip = jQuery('#<?php echo $prefix.'zip';?>').val();
         var city = jQuery('#<?php echo $prefix.'city';?>').val();
@@ -532,7 +542,7 @@ $auto_change_map_fields = apply_filters('geodir_auto_change_map_fields', true);
         });
         $("#<?php echo $prefix;?>set_address_button").click(function () {
             var set_on_map = true;
-            codeAddress(set_on_map);
+            geodir_codeAddress(set_on_map);
         });
 // Add dragging event listeners.
         google.maps.event.addListener(baseMarker, 'dragstart', function () {
@@ -545,7 +555,9 @@ $auto_change_map_fields = apply_filters('geodir_auto_change_map_fields', true);
         google.maps.event.addListener(baseMarker, 'dragend', function () {
 // updateMarkerStatus('Drag ended');
             centerMap();
+            <?php if($auto_change_address_fields_pin_move){?>
             geocodePosition(baseMarker.getPosition());
+            <?php }?>
             updateMarkerPosition(baseMarker.getPosition());
         });
         google.maps.event.addListener($.goMap.map, 'dragend', function () {

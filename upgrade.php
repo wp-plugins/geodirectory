@@ -1,4 +1,12 @@
 <?php
+/**
+ * Upgrade related functions.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
+
 global $wpdb;
 
 if (get_option(GEODIRECTORY_TEXTDOMAIN . '_db_version') != GEODIRECTORY_VERSION) {
@@ -11,10 +19,21 @@ if (get_option(GEODIRECTORY_TEXTDOMAIN . '_db_version') != GEODIRECTORY_VERSION)
     if (GEODIRECTORY_VERSION <= '1.4.6') {
         add_action('init', 'geodir_upgrade_146', 11);
     }
+
+    if (GEODIRECTORY_VERSION <= '1.4.8') {
+        add_action('init', 'geodir_upgrade_148', 11);
+    }
     update_option(GEODIRECTORY_TEXTDOMAIN . '_db_version', GEODIRECTORY_VERSION);
+
 }
 
 
+/**
+ * Handles upgrade for all geodirectory versions.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodirectory_upgrade_all()
 {
     geodir_create_tables();
@@ -22,17 +41,54 @@ function geodirectory_upgrade_all()
     gd_install_theme_compat();
 }
 
-// 1.3.6 Upgrades
+/**
+ * Handles upgrade for geodirectory versions <= 1.3.6.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_upgrade_136()
 {
     geodir_fix_review_overall_rating();
 }
 
+/**
+ * Handles upgrade for geodirectory versions <= 1.4.6.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_upgrade_146(){
     gd_convert_virtual_pages();
 }
 
 
+
+/**
+ * Handles upgrade for geodirectory versions <= 1.4.8.
+ *
+ * @since 1.4.8
+ * @package GeoDirectory
+ */
+function geodir_upgrade_148(){
+    /*
+     * Blank the users google password if present as we now use oAuth 2.0
+     */
+    update_option('geodir_ga_pass','');
+    update_option('geodir_ga_user','');
+
+}
+
+
+
+/**
+ * Handles upgrade for review table.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ */
 function geodir_update_review_db()
 {
     global $wpdb, $plugin_prefix;
@@ -60,18 +116,40 @@ function geodir_update_review_db()
 
 }
 
+/**
+ * Fixes review date.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function geodir_fix_review_date()
 {
     global $wpdb;
     $wpdb->query("UPDATE " . GEODIR_REVIEW_TABLE . " gdr JOIN $wpdb->comments c ON gdr.comment_id=c.comment_ID SET gdr.post_date = c.comment_date WHERE gdr.post_date='0000-00-00 00:00:00'");
 }
 
+/**
+ * Fixes review post status.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function geodir_fix_review_post_status()
 {
     global $wpdb;
     $wpdb->query("UPDATE " . GEODIR_REVIEW_TABLE . " gdr JOIN $wpdb->posts p ON gdr.post_id=p.ID SET gdr.post_status = 1 WHERE gdr.post_status IS NULL AND p.post_status='publish'");
 }
 
+/**
+ * Fixes review content.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @return bool
+ */
 function geodir_fix_review_content()
 {
     global $wpdb;
@@ -82,6 +160,14 @@ function geodir_fix_review_content()
     }
 }
 
+/**
+ * Fixes review location.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @return bool
+ */
 function geodir_fix_review_location()
 {
     global $wpdb;
@@ -100,6 +186,13 @@ function geodir_fix_review_location()
     return false;
 }
 
+/**
+ * Fixes review overall rating.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function geodir_fix_review_overall_rating()
 {
     global $wpdb;
@@ -128,6 +221,13 @@ function geodir_fix_review_overall_rating()
 ########### THEME COMPATIBILITY ############
 ############################################
 
+/**
+ * Inserts theme compatibility settings data for supported themes.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function gd_install_theme_compat()
 {
     global $wpdb;
@@ -451,6 +551,13 @@ function gd_install_theme_compat()
 }
 
 
+/**
+ * Converts virtual pages to normal pages.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ */
 function gd_convert_virtual_pages(){
     global $wpdb;
 

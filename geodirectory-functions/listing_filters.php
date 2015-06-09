@@ -10,7 +10,7 @@
  * Starts session if not started.
  *
  * @since 1.0.0
- *
+ * @package GeoDirectory
  * @global bool $geodir_add_location_url If true it will add location name in url.
  */
 function geodir_session_start()
@@ -25,8 +25,9 @@ function geodir_session_start()
  * Set geodir page variable in WP_Query instance.
  *
  * @since 1.0.0
+ * @package GeoDirectory
  *
- * @param WP_Query The WP_Query instance.
+ * @param WP_Query $query The WP_Query instance.
  * @return WP_Query
  */
 function geodir_modified_query($query)
@@ -50,9 +51,10 @@ function geodir_modified_query($query)
  *
  * @since 1.0.0
  *
- * @global object $wp_query The wordpress query object.
+ * @global object $wp_query WordPress Query object.
  * @global object $wpdb WordPress Database object.
  * @global string $geodir_post_type The post type.
+ * @global array $geodir_addon_list List of active GeoDirectory extensions.
  * @global string $table Listing table name.
  * @global float $dist Distance value to be filtered.
  * @global string $mylat Current latitude.
@@ -265,7 +267,18 @@ function set_listing_request()
 }
 
 
-/* ====== Place Listing Geodir loop filters ===== */
+/**
+ * GeoDirectory Listing loop filters.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
+ * @global string $table Listing table name.
+ * @todo $wp_query declared twice - fix it.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @param object $query Current query object.
+ * @return object Modified query object.
+ */
 function geodir_listing_loop_filter($query)
 {
     global $wp_query, $geodir_post_type, $table, $plugin_prefix, $table, $term;
@@ -321,9 +334,18 @@ function geodir_listing_loop_filter($query)
 }
 
 
-/*
-* Listing fields filter *
-*/
+/**
+ * Listing fields filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @global string $table Listing table name.
+ * @param string $fields Fields query string.
+ * @return string Modified fields query string.
+ */
 function geodir_posts_fields($fields)
 {
 
@@ -361,10 +383,10 @@ function geodir_posts_fields($fields)
 					$count++;
                     if ($count < count($keywords)) {
                        // $gd_titlematch_part .= $wpdb->posts . ".post_title LIKE '%%" . $keyword . "%%' " . $key . " ";
-						$gd_titlematch_part .= "( " . $wpdb->posts . ".post_title LIKE '" . $keyword . "' OR " . $wpdb->posts . ".post_title LIKE '" . $keyword . " %%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . " %%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . "' ) " . $key . " ";
+						$gd_titlematch_part .= "( " . $wpdb->posts . ".post_title LIKE '" . $keyword . "' OR " . $wpdb->posts . ".post_title LIKE '" . $keyword . "%%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . "%%' ) " . $key . " ";
                     } else {
                         //$gd_titlematch_part .= $wpdb->posts . ".post_title LIKE '%%" . $keyword . "%%' ";
-						$gd_titlematch_part .= "( " . $wpdb->posts . ".post_title LIKE '" . $keyword . "' OR " . $wpdb->posts . ".post_title LIKE '" . $keyword . " %%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . " %%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . "' ) ";
+						$gd_titlematch_part .= "( " . $wpdb->posts . ".post_title LIKE '" . $keyword . "' OR " . $wpdb->posts . ".post_title LIKE '" . $keyword . "%%' OR " . $wpdb->posts . ".post_title LIKE '%% " . $keyword . "%%' ) ";
                     }
                 }
                 $gd_titlematch_part .= "THEN 1 ELSE 0 END AS " . $part . ",";
@@ -373,15 +395,23 @@ function geodir_posts_fields($fields)
             $gd_titlematch_part = "";
         }
         //$fields .= $wpdb->prepare(", CASE WHEN " . $table . ".is_featured='1' THEN 1 ELSE 0 END AS gd_featured, CASE WHEN " . $wpdb->posts . ".post_title=%s THEN 1 ELSE 0 END AS gd_exacttitle," . $gd_titlematch_part . " CASE WHEN " . $wpdb->posts . ".post_title LIKE %s THEN 1 ELSE 0 END AS gd_titlematch, CASE WHEN " . $wpdb->posts . ".post_content LIKE %s THEN 1 ELSE 0 END AS gd_content", array($s, '%' . $s . '%', '%' . $s . '%'));
-		$fields .= $wpdb->prepare(", CASE WHEN " . $table . ".is_featured='1' THEN 1 ELSE 0 END AS gd_featured, CASE WHEN " . $wpdb->posts . ".post_title LIKE %s THEN 1 ELSE 0 END AS gd_exacttitle," . $gd_titlematch_part . " CASE WHEN ( " . $wpdb->posts . ".post_title LIKE %s OR " . $wpdb->posts . ".post_title LIKE %s OR " . $wpdb->posts . ".post_title LIKE %s OR " . $wpdb->posts . ".post_title LIKE %s ) THEN 1 ELSE 0 END AS gd_titlematch, CASE WHEN ( " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s ) THEN 1 ELSE 0 END AS gd_content", array($s, $s, $s . ' %', '% ' . $s . ' %', '% ' . $s, $s, $s . ' %', '% ' . $s . ' %', '% ' . $s));
+		$fields .= $wpdb->prepare(", CASE WHEN " . $table . ".is_featured='1' THEN 1 ELSE 0 END AS gd_featured, CASE WHEN " . $wpdb->posts . ".post_title LIKE %s THEN 1 ELSE 0 END AS gd_exacttitle," . $gd_titlematch_part . " CASE WHEN ( " . $wpdb->posts . ".post_title LIKE %s OR " . $wpdb->posts . ".post_title LIKE %s OR " . $wpdb->posts . ".post_title LIKE %s ) THEN 1 ELSE 0 END AS gd_titlematch, CASE WHEN ( " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s OR " . $wpdb->posts . ".post_content LIKE %s ) THEN 1 ELSE 0 END AS gd_content", array($s, $s, $s . '%', '% ' . $s . '%', $s, $s . ' %', '% ' . $s . ' %', '% ' . $s));
     }
     return $fields;
 }
 
 
-/*
-* Listing tables join filter *
-*/
+/**
+ * Listing tables join filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @global string $table Listing table name.
+ * @return string Modified join query.
+ */
 function geodir_posts_join($join)
 {
     global $wpdb, $geodir_post_type, $table, $table_prefix, $plugin_prefix;
@@ -407,10 +437,18 @@ function geodir_posts_join($join)
 }
 
 
-/*
-* Listing orderby filters *
-*/
-
+/**
+ * Listing orderby filters.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $wp_query WordPress Query object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @global string $table Listing table name.
+ * @param string $orderby The orderby query string.
+ * @return string Modified orderby query.
+ */
 function geodir_posts_orderby($orderby)
 {
     global $wpdb, $wp_query, $geodir_post_type, $table, $plugin_prefix, $snear, $default_sort;
@@ -473,16 +511,18 @@ function geodir_posts_orderby($orderby)
             $orderby = "$wpdb->posts.post_date asc, ";
             break;
         case 'low_review':
+        case 'rating_count_asc':
             $orderby = $table . ".rating_count ASC, " . $table . ".overall_rating ASC, ";
             break;
         case 'high_review':
+        case 'rating_count_desc':
 			$orderby = $table . ".rating_count DESC, " . $table . ".overall_rating DESC, ";
             break;
         case 'low_rating':
-            $orderby = "( " . $table . ".overall_rating  ) asc, ";
+            $orderby = "( " . $table . ".overall_rating  ) ASC, " . $table . ".rating_count ASC,  ";
             break;
         case 'high_rating':
-            $orderby = "( " . $table . ".overall_rating ) desc, ";
+            $orderby = " " . $table . ".overall_rating DESC, " . $table . ".rating_count DESC, ";
             break;
         case 'featured':
             $orderby = $table . ".is_featured asc, ";
@@ -531,6 +571,17 @@ function geodir_posts_orderby($orderby)
 }
 
 
+/**
+ * Listing orderby custom sort.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @param string $orderby The orderby query string.
+ * @param string $sort_by Sortby query string.
+ * @param string $table Listing table name.
+ * @return string Modified orderby query.
+ */
 function geodir_posts_order_by_custom_sort($orderby, $sort_by, $table)
 {
 
@@ -553,17 +604,20 @@ function geodir_posts_order_by_custom_sort($orderby, $sort_by, $table)
                 case 'post_date':
                 case 'comment_count':
 
-                    $orderby = "$wpdb->posts." . $sort_by . " " . $order . ", ";
+                    $orderby = "$wpdb->posts." . $sort_by . " " . $order . ", ".$table . ".overall_rating " . $order . ", ";
                     break;
 
                 case 'distance':
                     $orderby = $sort_by . " " . $order . ", ";
                     break;
 
+
                 // sort by rating
                 case 'overall_rating':
-                    $orderby = "( " . $table . "." . $sort_by . " ) " . $order . ", ";
+                    $orderby = " " . $table . "." . $sort_by . "  " . $order . ", " . $table . ".rating_count " . $order . ", ";
+
                     break;
+
 
                 default:
                     $orderby = $table . "." . $sort_by . " " . $order . ", ";
@@ -578,10 +632,14 @@ function geodir_posts_order_by_custom_sort($orderby, $sort_by, $table)
     return $orderby;
 }
 
-/*
-* Listing where filters *
-*/
-
+/**
+ * Listing where filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table Listing table name.
+ */
 function geodir_post_where()
 {
 
@@ -608,7 +666,7 @@ function geodir_post_where()
 
         }
 
-        if (!geodir_is_page('detail'))
+        //if (!geodir_is_page('detail'))
             add_filter('posts_where', 'geodir_default_where', 1);/**/
 
         //add_filter( 'user_has_cap', 'geodir_preview_post_cap', 10, 3 );// let subscribers edit their own posts
@@ -616,9 +674,16 @@ function geodir_post_where()
     }
 }
 
-/*
-* Preivepost cap *
-*/
+/**
+ * Let subscribers edit their own posts.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $allcaps An array of all the role's capabilities.
+ * @param array $caps Actual capabilities for meta capability.
+ * @param array $args Optional parameters passed to has_cap(), typically object ID.
+ * @return array Modified capabilities array.
+ */
 function geodir_preview_post_cap($allcaps, $caps, $args)
 {
     $user_id = get_current_user_id();
@@ -631,9 +696,15 @@ function geodir_preview_post_cap($allcaps, $caps, $args)
 }
 
 
-/*
-* Listing edit filter *
-*/
+/**
+ * Edit Listing where filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @param string $where The where query string.
+ * @return string Modified where query string.
+ */
 function geodir_edit_listing_where($where)
 {
     global $wpdb;
@@ -642,10 +713,17 @@ function geodir_edit_listing_where($where)
 }
 
 
-/*
-* Listing location filters *
-*/
-
+/**
+ * Listing location where filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @param string $where The where query string.
+ * @return string Modified where query string.
+ */
 function geodir_default_where($where)
 {
     global $wp_query, $wpdb;
@@ -696,10 +774,17 @@ function geodir_default_where($where)
 }
 
 
-/*
-* Listing search filter *
-*/
-
+/**
+ * Listing search where filter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @global string $table Listing table name.
+ * @param string $where The where query string.
+ * @return string Modified where query string.
+ */
 function searching_filter_where($where)
 {
 
@@ -727,7 +812,7 @@ function searching_filter_where($where)
     if (!empty($s_SA)) {
         foreach ($s_SA as $s_term) {
             //$better_search[] = " OR $wpdb->posts.post_title LIKE\"%$s_term%\" ";
-			$better_search[] = " OR ( $wpdb->posts.post_title LIKE \"$s_term\" OR $wpdb->posts.post_title LIKE \"$s_term %\" OR $wpdb->posts.post_title LIKE \"% $s_term %\" OR $wpdb->posts.post_title LIKE \"% $s_term\" ) ";
+			$better_search[] = " OR ( $wpdb->posts.post_title LIKE \"$s_term\" OR $wpdb->posts.post_title LIKE \"$s_term%\" OR $wpdb->posts.post_title LIKE \"% $s_term%\" ) ";
         }
     }
 
@@ -748,7 +833,7 @@ function searching_filter_where($where)
                 $keyword = trim($keyword);
                 if ($keyword != '') {
                     //$better_search_terms .= ' OR ' . $wpdb->posts . '.post_title LIKE "%' . $adv_search_val . '%"';
-					$better_search_terms .= ' OR ( ' . $wpdb->posts . '.post_title LIKE "' . $keyword . '" OR ' . $wpdb->posts . '.post_title LIKE "' . $keyword . ' %" OR ' . $wpdb->posts . '.post_title LIKE "% ' . $keyword . ' %" OR ' . $wpdb->posts . '.post_title LIKE "% ' . $keyword . '" )';
+					$better_search_terms .= ' OR ( ' . $wpdb->posts . '.post_title LIKE "' . $keyword . '" OR ' . $wpdb->posts . '.post_title LIKE "' . $keyword . '%" OR ' . $wpdb->posts . '.post_title LIKE "% ' . $keyword . '%" )';
                 }
             }
         }
@@ -761,8 +846,8 @@ function searching_filter_where($where)
 
     $content_where = $terms_where = '';
 	if ($s != '') {
-		$content_where = " OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s %\" OR $wpdb->posts.post_content LIKE \"% $s %\" OR $wpdb->posts.post_content LIKE \"% $s\") ";
-		$terms_where = " AND ($wpdb->terms.name LIKE \"$s\" OR $wpdb->terms.name LIKE \"$s %\" OR $wpdb->terms.name LIKE \"% $s %\" OR $wpdb->terms.name LIKE \"% $s\"  OR $wpdb->terms.name IN ($s_A)) ";
+		$content_where = " OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s%\" OR $wpdb->posts.post_content LIKE \"% $s%\") ";
+		$terms_where = " AND ($wpdb->terms.name LIKE \"$s\" OR $wpdb->terms.name LIKE \"$s%\" OR $wpdb->terms.name LIKE \"% $s%\" OR $wpdb->terms.name IN ($s_A)) ";
 	}
 		
     if ($snear != '') {
@@ -821,10 +906,16 @@ function searching_filter_where($where)
 }
 
 
-/*
-* Listing author filter *
-*/
-
+/**
+ * Where filter for author listing.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table Listing table name.
+ * @param string $where The where query string.
+ * @return string Modified where query string.
+ */
 function author_filter_where($where)
 {
 
@@ -861,7 +952,16 @@ function author_filter_where($where)
     return $where;
 }
 
-// advanced filter for popular post view widget
+/**
+ * advanced join filter for popular post view widget.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
+ * @global string $table Listing table name.
+ * @param string $join The join query.
+ * @return string Modified join query.
+ */
 function geodir_filter_widget_join($join)
 {
     global $wp_query, $table;
@@ -871,6 +971,16 @@ function geodir_filter_widget_join($join)
     return $join;
 }
 
+/**
+ * advanced where filter for popular post view widget.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
+ * @global string $table Listing table name.
+ * @param string $where The where query string.
+ * @return string Modified where query string.
+ */
 function geodir_filter_widget_where($where)
 {
     global $wp_query, $table;

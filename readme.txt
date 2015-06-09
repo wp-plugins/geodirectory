@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=payments
 Tags:  address book, addressbook, addresses, bio, biographies, bios, business, business directory plugin, business-directory, businesses, church, directories, directory, directory plugin, directory widget, geodirectory, googlemap, googlemaps, google maps, list, listings, lists, member directory, members directories, members directory, microformat, microformats, multisite, profile, profiles, staff, user, users, vcard, wordpress business directory, wordpress directory, wordpress directory plugin, yelp clone, tripadvisor clone, yellow pages clone, wordpress business directory plugin, wordpress directory theme, wordpress business directory theme, wordpress city directory plugin, wordpress local directory plugin
 Requires at least: 3.1
 Tested up to: 4.2.2
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -38,9 +38,11 @@ GeoDirectory was developed to work with any theme. If you need help getting your
 * GeoDirectory is 100% WPML compatible for multilanguage directories.
 * GeoDirectory is multisite compatible.
 * NEW - Theme Compatibility admin page to make it easier to set GD to properly work with any theme.
-* NEW - set of Shortcodes available
-* NEW - Yelp Like Best of Widget
+* NEW - set of Shortcodes available.
+* NEW - Yelp Like Best of Widget.
 * NEW - CSV bulk lisiting Import/Export/re-Import and update!   
+* NEW - Improved Google Analytics widget for listings owners.
+
 
 = GDF - Directory Theme Framework =
 
@@ -123,6 +125,10 @@ GeoDirectory comes with some dummy data you can use to see how listings look. Yo
 7. GD WordPress Admin Page.
 
 == Changelog ==
+
+= 1.4.8 =
+
+[GeoDirectory changelog for version 1.4.8](http://wpgeodirectory.com/change-logs/#v1.4.8).
 
 = 1.4.7 =
 

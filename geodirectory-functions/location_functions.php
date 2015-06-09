@@ -172,7 +172,7 @@ function geodir_get_country_dl($post_country = '', $prefix = '')
  * @since 1.0.0
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
- * @global string $plugin_prefix WordPress plugin prefix.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  */
 function geodir_location_form_submit()
 {
@@ -276,6 +276,11 @@ function geodir_add_new_location($location_info = array())
         $region_slug = create_location_slug($location_region);
         $city_slug = create_location_slug($location_city);
 
+        /**
+         * Filter add new location data.
+         *
+         * @since 1.0.0
+         */
         $geodir_location = (object)apply_filters('geodir_add_new_location', array('location_id' => 0,
             'country' => $location_country,
             'region' => $location_region,

@@ -66,6 +66,9 @@ if (!function_exists('geodir_save_listing')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global object $post The current post object.
+     * @global object $current_user Current user object.
      * @param array $request_info Array of request info arguments.
      * @param bool $dummy Optional. Is this a dummy listing? Default false.
      * @return int|string|WP_Error Created post id.
@@ -457,6 +460,9 @@ if (!function_exists('geodir_save_listing')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $post The current post object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param int|string $post_id Optional. The post ID.
  * @return object|bool Returns full post details as an object. If no details returns false.
  */
@@ -502,6 +508,8 @@ if (!function_exists('geodir_save_post_info')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $post_id The post ID.
      * @param array $postinfo_array Post info that needs to be saved in detail table.
      * @return bool
@@ -599,6 +607,8 @@ if (!function_exists('geodir_save_post_meta')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $post_id The post ID.
      * @param string $postmeta Detail table column name.
      * @param string $meta_value Detail table column value.
@@ -650,6 +660,8 @@ if (!function_exists('geodir_delete_post_meta')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $post_id The post ID.
      * @param string $postmeta Detail table column name.
      * @todo check if this is depreciated
@@ -712,6 +724,8 @@ if (!function_exists('geodir_get_post_meta')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $post_id The post ID.
      * @param string $meta_key The meta key to retrieve.
      * @param bool $single Optional. Whether to return a single value. Default false.
@@ -754,6 +768,9 @@ if (!function_exists('geodir_save_post_images')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
+     * @global object $current_user Current user object.
      * @param int $post_id The post ID.
      * @param array $post_image Post image urls as an array.
      * @param bool $dummy Optional. Is this a dummy listing? Default false.
@@ -1003,6 +1020,7 @@ if (!function_exists('geodir_save_post_images')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $current_user Current user object.
  **/
 function geodir_remove_temp_images()
 {
@@ -1098,6 +1116,9 @@ if (!function_exists('geodir_get_featured_image')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global object $post The current post object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int|string $post_id The post ID.
      * @param string $size Optional. Thumbnail size. Default: thumbnail.
      * @param bool $no_image Optional. Do you want to return the default image when no image is available? Default: false.
@@ -1243,6 +1264,7 @@ if (!function_exists('geodir_get_images')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
      * @param int $post_id The post ID.
      * @param string $img_size Optional. Thumbnail size.
      * @param bool $no_images Optional. Do you want to return the default image when no image is available? Default: false.
@@ -1436,8 +1458,10 @@ if (!function_exists('geodir_set_post_terms')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $post_id The post ID.
-     * @param array $terms An array of object terms.
+     * @param array $terms An array of term objects.
      * @param array $tt_ids An array of term taxonomy IDs.
      * @param string $taxonomy Taxonomy slug.
      */
@@ -1629,6 +1653,7 @@ if (!function_exists('geodir_get_infowindow_html')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global array $geodir_addon_list List of active GeoDirectory extensions.
      * @param object $postinfo_obj The post details object.
      * @param string $post_preview Is this a post preview?.
      * @return mixed|string|void
@@ -1878,6 +1903,8 @@ if (!function_exists('geodir_change_post_status')) {
     /**
      * Change post status of a post.
      *
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int|string $post_id The post ID.
      * @param string $status New post status. Ex: draft, publish etc.
      */
@@ -1905,6 +1932,7 @@ if (!function_exists('geodir_change_post_status')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param int $pid The post ID.
  * @param string $status Post status. Ex: draft, publish etc.
  */
@@ -1925,6 +1953,7 @@ function geodir_set_post_status($pid, $status)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param string $new_status New post status. Ex: draft, publish etc.
  * @param string $old_status Old post status. Ex: draft, publish etc.
  * @param object $post The post object.
@@ -1948,6 +1977,8 @@ if (!function_exists('geodir_update_listing_info')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $updatingpost The updating post ID.
      * @param int $temppost The temporary post ID.
      * @todo fix post_id variable
@@ -1994,8 +2025,11 @@ if (!function_exists('geodir_delete_listing_info')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $wpdb WordPress Database object.
+     * @global string $plugin_prefix Geodirectory plugin table prefix.
      * @param int $deleted_postid The post ID.
      * @param bool $force Optional. Do you want to force delete it? Default: false.
+     * @return bool|void
      */
     function geodir_delete_listing_info($deleted_postid, $force = false)
     {
@@ -2054,6 +2088,7 @@ if (!function_exists('geodir_add_to_favorite')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $current_user Current user object.
      * @param int $post_id The post ID.
      */
     function geodir_add_to_favorite($post_id)
@@ -2129,6 +2164,7 @@ if (!function_exists('geodir_remove_from_favorite')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $current_user Current user object.
      * @param int $post_id The post ID.
      */
     function geodir_remove_from_favorite($post_id)
@@ -2208,6 +2244,8 @@ if (!function_exists('geodir_favourite_html')) {
      *
      * @since 1.0.0
      * @package GeoDirectory
+     * @global object $current_user Current user object.
+     * @global object $post The current post object.
      * @param int $user_id The user ID.
      * @param int $post_id The post ID.
      */
@@ -2299,6 +2337,8 @@ if (!function_exists('geodir_favourite_html')) {
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param object|array $term category / term object that need to be processed.
  * @return bool|int|null|string Post count.
  */
@@ -2384,6 +2424,7 @@ function geodir_allow_post_type_frontend()
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wp_query WordPress Query object.
  * @param int $length Optional. Old length.
  * @return mixed|void Returns length.
  */
@@ -2406,6 +2447,7 @@ function geodir_excerpt_length($length)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $post The current post object.
  * @param string $more Optional. Old string.
  * @return string Returns read more link.
  */
@@ -2421,6 +2463,8 @@ function geodir_excerpt_more($more)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param string $term_id The term ID as string.
  * @param int $tt_id The term taxonomy ID.
  * @param string $taxonomy The taxonomy slug.
@@ -2532,6 +2576,7 @@ function geodir_lisiting_belong_to_user($listing_id, $user_id)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $current_user Current user object.
  * @param int|string $listing_id The post ID.
  * @param bool $exclude_admin Optional. Do you want to exclude admin from the check?. Default true.
  * @return bool
@@ -2557,6 +2602,7 @@ function geodir_listing_belong_to_current_user($listing_id = '', $exclude_admin 
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param string $file. The File path.
  * @return string File path if valid. Else empty string.
  */
@@ -2583,6 +2629,8 @@ function geodir_only_supportable_attachments_remove($file)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  * @param int $post_id The post ID.
  */
 function geodir_set_wp_featured_image($post_id)
@@ -2668,6 +2716,9 @@ function geodir_set_wp_featured_image($post_id)
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
  */
 function gd_copy_original_translation()
 {
@@ -2730,6 +2781,7 @@ add_action('wp_ajax_gd_copy_original_translation', 'gd_copy_original_translation
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
  * @param string $listing_type The listing post type.
  * @return mixed|void|array custom fields info as an array.
  */

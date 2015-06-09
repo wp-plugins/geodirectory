@@ -4,6 +4,8 @@
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global array $geodir_addon_list List of active GeoDirectory extensions.
+ * @global string $plugin_file_name Plugin main file name. 'geodirectory/geodirectory.php'.
  */
 
 /**
@@ -11,6 +13,8 @@
  *
  * This is used to run GeoDirectory specific functions via ajax.
  *
+ * @since 1.0.0
+ * @package GeoDirectory
  * @return string The GeoDirectory ajax URL.
  */
 function geodir_get_ajax_url()
@@ -211,6 +215,8 @@ add_action('wp_footer', 'geodir_add_sharelocation_scripts');
 /**
  * Save and update GeoDirectory navigation settings per theme.
  *
+ * @since 1.0.0
+ * @package GeoDirectory
  * @param string $newname The theme name.
  * @ignore
  */
@@ -556,13 +562,468 @@ function geodir_detail_page_google_analytics()
         ?>
 
         <script type="text/javascript">
+            ga_data1 = false;
+            ga_data2 = false;
+            ga_data3 = false;
+            ga_data4 = false;
+            ga_data5 = false;
+            ga_data6 = false;
+            ga_au = 0;
             jQuery(document).ready(function () {
-                jQuery("#ga_stats").load("<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>");
+
+                gdga_weekVSweek();
+
+                // Set some global Chart.js defaults.
+                Chart.defaults.global.animationSteps = 60;
+                Chart.defaults.global.animationEasing = 'easeInOutQuart';
+                Chart.defaults.global.responsive = true;
+                Chart.defaults.global.maintainAspectRatio = false;
+
+                gdga_realtime();
             });
+
+            function gdga_weekVSweek(){
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=thisweek", success: function(result){
+                    ga_data1 = jQuery.parseJSON(result);
+                    if(ga_data1.error){jQuery('#ga_stats').html(result);return;}
+                    gd_renderWeekOverWeekChart();
+                }});
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=lastweek", success: function(result){
+                    ga_data2 = jQuery.parseJSON(result);
+                    gd_renderWeekOverWeekChart();
+                }});
+
+
+            }
+
+            function gdga_yearVSyear(){
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=thisyear", success: function(result){
+                    ga_data3 = jQuery.parseJSON(result);
+                    if(ga_data3.error){jQuery('#ga_stats').html(result);return;}
+
+                    gd_renderYearOverYearChart()
+                }});
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=lastyear", success: function(result){
+                    ga_data4 = jQuery.parseJSON(result);
+                    gd_renderYearOverYearChart()
+                }});
+
+
+            }
+
+            function gdga_country(){
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=country", success: function(result){
+                    ga_data5 = jQuery.parseJSON(result);
+                    if(ga_data5.error){jQuery('#ga_stats').html(result);return;}
+                    gd_renderTopCountriesChart();
+                }});
+
+            }
+
+            function gdga_realtime(){
+
+                jQuery.ajax({url: "<?php echo get_bloginfo('url').'/?ptype=ga&ga_page='.$page_url; ?>&ga_type=realtime", success: function(result){
+                    ga_data6 = jQuery.parseJSON(result);
+                    if(ga_data6.error){jQuery('#ga_stats').html(result);return;}
+                    gd_renderRealTime();
+                }});
+
+            }
+
+            function gd_renderRealTime(){
+                ga_au_old = ga_au;
+
+                ga_au = ga_data6.totalsForAllResults["rt:activeUsers"];
+
+                    if(ga_au>ga_au_old){
+                        jQuery('.gd-ActiveUsers').addClass( "is-increasing");
+                    }
+
+                    if(ga_au<ga_au_old){
+                        jQuery('.gd-ActiveUsers').addClass( "is-decreasing");
+                    }
+                    jQuery('.gd-ActiveUsers-value').html(ga_au);
+
+                // check for new users every 5 seconds
+                setTimeout(function (){
+                    jQuery('.gd-ActiveUsers').removeClass( "is-increasing is-decreasing" );
+                    gdga_realtime();
+                }, 5000);
+            }
+
+
+            /**
+             * Draw the a chart.js doughnut chart with data from the specified view that
+             * compares sessions from mobile, desktop, and tablet over the past two
+             * weeks.
+             */
+            function gd_renderTopCountriesChart(){
+
+                if(ga_data5){
+                    response = ga_data5;
+                    ga_data5 = false;
+                }else{
+                    return;
+                }
+
+                jQuery('#gdga-chart-container').show();
+                jQuery('#gdga-legend-container').show();
+                jQuery('#gdga-loader-icon').hide();
+                jQuery('#gdga-select-analytic').show();
+
+
+                        var data = [];
+                        var colors = ['#4D5360','#949FB1','#D4CCC5','#E2EAE9','#F7464A'];
+
+                        response.rows.forEach(function(row, i) {
+                            data.push({
+                                label: row[0],
+                                value: +row[1],
+                                color: colors[i]
+                            });
+                        });
+
+                        new Chart(makeCanvas('gdga-chart-container')).Doughnut(data);
+                        generateLegend('gdga-legend-container', data);
+
+            }
+
+
+            /**
+             * Draw the a chart.js bar chart with data from the specified view that
+             * overlays session data for the current year over session data for the
+             * previous year, grouped by month.
+             */
+            function gd_renderYearOverYearChart(){
+
+                if(ga_data3 && ga_data4){
+                    thisYear = ga_data3;
+                    lastYear = ga_data4;
+                    ga_data3 = false;
+                    ga_data4 = false;
+
+                }else{
+                    return;
+                }
+
+                jQuery('#gdga-chart-container').show();
+                jQuery('#gdga-legend-container').show();
+                jQuery('#gdga-loader-icon').hide();
+                jQuery('#gdga-select-analytic').show();
+
+                // Adjust `now` to experiment with different days, for testing only...
+                var now = moment(); // .subtract(3, 'day');
+
+
+
+                Promise.all([thisYear, lastYear]).then(function(results) {
+                    var data1 = results[0].rows.map(function(row) { return +row[2]; });
+                    var data2 = results[1].rows.map(function(row) { return +row[2]; });
+                    //var labelsN = results[0].rows.map(function(row) { return +row[1]; });
+
+
+
+                    var labels = ['<?php _e('Jan', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Feb', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Mar', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Apr', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('May', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Jun', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Jul', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Aug', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Sep', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Oct', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Nov', GEODIRECTORY_TEXTDOMAIN);?>',
+                        '<?php _e('Dec', GEODIRECTORY_TEXTDOMAIN);?>'];
+
+
+                    // Ensure the data arrays are at least as long as the labels array.
+                    // Chart.js bar charts don't (yet) accept sparse datasets.
+                    for (var i = 0, len = labels.length; i < len; i++) {
+                        if (data1[i] === undefined) data1[i] = null;
+                        if (data2[i] === undefined) data2[i] = null;
+                    }
+
+
+                    var data = {
+                        labels : labels,
+                        datasets : [
+                            {
+                                label: '<?php _e('Last Year', GEODIRECTORY_TEXTDOMAIN);?>',
+                                fillColor : "rgba(220,220,220,0.5)",
+                                strokeColor : "rgba(220,220,220,1)",
+                                data : data2
+                            },
+                            {
+                                label: '<?php _e('This Year', GEODIRECTORY_TEXTDOMAIN);?>',
+                                fillColor : "rgba(151,187,205,0.5)",
+                                strokeColor : "rgba(151,187,205,1)",
+                                data : data1
+                            }
+                        ]
+                    };
+
+                    new Chart(makeCanvas('gdga-chart-container')).Bar(data);
+                    generateLegend('gdga-legend-container', data.datasets);
+                })
+                    .catch(function(err) {
+                        console.error(err.stack);
+                    })
+            }
+
+            /**
+             * Draw the a chart.js line chart with data from the specified view that
+             * overlays session data for the current week over session data for the
+             * previous week.
+             */
+            function gd_renderWeekOverWeekChart() {
+
+                if(ga_data1 && ga_data2){
+                    thisWeek = ga_data1;
+                    lastWeek = ga_data2;
+                    ga_data1 = false;
+                    ga_data2 = false;
+                }else{
+                    return;
+                }
+
+            jQuery('#gdga-chart-container').show();
+            jQuery('#gdga-legend-container').show();
+            jQuery('#gdga-loader-icon').hide();
+                jQuery('#gdga-select-analytic').show();
+
+
+
+                // Adjust `now` to experiment with different days, for testing only...
+                var now = moment();
+
+                Promise.all([thisWeek, lastWeek]).then(function(results) {
+
+                    var data1 = results[0].rows.map(function(row) { return +row[2]; });
+                    var data2 = results[1].rows.map(function(row) { return +row[2]; });
+                    var labels = results[1].rows.map(function(row) { return +row[0]; });
+
+                    labels = labels.map(function(label) {
+                        return moment(label, 'YYYYMMDD').format('ddd');
+                    });
+
+                    var data = {
+                        labels : labels,
+                        datasets : [
+                            {
+                                label: '<?php _e('Last Week', GEODIRECTORY_TEXTDOMAIN);?>',
+                                fillColor : "rgba(220,220,220,0.5)",
+                                strokeColor : "rgba(220,220,220,1)",
+                                pointColor : "rgba(220,220,220,1)",
+                                pointStrokeColor : "#fff",
+                                data : data2
+                            },
+                            {
+                                label: '<?php _e('This Week', GEODIRECTORY_TEXTDOMAIN);?>',
+                                fillColor : "rgba(151,187,205,0.5)",
+                                strokeColor : "rgba(151,187,205,1)",
+                                pointColor : "rgba(151,187,205,1)",
+                                pointStrokeColor : "#fff",
+                                data : data1
+                            }
+                        ]
+                    };
+
+                    new Chart(makeCanvas('gdga-chart-container')).Line(data);
+                    generateLegend('gdga-legend-container', data.datasets);
+                });
+            }
+
+            /**
+             * Create a new canvas inside the specified element. Set it to be the width
+             * and height of its container.
+             * @param {string} id The id attribute of the element to host the canvas.
+             * @return {RenderingContext} The 2D canvas context.
+             */
+            function makeCanvas(id) {
+                var container = document.getElementById(id);
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+
+                container.innerHTML = '';
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
+                container.appendChild(canvas);
+
+                return ctx;
+            }
+
+            /**
+             * Create a visual legend inside the specified element based off of a
+             * Chart.js dataset.
+             * @param {string} id The id attribute of the element to host the legend.
+             * @param {Array.<Object>} items A list of labels and colors for the legend.
+             */
+            function generateLegend(id, items) {
+                var legend = document.getElementById(id);
+                legend.innerHTML = items.map(function(item) {
+                    var color = item.color || item.fillColor;
+                    var label = item.label;
+                    return '<li><i style="background:' + color + '"></i>' + label + '</li>';
+                }).join('');
+            }
+
+
+
+            function gdga_select_option(){
+
+
+                jQuery('#gdga-select-analytic').hide();
+                jQuery('#gdga-loader-icon').show();
+
+                gaType = jQuery('#gdga-select-analytic').val();
+
+                if(gaType=='weeks'){
+                    gdga_weekVSweek();
+
+                }else if(gaType=='years'){
+                    gdga_yearVSyear();
+
+                }else if(gaType=='country'){
+                    gdga_country();
+                }
+
+            }
+
+
         </script>
-        <p id="ga_stats"><img alt="loader icon"
-                              src="<?php echo geodir_plugin_url() . '/geodirectory-assets/images/ajax-loader.gif'; ?>"/>
-        </p>
+
+        <style>
+            #ga_stats #ga-analytics-title{
+                float: left;
+                font-weight: bold;
+            }
+
+            #ga_stats #gd-active-users-container{
+                float: right;
+            }
+            .Chartjs {
+                font-size: .85em
+            }
+
+            .Chartjs-figure {
+                height: 200px;
+                width: 100%;
+                display: none;
+            }
+
+            .Chartjs-legend {
+                list-style: none;
+                margin: 0;
+                padding: 1em 0 0;
+                text-align: center;
+                width: 100%;
+                display: none;
+            }
+
+            .Chartjs-legend>li {
+                display: inline-block;
+                padding: .25em .5em
+            }
+
+            .Chartjs-legend>li>i {
+                display: inline-block;
+                height: 1em;
+                margin-right: .5em;
+                vertical-align: -.1em;
+                width: 1em
+            }
+
+            @media (min-width: 570px) {
+                .Chartjs-figure {
+                    margin-right:1.5em
+                }
+            }
+
+            .gd-ActiveUsers {
+                background: #f3f2f0;
+                border: 1px solid #d4d2d0;
+                border-radius: 4px;
+                font-weight: 300;
+                padding: .5em 1.5em;
+                white-space: nowrap
+            }
+
+            .gd-ActiveUsers-value {
+                display: inline-block;
+                font-weight: 600;
+                margin-right: -.25em
+            }
+
+            .gd-ActiveUsers.is-increasing {
+                -webkit-animation: increase 3s;
+                animation: increase 3s
+            }
+
+            .gd-ActiveUsers.is-decreasing {
+                -webkit-animation: decrease 3s;
+                animation: decrease 3s
+            }
+
+            @-webkit-keyframes increase {
+                10% {
+                    background-color: #eaffea;
+                    border-color: hsla(120,100%,25%,.5);
+                    color: hsla(120,100%,25%,1)
+                }
+            }
+
+            @keyframes increase {
+                10% {
+                    background-color: #eaffea;
+                    border-color: hsla(120,100%,25%,.5);
+                    color: hsla(120,100%,25%,1)
+                }
+            }
+
+            @-webkit-keyframes decrease {
+                10% {
+                    background-color: #ffeaea;
+                    border-color: hsla(0,100%,50%,.5);
+                    color: red
+                }
+            }
+
+            @keyframes decrease {
+                10% {
+                    background-color: #ffeaea;
+                    border-color: hsla(0,100%,50%,.5);
+                    color: red
+                }
+            }
+        </style>
+        <script src="https://ga-dev-tools.appspot.com/public/javascript/Chart.min.js"></script>
+        <script src="https://ga-dev-tools.appspot.com/public/javascript/moment.min.js"></script>
+
+
+        <span id="ga_stats">
+            <div id="ga-analytics-title"><?php _e("Analytics", GEODIRECTORY_TEXTDOMAIN);?></div>
+
+            <div id="gd-active-users-container">
+                <div class="gd-ActiveUsers"><?php _e("Active Users:", GEODIRECTORY_TEXTDOMAIN);?>
+                    <b class="gd-ActiveUsers-value">0</b>
+                </div>
+            </div>
+
+            <select id="gdga-select-analytic" onchange="gdga_select_option();" style="display: none;">
+                <option value="weeks"><?php _e("Last Week vs This Week", GEODIRECTORY_TEXTDOMAIN);?></option>
+                <option value="years"><?php _e("This Year vs Last Year", GEODIRECTORY_TEXTDOMAIN);?></option>
+                <option value="country"><?php _e("Top Countries", GEODIRECTORY_TEXTDOMAIN);?></option>
+            </select>
+            <img alt="loader icon" id="gdga-loader-icon" src="<?php echo geodir_plugin_url() . '/geodirectory-assets/images/ajax-loader.gif'; ?>" />
+            <div class="Chartjs-figure" id="gdga-chart-container"></div>
+            <ol class="Chartjs-legend" id="gdga-legend-container"></ol>
+        </span>
 
     <?php
     }
@@ -590,7 +1051,7 @@ function geodir_detail_page_google_analytics()
  *
  * @global WP_Post|null $post The current post, if available.
  * @global bool $preview True if the current page is add listing preview page. False if not.
- * @global object $post_images An array of post image objects of current post images if exist.
+ * @global object $post_images Image objects of current post if available.
  * @since 1.0.0
  * @package GeoDirectory
  */
@@ -742,6 +1203,15 @@ function geodir_localize_all_js_msg()
     } elseif (!str_replace("https", "http", admin_url('admin-ajax.php')) && !empty($_SERVER['HTTPS'])) {
         $ajax_url = str_replace("http", "https", admin_url('admin-ajax.php'));
     }
+	
+	/**
+	 * Filter the allowed image type extensions for post images.
+	 *
+	 * @since 1.4.7.1
+	 * @param string $allowed_img_types The image type extensions array.
+	 */
+	$allowed_img_types = apply_filters('geodir_allowed_post_image_exts', array('jpg', 'jpeg', 'jpe', 'gif', 'png'));
+	
     $arr_alert_msg = array(
         'geodir_plugin_url' => geodir_plugin_url(),
         'geodir_admin_ajax_url' => $ajax_url,
@@ -787,8 +1257,9 @@ function geodir_localize_all_js_msg()
         'geodir_err_file_upload_limit' => __('You have reached your upload limit of %s files.', GEODIRECTORY_TEXTDOMAIN),
         'geodir_err_pkg_upload_limit' => __('You may only upload %s files with this package, please try again.', GEODIRECTORY_TEXTDOMAIN),
         'geodir_action_remove' => __('Remove', GEODIRECTORY_TEXTDOMAIN),
-		'geodir_upload_allowed_files' => __('Allowed files', GEODIRECTORY_TEXTDOMAIN),
+		'geodir_txt_all_files' => __('Allowed files', GEODIRECTORY_TEXTDOMAIN),
 		'geodir_err_file_type' => __('File type error. Allowed file types: %s', GEODIRECTORY_TEXTDOMAIN),
+		'gd_allowed_img_types' => !empty($allowed_img_types) ? implode(',', $allowed_img_types) : '',
     );
 
     /**
@@ -849,6 +1320,8 @@ add_action('switch_theme', 'geodir_store_sidebars');
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global array $geodir_sidebars List of geodirectory sidebars.
+ * @global array $sidebars_widgets List of geodirectory sidebar widgets.
  */
 function geodir_store_sidebars()
 {
@@ -875,6 +1348,13 @@ function geodir_store_sidebars()
 }
 
 add_action('after_switch_theme', 'geodir_restore_sidebars');
+/**
+ * Restore sidebars.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global array $sidebars_widgets List of geodirectory sidebar widgets.
+ */
 function geodir_restore_sidebars()
 {
     global $sidebars_widgets;
@@ -908,6 +1388,13 @@ function geodir_restore_sidebars()
 }
 
 add_action('geodir_after_listing_post_gridview', 'geodir_after_listing_post_gridview');
+/**
+ * Set gridview columns value.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global string $gridview_columns The girdview style of the listings.
+ */
 function geodir_after_listing_post_gridview()
 {
     global $gridview_columns;
@@ -928,6 +1415,16 @@ function geodir_script_loader_src($url)
 }*/
 
 add_filter('clean_url', 'so_handle_038', 99, 3);
+/**
+ * Clean url.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $url Url.
+ * @param string $original_url Original url.
+ * @param string $_context Context.
+ * @return string Modified url.
+ */
 function so_handle_038($url, $original_url, $_context)
 {
     if (strstr($url, "maps.google.com/maps/api/js") !== false) {
@@ -939,6 +1436,13 @@ function so_handle_038($url, $original_url, $_context)
 
 
 add_action('geodir_after_main_form_fields', 'geodir_after_main_form_fields', 1);
+/**
+ * Add html after main form fields.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
+ */
 function geodir_after_main_form_fields()
 {
 
@@ -977,6 +1481,21 @@ function geodir_after_main_form_fields()
 
 add_filter('geodir_detail_page_tab_is_display', 'geodir_detail_page_tab_is_display', 0, 2);
 
+/**
+ * Check whether custom field should be displayed or not, on the details page tab.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
+ * @global object $post_images Image objects of current post if available.
+ * @global string $video The video embed content.
+ * @global string $special_offers Special offers content.
+ * @global string $related_listing Related listing html.
+ * @global string $geodir_post_detail_fields Detail field html.
+ * @param bool $is_display Old display value.
+ * @param string $tab Tab type.
+ * @return bool New display value. If display returns true.
+ */
 function geodir_detail_page_tab_is_display($is_display, $tab)
 {
 
@@ -1005,13 +1524,19 @@ function geodir_detail_page_tab_is_display($is_display, $tab)
 }
 
 
-/*======================================*/
-/*	Add an action to show a message on core plugin row for deactivation. */
-/*=======================================*/
 global $plugin_file_name;
 add_action('after_plugin_row_' . $plugin_file_name, 'geodir_after_core_plugin_row', 3, 3);
 
 
+/**
+ * Add an action to show a message on core plugin row for deactivation.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $plugin_file Plugin file path.
+ * @param array $plugin_data Plugin data.
+ * @param string $status Plugin status.
+ */
 function geodir_after_core_plugin_row($plugin_file, $plugin_data, $status)
 {
     //echo $plugin_file . " " .  $plugin_data . " " . $status ;
@@ -1025,11 +1550,17 @@ function geodir_after_core_plugin_row($plugin_file, $plugin_data, $status)
 }
 
 
-/* ----------- Geodirectory updated custom field table(add field and change show in sidebar value in db) */
-
 add_action('wp', 'geodir_changes_in_custom_fields_table');
 add_action('wp_admin', 'geodir_changes_in_custom_fields_table');
 
+/**
+ * Geodirectory updated custom field table(add field and change show in sidebar value in db).
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ */
 function geodir_changes_in_custom_fields_table() {
     global $wpdb, $plugin_prefix;
 	
@@ -1114,6 +1645,16 @@ function geodir_changes_in_custom_fields_table() {
 
 
 add_filter('geodir_location_slug_check', 'geodir_location_slug_check');
+/**
+ * Check location slug.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @param string $slug Term slug.
+ * @return string Modified term slug.
+ */
 function geodir_location_slug_check($slug)
 {
 
@@ -1143,6 +1684,18 @@ add_action('edited_term', 'geodir_update_term_slug', '1', 3);
 add_action('create_term', 'geodir_update_term_slug', '1', 3);
 
 
+/**
+ * Update term slug.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @param int|string $term_id The term ID.
+ * @param int $tt_id term Taxonomy ID.
+ * @param string $taxonomy Taxonomy slug.
+ */
 function geodir_update_term_slug($term_id, $tt_id, $taxonomy)
 {
 
@@ -1156,6 +1709,7 @@ function geodir_update_term_slug($term_id, $tt_id, $taxonomy)
      * Filter if a term slug exists.
      *
      * @since 1.0.0
+     * @package GeoDirectory
      * @param bool $bool Default: false.
      * @param string $slug The term slug.
      * @param int $term_id The term ID.
@@ -1186,6 +1740,18 @@ function geodir_update_term_slug($term_id, $tt_id, $taxonomy)
 
 
 add_filter('geodir_term_slug_is_exists', 'geodir_term_slug_is_exists', 0, 3); //in core plugin
+/**
+ * Check whether a term slug exists or not.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $table_prefix WordPress Database Table prefix.
+ * @param bool $slug_exists Default: false.
+ * @param string $slug Term slug.
+ * @param int $term_id The term ID.
+ * @return bool true when exists. false when not exists.
+ */
 function geodir_term_slug_is_exists($slug_exists, $slug, $term_id)
 {
 
@@ -1208,6 +1774,16 @@ function geodir_term_slug_is_exists($slug_exists, $slug, $term_id)
 
 
 add_filter('wp_title', 'geodir_custom_page_title', 100, 2);
+/**
+ * Set custom page title.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp WordPress object.
+ * @param string $title Old title.
+ * @param string $sep Title separator.
+ * @return string Modified title.
+ */
 function geodir_custom_page_title($title = '', $sep = '')
 {
     global $wp;
@@ -1217,6 +1793,7 @@ function geodir_custom_page_title($title = '', $sep = '')
          * Filter the pae title separator.
          *
          * @since 1.0.0
+         * @package GeoDirectory
          * @param string $sep The separator, default: `|`.
          */
         $sep = apply_filters('geodir_page_title_separator', '|');
@@ -1228,6 +1805,29 @@ function geodir_custom_page_title($title = '', $sep = '')
         $title = $sitename . ' ' . $sep . ' ' . $site_description;
     }
 
+    if (is_search() && isset($_REQUEST['geodir_search'])) {
+        $all_postypes = geodir_get_posttypes();
+        $keyword = esc_sql(strip_tags(get_query_var('s')));
+        $stype = esc_sql(strip_tags($_REQUEST['stype']));
+        $snear = esc_sql(strip_tags($_REQUEST['snear']));
+
+        if ($stype && in_array($stype, $all_postypes)) {
+            $title = $keyword;
+
+            if (!empty($stype)) {
+                $posttype_obj = get_post_type_object($stype);
+                $title = $title . ' ' . $sep . ' ' . ucfirst($posttype_obj->labels->name);
+            }
+
+            if (!empty($snear)) {
+                $title = $title . ' ' . $sep . ' ' . __('Near', GEODIRECTORY_TEXTDOMAIN) . ' ' . $snear;
+            }
+
+            $sitename = get_bloginfo('name');
+            $title = $title . ' ' . $sep . ' ' . __('Search Results', GEODIRECTORY_TEXTDOMAIN) . ' ' . $sep . ' ' . $sitename;
+
+        }
+     }
     //print_r($wp->query_vars) ;
     if (isset($wp->query_vars['pagename']) && $wp->query_vars['pagename'] != '')
         $page = get_page_by_path($wp->query_vars['pagename']);
@@ -1252,10 +1852,14 @@ function geodir_custom_page_title($title = '', $sep = '')
 }
 
 
-/* --- set attachments for all geodir posts --- */
-
 //add_action('init', 'geodir_set_post_attachment'); // we need to make a tool somwhere to run this function maybe via ajax or something in batch form, it is crashing servers with lots of listings
 
+/**
+ * set attachments for all geodir posts.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_set_post_attachment()
 {
 
@@ -1293,6 +1897,12 @@ function geodir_set_post_attachment()
 /*   --------- geodir remove url seperator ------- */
 
 add_action('init', 'geodir_remove_url_seperator');
+/**
+ * Remove url separator.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_remove_url_seperator()
 {
 
@@ -1314,6 +1924,14 @@ function geodir_remove_url_seperator()
 
 add_filter('geodir_permalink_settings', 'geodir_remove_url_seperator_form_permalink_settings', 0, 1);
 
+/**
+ * Remove url separator from permalink settings.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $permalink_arr The permalink array.
+ * @return array Modified permalink array.
+ */
 function geodir_remove_url_seperator_form_permalink_settings($permalink_arr)
 {
 
@@ -1331,6 +1949,15 @@ function geodir_remove_url_seperator_form_permalink_settings($permalink_arr)
 if (!is_admin()) {
     add_filter('posts_results', 'geodir_set_status_draft_to_publish_for_own_post');
 }
+/**
+ * Set status from draft to publish.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp WordPress object.
+ * @param object $post Post object.
+ * @return object Modified post object.
+ */
 function geodir_set_status_draft_to_publish_for_own_post($post)
 {
     global $wp;
@@ -1344,9 +1971,16 @@ function geodir_set_status_draft_to_publish_for_own_post($post)
 }
 
 
-/* ----- Detail Page Tab Headings Change ---- */
-
 add_filter('geodir_detail_page_tab_list_extend', 'geodir_detail_page_tab_headings_change');
+/**
+ * Detail Page Tab Headings Change.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @param array $tabs_arr Tabs array.
+ * @return array Modified tabs array.
+ */
 function geodir_detail_page_tab_headings_change($tabs_arr)
 {
 
@@ -1381,6 +2015,12 @@ function geodir_detail_page_tab_headings_change($tabs_arr)
 }
 
 add_action('init', 'geodir_remove_template_redirect_actions', 100);
+/**
+ * Remove template redirect options.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_remove_template_redirect_actions()
 {
     if (isset($_REQUEST['geodir_signup'])) {
@@ -1391,8 +2031,18 @@ function geodir_remove_template_redirect_actions()
 
 add_filter('wpseo_title', 'geodir_post_type_archive_title', 11, 1);
 
-/// add loction variables in geodirectory title parameter 
 add_filter('post_type_archive_title', 'geodir_post_type_archive_title', 10, 1);
+/**
+ * add location variables in geodirectory title parameter.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $wp_query WordPress Query object.
+ * @global object $wp WordPress object.
+ * @param string $title The title parameter.
+ * @return string Modified post title.
+ */
 function geodir_post_type_archive_title($title)
 {
     global $wp_query, $wp, $wpdb;
@@ -1507,6 +2157,16 @@ function geodir_post_type_archive_title($title)
 }
 
 add_filter('single_post_title', 'geodir_single_post_title', 10, 2);
+/**
+ * add location variables in geodirectory title parameter for single post.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wp WordPress object.
+ * @param string $title The title parameter.
+ * @param object $post Post object.
+ * @return string Modified post title.
+ */
 function geodir_single_post_title($title, $post)
 {
     global $wp;
@@ -1565,6 +2225,16 @@ function geodir_single_post_title($title, $post)
 
 add_action('delete_attachment', 'geodirectory_before_featured_image_delete');
 
+/**
+ * temp function to delete media post.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @param int $attachment_id Attachment ID.
+ * @return bool|void Returns false on failure.
+ */
 function geodirectory_before_featured_image_delete($attachment_id)
 {
 
@@ -1619,6 +2289,14 @@ function geodirectory_before_featured_image_delete($attachment_id)
 
 //add_action('wp', 'geodir_temp_set_post_attachment'); //WTF 
 
+/**
+ * temp function to set post attachment.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ */
 function geodir_temp_set_post_attachment()
 {
 
@@ -1650,7 +2328,7 @@ function geodir_temp_set_post_attachment()
                         if ($file_info['dirname'] != '.' && $file_info['dirname'] != '..')
                             $sub_dir = stripslashes_deep($file_info['dirname']);
 
-                        $uploads = wp_upload_dir(trim($sub_dir, '/')); // Array of key => value pairs	
+                        $uploads = wp_upload_dir(trim($sub_dir, '/')); // Array of key => value pairs
                         $uploads_baseurl = $uploads['baseurl'];
                         $uploads_path = $uploads['basedir'];
 
@@ -1704,6 +2382,12 @@ function geodir_temp_set_post_attachment()
 
 add_action('init', 'geodir_default_rating_star_icon');
 
+/**
+ * Update default rating star icon.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_default_rating_star_icon()
 {
 
@@ -1715,6 +2399,16 @@ function geodir_default_rating_star_icon()
 
 
 /* ------- GET CURRENT USER POST LISTING -------*/
+/**
+ * Get user's post listing count.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $current_user Current user object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @return array User listing count for each post type.
+ */
 function geodir_user_post_listing_count()
 {
     global $wpdb, $plugin_prefix, $current_user;
@@ -1741,6 +2435,16 @@ function geodir_user_post_listing_count()
 
 
 /* ------- GET CURRENT USER FAVOURITE LISTING -------*/
+/**
+ * Get user's favorite listing count.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $current_user Current user object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ * @return array User listing count for each post type.
+ */
 function geodir_user_favourite_listing_count()
 {
     global $wpdb, $plugin_prefix, $current_user;
@@ -1769,6 +2473,15 @@ function geodir_user_favourite_listing_count()
 }
 
 add_filter('geodir_detail_page_tab_list_extend', 'geodir_detail_page_custom_field_tab');
+/**
+ * Details page tab custom fields.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
+ * @param array $tabs_arr Tabs array.
+ * @return array Modified tabs array.
+ */
 function geodir_detail_page_custom_field_tab($tabs_arr)
 {
     global $post;
@@ -1786,7 +2499,9 @@ function geodir_detail_page_custom_field_tab($tabs_arr)
         if (!empty($custom_fields)) {
             $parse_custom_fields = array();
             foreach ($custom_fields as $field) {
-                $type = $field;
+                $field = stripslashes_deep($field); // strip slashes
+				
+				$type = $field;
                 $field_name = $field['htmlvar_name'];
                 if (empty($geodir_post_info) && geodir_is_page('preview') && $field_name != '' && !isset($post->$field_name) && isset($_REQUEST[$field_name])) {
                     $post->$field_name = $_REQUEST[$field_name];
@@ -2315,6 +3030,14 @@ add_action('post_updated', 'geodir_function_post_updated', 16, 3);
 
 add_action('geodir_after_edit_post_link_on_listing', 'geodir_add_post_status_author_page', 11);
 
+/**
+ * Adds post status on author page when the author is current user.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $post The current post object.
+ */
 function geodir_add_post_status_author_page()
 {
     global $wpdb, $post;
@@ -2352,8 +3075,13 @@ function geodir_add_post_status_author_page()
 
 }
 
-// remove rating stars fields if disabled
 add_action('init', 'geodir_init_no_rating', 100);
+/**
+ * remove rating stars fields if disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_init_no_rating()
 {
     if (get_option('geodir_disable_rating')) {
@@ -2373,6 +3101,13 @@ function geodir_init_no_rating()
     }
 }
 
+/**
+ * Modify rating fields when rating disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
+ */
 function geodir_no_rating_rating_fields()
 {
     global $post;
@@ -2391,6 +3126,15 @@ function geodir_no_rating_rating_fields()
     }
 }
 
+/**
+ * Returns normal comment text when rating disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $content Comment text.
+ * @param string|object $comment Comment object.
+ * @return string Comment HTML.
+ */
 function geodir_no_rating_comment_text($content, $comment = '')
 {
     if (!is_admin()) {
@@ -2400,11 +3144,28 @@ function geodir_no_rating_comment_text($content, $comment = '')
     }
 }
 
+/**
+ * Remove rating HTML when rating disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $content HTML content.
+ * @return null
+ */
 function geodir_no_rating_review_rating_html($content = '')
 {
     return NULL;
 }
 
+/**
+ * Skip overall rating sort option when rating disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $options Sort options array.
+ * @param string $post_type The post type.
+ * @return array Modified sort options array.
+ */
 function geodir_no_rating_get_sort_options($options, $post_type = '')
 {
     $new_options = array();
@@ -2422,8 +3183,15 @@ function geodir_no_rating_get_sort_options($options, $post_type = '')
     return $options;
 }
 
-// skip rating stars validation if rating stars disabled
 add_filter('geodir_all_js_msg', 'geodir_all_js_msg_no_rating', 100);
+/**
+ * skip rating stars validation if rating stars disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $msg Message array.
+ * @return array Modified message array.
+ */
 function geodir_all_js_msg_no_rating($msg = array())
 {
     if (get_option('geodir_disable_rating')) {
@@ -2433,8 +3201,15 @@ function geodir_all_js_msg_no_rating($msg = array())
     return $msg;
 }
 
-// add body class when rating stars if disabled
 add_filter('body_class', 'geodir_body_class_no_rating', 100);
+/**
+ * add body class when rating stars if disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $classes The class array of the HTML element.
+ * @return array Modified class array.
+ */
 function geodir_body_class_no_rating($classes = array())
 {
     if (get_option('geodir_disable_rating')) {
@@ -2445,6 +3220,14 @@ function geodir_body_class_no_rating($classes = array())
 }
 
 add_filter('admin_body_class', 'geodir_admin_body_class_no_rating', 100);
+/**
+ * Adds class to disable rating.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param string $class The class of the HTML element.
+ * @return string Modified class string.
+ */
 function geodir_admin_body_class_no_rating($class = '')
 {
     if (get_option('geodir_disable_rating')) {
@@ -2454,9 +3237,14 @@ function geodir_admin_body_class_no_rating($class = '')
     return $class;
 }
 
-// hide rating stars if disabled
 add_action('wp_head', 'geodir_wp_head_no_rating');
 add_action('admin_head', 'geodir_wp_head_no_rating');
+/**
+ * hide rating stars if disabled.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 function geodir_wp_head_no_rating()
 {
     if (get_option('geodir_disable_rating')) {
@@ -2466,3 +3254,38 @@ function geodir_wp_head_no_rating()
 }
 
 add_filter('geodir_load_db_language', 'geodir_load_custom_field_translation');
+
+/**
+ * Meta description for search page.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
+function geodir_search_meta_desc($html) {
+    if (is_search() && isset($_REQUEST['geodir_search'])) {
+        $all_postypes = geodir_get_posttypes();
+        $keyword = esc_sql(strip_tags(get_query_var('s')));
+        $stype = esc_sql(strip_tags($_REQUEST['stype']));
+        $snear = esc_sql(strip_tags($_REQUEST['snear']));
+
+        if ($stype && in_array($stype, $all_postypes)) {
+            $desc = __('Search results for', GEODIRECTORY_TEXTDOMAIN);
+
+            if(!empty($keyword)) {
+                $desc = $desc . ' ' . $keyword;
+            }
+
+            if(!empty($stype)) {
+                $posttype_obj = get_post_type_object( $stype );
+                $desc = $desc . ' ' . __('in', GEODIRECTORY_TEXTDOMAIN) . ' ' . $posttype_obj->labels->name;
+            }
+
+            if(!empty($snear)) {
+                $desc = $desc . ' ' . __('near', GEODIRECTORY_TEXTDOMAIN) . ' ' . $snear;
+            }
+            $html = '<meta name="description" content="' . $desc . '" />';
+        }
+    }
+    return $html;
+}
+add_filter('geodir_seo_meta_description', 'geodir_search_meta_desc', 10, 1);

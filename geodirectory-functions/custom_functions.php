@@ -99,7 +99,7 @@ add_action('geodir_before_listing', 'geodir_list_view_select', 100);
  * @since 1.0.0
  * @package GeoDirectory
  * @param string|int $charlength The character length.
- * @global object $post The post object.
+ * @global object $post The current post object.
  * @return string The modified excerpt.
  */
 function geodir_max_excerpt($charlength)
@@ -132,6 +132,11 @@ function geodir_max_excerpt($charlength)
             }
         }
         $out .= ' <a class="excerpt-read-more" href="' . get_permalink() . '" title="' . get_the_title() . '">';
+        /**
+         * Filter excerpt read more text.
+         *
+         * @since 1.0.0
+         */
         $out .= apply_filters('geodir_max_excerpt_end', __('Read more [...]', GEODIRECTORY_TEXTDOMAIN));
         $out .= '</a>';
 
@@ -140,6 +145,11 @@ function geodir_max_excerpt($charlength)
             $excut = -(mb_strlen($excerpt_more));
             $out .= mb_substr($excerpt, 0, $excut);
             $out .= ' <a class="excerpt-read-more" href="' . get_permalink() . '" title="' . get_the_title() . '">';
+            /**
+             * Filter excerpt read more text.
+             *
+             * @since 1.0.0
+             */
             $out .= apply_filters('geodir_max_excerpt_end', __('Read more [...]', GEODIRECTORY_TEXTDOMAIN));
             $out .= '</a>';
         } else {
@@ -155,7 +165,7 @@ function geodir_max_excerpt($charlength)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $package_info
+ * @param array $package_info Package info array.
  * @param object|string $post The post object.
  * @param string $post_type The post type.
  * @return object Returns filtered package info as an object.
@@ -169,7 +179,14 @@ function geodir_post_package_info($package_info, $post = '', $post_type = '')
     $package_info['image_limit'] = '';
     $package_info['google_analytics'] = 1;
     $package_info['sendtofriend'] = 1;
-
+    /**
+     * Filter listing package info.
+     *
+     * @since 1.0.0
+     * @param array $package_info Package info array.
+     * @param object|string $post The post object.
+     * @param string $post_type The post type.
+     */
     return (object)apply_filters('geodir_post_package_info', $package_info, $post, $post_type);
 
 }
@@ -183,8 +200,8 @@ function geodir_post_package_info($package_info, $post = '', $post_type = '')
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $request The request array that contains details like name, email, phone etc.
  * @global object $wpdb WordPress Database object.
+ * @param array $request The request array that contains details like name, email, phone etc.
  */
 function geodir_send_inquiry($request)
 {
@@ -235,7 +252,12 @@ function geodir_send_inquiry($request)
 
     $client_message = $frnd_comments;
     $client_message .= '<br>' . __('From :', GEODIRECTORY_TEXTDOMAIN) . ' ' . $yourname . '<br>' . __('Phone :', GEODIRECTORY_TEXTDOMAIN) . ' ' . $inq_phone . '<br><br>' . __('Sent from', GEODIRECTORY_TEXTDOMAIN) . ' - <b><a href="' . get_option('siteurl') . '">' . get_option('blogname') . '</a></b>.';
-
+    /**
+     * Filter client message text.
+     *
+     * @since 1.0.0
+     * @param string $client_message Client message text.
+     */
     $client_message = apply_filters('geodir_inquiry_email_msg', $client_message);
 
     /**
@@ -265,6 +287,12 @@ function geodir_send_inquiry($request)
     } else {
         $url = $url . "?send_inquiry=success";
     }
+    /**
+     * Filter redirect url after the send enquiry email is sent.
+     *
+     * @since 1.0.0
+     * @param string $url Redirect url.
+     */
     $url = apply_filters('geodir_send_enquiry_after_submit_redirect', $url);
     wp_redirect($url);
     exit;
@@ -330,6 +358,12 @@ function geodir_send_friend($request)
     } else {
         $url = $url . "?sendtofrnd=success";
     }
+    /**
+     * Filter redirect url after the send to friend email is sent.
+     *
+     * @since 1.0.0
+     * @param string $url Redirect url.
+     */
     $url = apply_filters('geodir_send_to_friend_after_submit_redirect', $url);
     wp_redirect($url);
     exit;
@@ -351,6 +385,11 @@ function geodir_before_tab_content($hash_key)
             echo '<div class="geodir-company_info field-group">';
             break;
         case 'post_images' :
+            /**
+             * Filter post gallery HTML id.
+             *
+             * @since 1.0.0
+             */
             echo ' <div id="' . apply_filters('geodir_post_gallery_id', 'geodir-post-gallery') . '" class="clearfix" >';
             break;
         case 'reviews' :
@@ -449,7 +488,13 @@ function geodir_get_sort_options($post_type)
 
 
         $sort_field_info = $wpdb->get_results($wpdb->prepare("select * from " . GEODIR_CUSTOM_SORT_FIELDS_TABLE . " where	post_type= %s and is_active=%d and (sort_asc=1 ||	sort_desc=1 || field_type='random') order by sort_order asc", array($post_type, 1)));
-
+        /**
+         * Filter post sort options.
+         *
+         * @since 1.0.0
+         * @param array $sort_field_info Unfiltered sort field array.
+         * @param string $post_type Post type.
+         */
         return apply_filters('geodir_get_sort_options', $sort_field_info, $post_type);
     }
 
@@ -461,7 +506,7 @@ function geodir_get_sort_options($post_type)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @global object $wp_query The wordpress query object.
+ * @global object $wp_query WordPress Query object.
  */
 function geodir_display_sort_options()
 {
@@ -489,13 +534,14 @@ function geodir_display_sort_options()
 
     if (!empty($sort_options)) {
         foreach ($sort_options as $sort) {
+			$sort = stripslashes_deep($sort); // strip slashes
 
-            $label = $sort->site_title;
+            $label = __($sort->site_title, GEODIRECTORY_TEXTDOMAIN);
 
             if ($sort->field_type == 'random') {
                 $key = $sort->field_type;
                 ($sort_by == $key || ($sort->is_default == '1' && !isset($_REQUEST['sort_by']))) ? $selected = 'selected="selected"' : $selected = '';
-                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . $label . '</option>';
+                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . __($label, GEODIRECTORY_TEXTDOMAIN) . '</option>';
             }
 
             if ($sort->htmlvar_name == 'comment_count') {
@@ -508,7 +554,7 @@ function geodir_display_sort_options()
                 if ($sort->asc_title)
                     $label = $sort->asc_title;
                 ($sort_by == $key || ($sort->is_default == '1' && $sort->default_order == $key && !isset($_REQUEST['sort_by']))) ? $selected = 'selected="selected"' : $selected = '';
-                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . $label . '</option>';
+                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . __($label, GEODIRECTORY_TEXTDOMAIN) . '</option>';
             }
 
             if ($sort->sort_desc) {
@@ -517,7 +563,7 @@ function geodir_display_sort_options()
                 if ($sort->desc_title)
                     $label = $sort->desc_title;
                 ($sort_by == $key || ($sort->is_default == '1' && $sort->default_order == $key && !isset($_REQUEST['sort_by']))) ? $selected = 'selected="selected"' : $selected = '';
-                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . $label . '</option>';
+                $sort_field_options .= '<option ' . $selected . ' value="' . esc_url( add_query_arg('sort_by', $key) ) . '">' . __($label, GEODIRECTORY_TEXTDOMAIN) . '</option>';
             }
 
         }
@@ -575,7 +621,8 @@ function geodir_advance_customfields_heading($title, $field_type)
  * @package GeoDirectory
  * @param array $request Related posts request array.
  * @global object $wpdb WordPress Database object.
- * @global object $post The post object.
+ * @global object $post The current post object.
+ * @global string $gridview_columns The girdview style of the listings.
  * @return string Returns related posts html.
  */
 function geodir_related_posts_display($request)
@@ -690,7 +737,9 @@ function geodir_related_posts_display($request)
 
             <?php
             if (isset($request['is_widget']) && $request['is_widget'] == '1') {
+                /** geodir_before_title filter Documented in geodirectory_widgets.php */
                 $before_title = isset($before_title) ? $before_title : apply_filters('geodir_before_title', '<h3 class="widget-title">');
+                /** geodir_after_title filter Documented in geodirectory_widgets.php */
                 $after_title = isset($after_title) ? $after_title : apply_filters('geodir_after_title', '</h3>');
                 ?>
                 <div class="location_list_heading clearfix">
@@ -786,6 +835,12 @@ function geodir_get_map_default_language()
     $geodir_default_map_language = get_option('geodir_default_map_language');
     if (empty($geodir_default_map_language))
         $geodir_default_map_language = 'en';
+    /**
+     * Filter default map language.
+     *
+     * @since 1.0.0
+     * @param string $geodir_default_map_language Default map language.
+     */
     return apply_filters('geodir_default_map_language', $geodir_default_map_language);
 }
 
@@ -796,8 +851,9 @@ function geodir_get_map_default_language()
  * @since 1.0.0
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
- * @global object $post The post object.
- * @global object $wp_query The wordpress query object.
+ * @global object $post The current post object.
+ * @global object $wp_query WordPress Query object.
+ * @global array $geodir_addon_list List of active GeoDirectory extensions.
  */
 function geodir_add_meta_keywords()
 {
@@ -818,6 +874,11 @@ function geodir_add_meta_keywords()
     $meta_desc = '';
     $meta_key = '';
     if (isset($current_term->ID) && $current_term->ID == geodir_location_page_id()) {
+        /**
+         * Filter SEO meta location description.
+         *
+         * @since 1.0.0
+         */
         $meta_desc = apply_filters('geodir_seo_meta_location_description', '');
         $meta_desc .= '';
     }
@@ -945,6 +1006,12 @@ function geodir_add_meta_keywords()
 
     if ($meta_desc) {
         $meta_desc = stripslashes_deep($meta_desc);
+        /**
+         * Filter SEO meta description.
+         *
+         * @since 1.0.0
+         * @param string $meta_desc Meta description content.
+         */
         echo apply_filters('geodir_seo_meta_description', '<meta name="description" content="' . $meta_desc . '" />', $meta_desc);
     }
 
@@ -988,6 +1055,12 @@ function geodir_add_meta_keywords()
 
     if ($meta_key) {
         $meta_key = stripslashes_deep($meta_key);
+        /**
+         * Filter SEO meta keywords.
+         *
+         * @since 1.0.0
+         * @param string $meta_desc Meta keywords.
+         */
         echo apply_filters('geodir_seo_meta_keywords', '<meta name="keywords" content="' . $meta_key . '" />', $meta_key);
     }
 
@@ -1025,6 +1098,11 @@ function geodir_detail_page_tabs_array()
 {
 
     $arr_tabs = array();
+    /**
+     * Filter detail page tab display.
+     *
+     * @since 1.0.0
+     */
     $arr_tabs['post_profile'] = array(
         'heading_text' => __('Profile', GEODIRECTORY_TEXTDOMAIN),
         'is_active_tab' => true,
@@ -1115,7 +1193,7 @@ function geodir_detail_page_tabs_list()
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @global object $post The post object.
+ * @global object $post The current post object.
  * @global array $post_images List of images attached to the post.
  * @global string $video The video embed content.
  * @global string $special_offers Special offers content.
@@ -1733,6 +1811,10 @@ function geodir_twitter_tweet_button()
  * "Facebook like" button code.
  *
  * To display "Facebook like" button, you can call this function.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
  */
 function geodir_fb_like_button()
 {
@@ -1778,6 +1860,7 @@ function geodir_google_plus_button()
  *
  * @since 1.0.0
  * @package GeoDirectory
+ * @global object $post The current post object.
  */
 function geodir_share_this_button_code()
 {

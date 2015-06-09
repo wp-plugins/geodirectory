@@ -1,4 +1,10 @@
 <?php
+/**
+ * Shortcode functions.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ */
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
@@ -6,6 +12,24 @@ if (!defined('WPINC')) {
 require_once('geodirectory-functions/shortcode_functions.php');
 
 add_shortcode('gd_add_listing', 'geodir_sc_add_listing');
+/**
+ * The geodirectory add listing shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying geodirectory add listing page form.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $pid            Post ID. If passed post will be edited. Default empty.
+ *     @type string $listing_type   Post type of listing. Default gd_place.
+ *     @type string $login_msg      Message to display when user not logged in.
+ *     @type bool   $show_login     Do you want to display login widget when user not logged in?. Default: false.
+ *
+ * }
+ * @return string Add listing page HTML.
+ */
 function geodir_sc_add_listing($atts)
 {
     ob_start();
@@ -52,7 +76,28 @@ function geodir_sc_add_listing($atts)
     return $output;
 }
 
-
+/**
+ * The geodirectory home page map shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying map on home page.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $width           Map width in pixels. Default 960.
+ *     @type string $height          Map height in pixels. Default 425.
+ *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID.
+ *     @type string $zoom            The zoom level of the map. Between 1-19. Default 13.
+ *     @type string $autozoom        True if the map should autozoom, false if not.
+ *     @type string $child_collapse  True if the map should collapse the categories, false if not.
+ *     @type string $scrollwheel     True to allow scroll wheel to scroll map or false if not.
+ *     @type bool   $marker_cluster  Enable marker cluster? Default: false.
+ *
+ * }
+ * @return string Map HTML.
+ */
 function geodir_sc_home_map($atts)
 {
     ob_start();
@@ -167,6 +212,32 @@ function geodir_sc_home_map($atts)
 add_shortcode('gd_homepage_map', 'geodir_sc_home_map');
 
 add_shortcode('gd_listing_map', 'geodir_sc_listing_map');
+
+/**
+ * The geodirectory listing map shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying listing map.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $post The current post object.
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $width           Map width in pixels. Default 294.
+ *     @type string $height          Map height in pixels. Default 370.
+ *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID.
+ *     @type string $zoom            The zoom level of the map. Between 1-19. Default 13.
+ *     @type string $autozoom        True if the map should autozoom, false if not.
+ *     @type bool   $sticky          True if should be sticky, false if not
+ *     @type string $showall         Show all listings on map? (not just page list). Default 0.
+ *     @type string $child_collapse  True if the map should collapse the categories, false if not.
+ *     @type string $scrollwheel     True to allow scroll wheel to scroll map or false if not.
+ *     @type bool   $marker_cluster  Enable marker cluster? Default: false.
+ *
+ * }
+ * @return string Map HTML.
+ */
 function geodir_sc_listing_map($atts)
 {
     ob_start();
@@ -258,6 +329,33 @@ function geodir_sc_listing_map($atts)
 }
 
 add_shortcode('gd_listing_slider', 'geodir_sc_listing_slider');
+/**
+ * The geodirectory listing slider shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying listing slider.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $animation              Controls the animation type, "fade" or "slide". Default. slide.
+ *     @type int    $animation_loop         Gives the slider a seamless infinite loop. Default. 0.
+ *     @type int    $animation_speed        Set the speed of animations, in milliseconds. Default. 600.
+ *     @type string $category               Filter by term. Can be any valid term. Default. 0.
+ *     @type int    $direction_nav          Enable previous/next arrow navigation?. Can be 1 or 0. Default. 0.
+ *     @type string $order_by               Order by filter. Default. latest.
+ *     @type string $post_number            Number of listings to display. Default. 5.
+ *     @type string $post_type              Post type of listing. Default. gd_place.
+ *     @type string $show_featured_only     Do you want to display only featured losting? Can be 1 or 0. Default. Empty.
+ *     @type string $show_title             Do you want to display title? Can be 1 or 0. Default. Empty.
+ *     @type string $slideshow              Setup a slideshow for the slider to animate automatically. Default. 0.
+ *     @type int    $slideshow_speed        Set the speed of the slideshow cycling, in milliseconds. Default. 5000.
+ *     @type string $title                  Slider title. Default. Empty.
+ *
+ * }
+ * @return string Slider HTML.
+ */
 function geodir_sc_listing_slider($atts)
 {
     ob_start();
@@ -377,6 +475,24 @@ function geodir_sc_listing_slider($atts)
 }
 
 add_shortcode('gd_login_box', 'geodir_sc_login_box');
+/**
+ * The geodirectory login box shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying login box.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $before_widget HTML content to prepend to each widget's HTML output. Default. Empty.
+ *     @type string $after_widget  HTML content to append to each widget's HTML output. Default. Empty.
+ *     @type string $before_title  HTML content to prepend to the title when displayed. Default. Empty.
+ *     @type string $after_title   HTML content to append to the title when displayed. Default. Empty.
+ *
+ * }
+ * @return string Login box HTML.
+ */
 function geodir_sc_login_box($atts)
 {
     ob_start();
@@ -398,6 +514,27 @@ function geodir_sc_login_box($atts)
 }
 
 add_shortcode('gd_popular_post_category', 'geodir_sc_popular_post_category');
+/**
+ * The geodirectory popular post category shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying popular post category.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global string $geodir_post_category_str The geodirectory post category.
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $before_widget      HTML content to prepend to each widget's HTML output. Default. Empty.
+ *     @type string $after_widget       HTML content to append to each widget's HTML output. Default. Empty.
+ *     @type string $before_title       HTML content to prepend to the title when displayed. Default. Empty.
+ *     @type string $after_title        HTML content to append to the title when displayed. Default. Empty.
+ *     @type int $category_limit        Number of categories to display. Default. 15.
+ *     @type string $title              Widget title. Default. Empty.
+ *
+ * }
+ * @return string Popular post category HTML.
+ */
 function geodir_sc_popular_post_category($atts)
 {
     ob_start();
@@ -423,6 +560,40 @@ function geodir_sc_popular_post_category($atts)
 }
 
 add_shortcode('gd_popular_post_view', 'geodir_sc_popular_post_view');
+/**
+ * The geodirectory popular post view shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying popular post view.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $add_location_filter    Filter listings using current location. Default 0.
+ *     @type string $before_widget          HTML content to prepend to each widget's HTML output. Default. Empty.
+ *     @type string $after_widget           HTML content to append to each widget's HTML output. Default. Empty.
+ *     @type string $before_title           HTML content to prepend to the title when displayed. Default. <h3 class="widget-title">.
+ *     @type string $after_title            HTML content to append to the title when displayed. Default. </h3>.
+ *     @type string $category               Category ids to filter listings. Ex: 1,3. Default. 0.
+ *     @type string $category_title         Category title. Default. Empty.
+ *     @type string $character_count        The excerpt length. Default. 20.
+ *     @type string $layout                 Layout to display listing. Should be gridview_onehalf, gridview_onethird,
+ *                                          gridview_onefourth, gridview_onefifth, list. Default 'gridview_onehalf'. Default. gridview_onehalf.
+ *     @type string $list_sort              Sort by. Default. latest.
+ *     @type string $listing_width          Width of the listing in %. Default. Empty.
+ *     @type string $post_number            No. of post to display. Default. 5.
+ *     @type string $post_type              Post type of listing. Default. gd_place.
+ *     @type string $show_featured_only     Display only featured listings. Default. 0.
+ *     @type string $show_special_only      Display only special offers listings. Default. 0.
+ *     @type string $title                  Widget title. Default. Empty.
+ *     @type string $use_viewing_post_type  Filter using viewing post type. Default. 1.
+ *     @type string $with_pics_only         Only display listings which has image available. Default empty. Default. 0.
+ *     @type string $with_videos_only       Only display listings which has video available. Default. 0.
+ *
+ * }
+ * @return string Popular post view HTML.
+ */
 function geodir_sc_popular_post_view($atts)
 {
     ob_start();
@@ -519,6 +690,21 @@ function geodir_sc_popular_post_view($atts)
 }
 
 add_shortcode('gd_recent_reviews', 'geodir_sc_recent_reviews');
+/**
+ * The geodirectory recent reviews shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying recent reviews.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type int $count Number of reviews you want to display. Default. 5.
+ *
+ * }
+ * @return string Recent reviews HTML.
+ */
 function geodir_sc_recent_reviews($atts)
 {
     ob_start();
@@ -550,6 +736,30 @@ function geodir_sc_recent_reviews($atts)
 }
 
 add_shortcode('gd_related_listings', 'geodir_sc_related_listings');
+/**
+ * The geodirectory related listing widget shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying related listing widget.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type int $add_location_filter   Filter listings using current location. Default 0.
+ *     @type string $before_title       HTML content to prepend to the title when displayed. Default. <style type="text/css">.geodir_category_list_view li{margin:0px!important}</style>.
+ *     @type int $character_count       The excerpt length Default. 20.
+ *     @type int $is_widget             Is this a widget? Default. 1.
+ *     @type string $layout             Layout to display listing. Should be gridview_onehalf, gridview_onethird,
+ *                                      gridview_onefourth, gridview_onefifth, list. Default 'gridview_onehalf'. Default. gridview_onehalf.
+ *     @type string $list_sort          Sort by. Default. latest.
+ *     @type string $listing_width      Width of the listing in %. Default. Empty.
+ *     @type int $post_number           No. of post to display. Default. 5.
+ *     @type string $relate_to          Type to use for making relation. Can be tags or category. Default. category.
+ *
+ * }
+ * @return string Related widget HTML.
+ */
 function geodir_sc_related_listings($atts)
 {
     ob_start();
@@ -612,17 +822,61 @@ function geodir_sc_related_listings($atts)
     return $output;
 }
 
-add_shortcode('gd_advanced_search', 'geodir_sc_advanced_search');
-function geodir_sc_advanced_search($atts)
-{
-    ob_start();
-    geodir_get_template_part('listing', 'filter-form');
-    $output = ob_get_contents();
-
+/**
+ * The geodirectory advanced search widget shortcode.
+ *
+ * This implements the functionality of the shortcode for displaying advanced search widget.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @param array $atts {
+ *     Attributes of the shortcode.
+ *
+ *     @type string $before_widget   HTML content to prepend to each widget's HTML output. Default. <section id="geodir_advanced_search-1" class="widget geodir-widget geodir_advanced_search_widget">.
+ *     @type string $after_widget    HTML content to append to each widget's HTML output. Default. </section>.
+ *     @type string $before_title    HTML content to prepend to the title when displayed. Default. <h3 class="widget-title">.
+ *     @type string $after_title     HTML content to append to the title when displayed. Default. </h3>.
+ *     @type string $show_adv_search Show advanced search? Default. default.
+ *     @type string $title           Widget title. Default. Empty.
+ *
+ * }
+ * @return string Advanced search widget HTML.
+ */
+function geodir_sc_advanced_search($atts) {
+    $defaults = array(
+		'title' => '',
+		'before_widget' => '<section id="geodir_advanced_search-1" class="widget geodir-widget geodir_advanced_search_widget">',
+        'after_widget' => '</section>',
+        'before_title' => '<h3 class="widget-title">',
+        'after_title' => '</h3>',
+		'show_adv_search' => 'default'
+	);
+	
+	$params = shortcode_atts($defaults, $atts);
+	
+	$show_adv_search = isset($params['show_adv_search']) && in_array($params['show_adv_search'], array('default', 'always', 'searched')) ? $params['show_adv_search'] : '';
+	
+	if ($show_adv_search != '' ) {
+		$show_adv_class = 'geodir-advance-search-' . $show_adv_search . ' ';
+		if ($show_adv_search == 'searched' && geodir_is_page('search')) {
+			$show_adv_search = 'search';
+		}
+		$show_adv_attrs = 'data-show-adv="' . $show_adv_search . '"';
+		
+		$params['before_widget'] = str_replace('class="', $show_adv_attrs . ' class="' . $show_adv_class, $params['before_widget']);
+	}
+	
+	ob_start();
+	
+	//geodir_get_template_part('listing', 'filter-form');
+	the_widget('geodir_advance_search_widget', $params, $params );
+	
+	$output = ob_get_contents();
     ob_end_clean();
 
     return $output;
 }
+add_shortcode('gd_advanced_search', 'geodir_sc_advanced_search');
 
 /**
  * The best of widget shortcode.
@@ -790,6 +1044,7 @@ function geodir_sc_gd_listings($atts, $content = '') {
     $params['post_number']	= $params['post_number'] > 0 ? $params['post_number'] : 10;
 	
 	// Validate character_count
+    //todo: is this necessary?
     $params['character_count'] 	= $params['character_count'];
 	
 	// Validate our layout choice
