@@ -178,7 +178,7 @@ add_action('before_delete_post', 'geodir_delete_listing_info', 10, 1);
 ////////////////////////
 
 add_action('geodir_update_postrating', 'geodir_term_review_count_force_update', 100);
-add_action('transition_post_status', 'geodir_term_review_count_force_update', 100);
+add_action('transition_post_status', 'geodir_term_review_count_force_update', 100,3);
 add_action('created_term', 'geodir_term_review_count_force_update', 100);
 add_action('edited_term', 'geodir_term_review_count_force_update', 100);
 add_action('delete_term', 'geodir_term_review_count_force_update', 100);
@@ -248,6 +248,12 @@ require_once('geodirectory-functions/custom_taxonomy_hooks_actions.php');
  */
 function geodir_add_post_filters()
 {
+    /**
+     * Contains all function for filtering listing.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once('geodirectory-functions/listing_filters.php');
 }
 
@@ -559,6 +565,7 @@ function geodir_detail_page_google_analytics()
     do_action('geodir_before_google_analytics');
     if (get_option('geodir_ga_stats') && get_edit_post_link() && is_user_logged_in() && (isset($package_info->google_analytics) && $package_info->google_analytics == '1')) {
         $page_url = $_SERVER['REQUEST_URI'];
+        //$page_url = "/";
         ?>
 
         <script type="text/javascript">
@@ -680,19 +687,27 @@ function geodir_detail_page_google_analytics()
                         var data = [];
                         var colors = ['#4D5360','#949FB1','#D4CCC5','#E2EAE9','#F7464A'];
 
-                        response.rows.forEach(function(row, i) {
-                            data.push({
-                                label: row[0],
-                                value: +row[1],
-                                color: colors[i]
+                        if(response.rows){
+                            response.rows.forEach(function (row, i) {
+                                data.push({
+                                    label: row[0],
+                                    value: +row[1],
+                                    color: colors[i]
+                                });
                             });
-                        });
 
-                        new Chart(makeCanvas('gdga-chart-container')).Doughnut(data);
-                        generateLegend('gdga-legend-container', data);
+                            new Chart(makeCanvas('gdga-chart-container')).Doughnut(data);
+                            generateLegend('gdga-legend-container', data);
+                        }else{
+                            gdga_noResults();
+                        }
 
             }
 
+            function gdga_noResults(){
+                jQuery('#gdga-chart-container').html('<?php _e('No results available',GEODIRECTORY_TEXTDOMAIN);?>');
+                jQuery('#gdga-legend-container').html('');
+            }
 
             /**
              * Draw the a chart.js bar chart with data from the specified view that
@@ -808,9 +823,28 @@ function geodir_detail_page_google_analytics()
                     var data2 = results[1].rows.map(function(row) { return +row[2]; });
                     var labels = results[1].rows.map(function(row) { return +row[0]; });
 
-                    labels = labels.map(function(label) {
-                        return moment(label, 'YYYYMMDD').format('ddd');
-                    });
+                    <?php
+                    // Here we list the shorthand days of the week so it can be used in translation.
+                    __("Mon",GEODIRECTORY_TEXTDOMAIN);
+                    __("Tue",GEODIRECTORY_TEXTDOMAIN);
+                    __("Wed",GEODIRECTORY_TEXTDOMAIN);
+                    __("Thu",GEODIRECTORY_TEXTDOMAIN);
+                    __("Fri",GEODIRECTORY_TEXTDOMAIN);
+                    __("Sat",GEODIRECTORY_TEXTDOMAIN);
+                    __("Sun",GEODIRECTORY_TEXTDOMAIN);
+                    ?>
+
+                    labels = [
+                        "<?php _e(date('D', strtotime("+1 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+2 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+3 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+4 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+5 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+6 day")),GEODIRECTORY_TEXTDOMAIN); ?>",
+                        "<?php _e(date('D', strtotime("+7 day")),GEODIRECTORY_TEXTDOMAIN); ?>"
+                    ];
+
+
 
                     var data = {
                         labels : labels,
@@ -903,9 +937,11 @@ function geodir_detail_page_google_analytics()
                 float: right;
                 margin: 0 0 10px;
             }
+
             #gdga-select-analytic {
                 clear: both;
             }
+
             #ga_stats #ga-analytics-title{
                 float: left;
                 font-weight: bold;
@@ -1009,8 +1045,8 @@ function geodir_detail_page_google_analytics()
                 }
             }
         </style>
-        <script src="https://ga-dev-tools.appspot.com/public/javascript/Chart.min.js"></script>
-        <script src="https://ga-dev-tools.appspot.com/public/javascript/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
 
 
         <span id="ga_stats">
@@ -1258,6 +1294,7 @@ function geodir_localize_all_js_msg()
         'gd_cmt_err_no_rating' => __("Please select star rating, you can't leave a review without stars.", GEODIRECTORY_TEXTDOMAIN),
         /* on/off dragging for phone devices */
         'geodir_onoff_dragging' => get_option('geodir_map_onoff_dragging') ? true : false,
+        'geodir_is_mobile' => wp_is_mobile() ? true : false,
         'geodir_on_dragging_text' => __('Enable Dragging', GEODIRECTORY_TEXTDOMAIN),
         'geodir_off_dragging_text' => __('Disable Dragging', GEODIRECTORY_TEXTDOMAIN),
         'geodir_err_max_file_size' => __('File size error : You tried to upload a file over %s', GEODIRECTORY_TEXTDOMAIN),
@@ -1542,7 +1579,7 @@ add_action('after_plugin_row_' . $plugin_file_name, 'geodir_after_core_plugin_ro
  * @package GeoDirectory
  * @param string $plugin_file Plugin file path.
  * @param array $plugin_data Plugin data.
- * @param string $status Plugin status.
+ * @param string $status Status of the plugin. Defaults are 'All', 'Active','Inactive', 'Recently Activated', 'Upgrade', 'Must-Use','Drop-ins', 'Search'.
  */
 function geodir_after_core_plugin_row($plugin_file, $plugin_data, $status)
 {
@@ -1936,12 +1973,11 @@ add_filter('geodir_permalink_settings', 'geodir_remove_url_seperator_form_permal
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $permalink_arr The permalink array.
+ * @param array $permalink_arr The permalink settings array ( Geodirectory -> Permalinks ).
  * @return array Modified permalink array.
  */
 function geodir_remove_url_seperator_form_permalink_settings($permalink_arr)
 {
-
     foreach ($permalink_arr as $key => $value) {
 
         if ($value['id'] == 'geodir_listingurl_separator' || $value['id'] == 'geodir_detailurl_separator')
@@ -1985,12 +2021,87 @@ add_filter('geodir_detail_page_tab_list_extend', 'geodir_detail_page_tab_heading
  * @since 1.0.0
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
- * @param array $tabs_arr Tabs array.
+ * @param array $tabs_arr {
+ *    Attributes of the Tabs array.
+ *
+ *    @type array $post_profile {
+ *        Attributes of post_profile.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Profile".
+ *        @type bool   $is_active_tab   Is this tab active? Default true.
+ *        @type bool   $is_display      Display this tab? Default true.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $post_info {
+ *        Attributes of post_info.
+ *
+ *        @type string $heading_text    Tab Heading. Default "More Info".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default false.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $post_images {
+ *        Attributes of post_images.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Photo".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default true.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $post_video {
+ *        Attributes of post_video.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Video".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default false.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $special_offers {
+ *        Attributes of special_offers.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Special Offers".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default false.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $post_map {
+ *        Attributes of post_map.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Map".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default true.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *    @type array $reviews {
+ *        Attributes of reviews.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Reviews".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default true.
+ *        @type string $tab_content     Tab content. Default "review display".
+ *
+ *    }
+ *    @type array $related_listing {
+ *        Attributes of related_listing.
+ *
+ *        @type string $heading_text    Tab Heading. Default "Related Listing".
+ *        @type bool   $is_active_tab   Is this tab active? Default false.
+ *        @type bool   $is_display      Display this tab? Default true.
+ *        @type string $tab_content     Tab content. Default "".
+ *
+ *    }
+ *
+ * }
  * @return array Modified tabs array.
  */
 function geodir_detail_page_tab_headings_change($tabs_arr)
 {
-
     global $wpdb;
 
     $post_type = geodir_get_current_posttype();
@@ -2486,7 +2597,7 @@ add_filter('geodir_detail_page_tab_list_extend', 'geodir_detail_page_custom_fiel
  * @since 1.0.0
  * @package GeoDirectory
  * @global object $post The current post object.
- * @param array $tabs_arr Tabs array.
+ * @param array $tabs_arr Tabs array {@see geodir_detail_page_tab_headings_change()}.
  * @return array Modified tabs array.
  */
 function geodir_detail_page_custom_field_tab($tabs_arr)

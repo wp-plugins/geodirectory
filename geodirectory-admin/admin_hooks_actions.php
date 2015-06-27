@@ -235,7 +235,7 @@ function geodir_meta_box_add()
 
 }
 
-add_action('save_post', 'geodir_post_information_save');
+add_action('save_post', 'geodir_post_information_save',10,2);
 
 
 
@@ -1488,7 +1488,18 @@ add_filter('posts_clauses_request', 'geodir_posts_clauses_request');
  * @global object $wpdb WordPress Database object.
  * @global object $wp_query WordPress Query object.
  * @global string $plugin_prefix Geodirectory plugin table prefix.
- * @param array $clauses The clause array.
+ * @param array $clauses {
+ *    Attributes of the clause array.
+ *
+ *    @type string $where Where clause.
+ *    @type string $groupby Groupby clause.
+ *    @type string $join Join clause.
+ *    @type string $orderby Orderby clause.
+ *    @type string $distinct Distinct clause.
+ *    @type string $fields Fields clause.
+ *    @type string $limits Limits clause.
+ *
+ * }
  * @return array Altered clause array.
  */
 function geodir_posts_clauses_request($clauses)
@@ -2025,14 +2036,3 @@ if(isset($_REQUEST['code']) && $_REQUEST['code']) {
     exit;
 }
 
-
-add_action( 'wp_ajax_geodir_ga_query', 'geodir_ga_query' );
-
-function geodir_ga_query()
-{
-
-
-    $response =  wp_remote_get("https://www.googleapis.com/analytics/v3/data/ga?ids=".$id."&start-date=2015-01-01&end-date=2015-05-27&metrics=ga:pageviews,ga:uniquePageviews,ga:bounces,ga:entrances,ga:exits,ga:newVisits,ga:timeOnPage&filters=ga:pagePath==/place/savoy-cafe/&access_token=ya29.gQH1CCa-N--Wmc01_N9gYV431DMkzATkShXbuoHHwLnWSt8fFdFiMhe8UZU8Ren9GS17i0Ykjj9FqA",array('timeout' => 15));
-    print_r($response);
-
-}

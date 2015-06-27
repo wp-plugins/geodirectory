@@ -179,11 +179,23 @@ function geodir_post_package_info($package_info, $post = '', $post_type = '')
     $package_info['image_limit'] = '';
     $package_info['google_analytics'] = 1;
     $package_info['sendtofriend'] = 1;
+
     /**
      * Filter listing package info.
      *
      * @since 1.0.0
-     * @param array $package_info Package info array.
+     * @param array $package_info {
+     *    Attributes of the package_info.
+     *
+     *    @type int $pid Package ID. Default 0.
+     *    @type int $days Package validity in Days. Default 0.
+     *    @type int $amount Package amount. Default 0.
+     *    @type int $is_featured Is this featured package? Default 0.
+     *    @type string $image_limit Image limit for this package. Default "".
+     *    @type int $google_analytics Add analytics to this package. Default 1.
+     *    @type int $sendtofriend Send to friend. Default 1.
+     *
+     * }
      * @param object|string $post The post object.
      * @param string $post_type The post type.
      */
@@ -201,7 +213,17 @@ function geodir_post_package_info($package_info, $post = '', $post_type = '')
  * @since 1.0.0
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
- * @param array $request The request array that contains details like name, email, phone etc.
+ * @param array $request {
+ *    The submitted form fields as an array.
+ *
+ *    @type string $sendact Enquiry type. Default "send_inqury".
+ *    @type string $pid Post ID.
+ *    @type string $inq_name Sender name.
+ *    @type string $inq_email Sender mail.
+ *    @type string $inq_phone Sender phone.
+ *    @type string $inq_msg Email message.
+ *
+ * }
  */
 function geodir_send_inquiry($request)
 {
@@ -245,7 +267,17 @@ function geodir_send_inquiry($request)
      * Called after the send enquiry var have been set but before the email has been sent.
      *
      * @since 1.0.0
-     * @param array $request The submitted form fields as an array.
+     * @param array $request {
+     *    The submitted form fields as an array.
+     *
+     *    @type string $sendact Enquiry type. Default "send_inqury".
+     *    @type string $pid Post ID.
+     *    @type string $inq_name Sender name.
+     *    @type string $inq_email Sender mail.
+     *    @type string $inq_phone Sender phone.
+     *    @type string $inq_msg Email message.
+     *
+     * }
      * @param string $type The form type, default: `Enquiry`.
      */
     do_action('geodir_after_send_enquiry', $request, 'Enquiry');
@@ -264,7 +296,17 @@ function geodir_send_inquiry($request)
      * Called before the send enquiry email is sent.
      *
      * @since 1.0.0
-     * @param array $request The submitted form fields as an array.
+     * @param array $request {
+     *    The submitted form fields as an array.
+     *
+     *    @type string $sendact Enquiry type. Default "send_inqury".
+     *    @type string $pid Post ID.
+     *    @type string $inq_name Sender name.
+     *    @type string $inq_email Sender mail.
+     *    @type string $inq_phone Sender phone.
+     *    @type string $inq_msg Email message.
+     *
+     * }
      */
     do_action('geodir_before_send_enquiry_email', $request);
     if ($to_email) {
@@ -278,7 +320,17 @@ function geodir_send_inquiry($request)
      * Called after the send enquiry email is sent.
      *
      * @since 1.0.0
-     * @param array $request The submitted form fields as an array.
+     * @param array $request {
+     *    The submitted form fields as an array.
+     *
+     *    @type string $sendact Enquiry type. Default "send_inqury".
+     *    @type string $pid Post ID.
+     *    @type string $inq_name Sender name.
+     *    @type string $inq_email Sender mail.
+     *    @type string $inq_phone Sender phone.
+     *    @type string $inq_msg Email message.
+     *
+     * }
      */
     do_action('geodir_after_send_enquiry_email', $request);
     $url = get_permalink($pid);
@@ -307,7 +359,19 @@ function geodir_send_inquiry($request)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $request
+ * @param array $request {
+ *    The submitted form fields as an array.
+ *
+ *    @type string $sendact Enquiry type. Default "email_frnd".
+ *    @type string $pid Post ID.
+ *    @type string $to_name Friend name.
+ *    @type string $to_email Friend email.
+ *    @type string $yourname Sender name.
+ *    @type string $youremail Sender email.
+ *    @type string $frnd_subject Email subject.
+ *    @type string $frnd_comments Email Message.
+ *
+ * }
  * @global object $wpdb WordPress Database object.
  */
 function geodir_send_friend($request)
@@ -339,7 +403,19 @@ function geodir_send_friend($request)
      * Called before the send to friend email is sent.
      *
      * @since 1.0.0
-     * @param array $request The submitted form fields as an array.
+     * @param array $request {
+     *    The submitted form fields as an array.
+     *
+     *    @type string $sendact Enquiry type. Default "email_frnd".
+     *    @type string $pid Post ID.
+     *    @type string $to_name Friend name.
+     *    @type string $to_email Friend email.
+     *    @type string $yourname Sender name.
+     *    @type string $youremail Sender email.
+     *    @type string $frnd_subject Email subject.
+     *    @type string $frnd_comments Email Message.
+     *
+     * }
      */
     do_action('geodir_before_send_to_friend_email', $request);
     geodir_sendEmail($youremail, $yourname, $to_email, $to_name, $frnd_subject, $frnd_comments, $extra = '', 'send_friend', $request['pid']);//To client email
@@ -348,7 +424,19 @@ function geodir_send_friend($request)
      * Called after the send to friend email is sent.
      *
      * @since 1.0.0
-     * @param array $request The submitted form fields as an array.
+     * @param array $request {
+     *    The submitted form fields as an array.
+     *
+     *    @type string $sendact Enquiry type. Default "email_frnd".
+     *    @type string $pid Post ID.
+     *    @type string $to_name Friend name.
+     *    @type string $to_email Friend email.
+     *    @type string $yourname Sender name.
+     *    @type string $youremail Sender email.
+     *    @type string $frnd_subject Email subject.
+     *    @type string $frnd_comments Email Message.
+     *
+     * }
      */
     do_action('geodir_after_send_to_friend_email', $request);
 
@@ -780,9 +868,19 @@ function geodir_related_posts_display($request)
 
             }
             $related_posts = true;
+
+            /**
+             * Filters related listing listview template.
+             *
+             * @since 1.0.0
+             */
             $template = apply_filters("geodir_template_part-related-listing-listview", geodir_locate_template('listing-listview'));
 
-
+            /**
+             * Includes related listing listview template.
+             *
+             * @since 1.0.0
+             */
             include($template);
 
             wp_reset_query();
@@ -1158,6 +1256,11 @@ function geodir_detail_page_tabs_array()
         'tab_content' => ''
     );
 
+    /**
+     * Filter the tabs array.
+     *
+     * @since 1.0.0
+     */
     return apply_filters('geodir_detail_page_tab_list_extend', $arr_tabs);
 
 
@@ -1437,6 +1540,11 @@ function geodir_show_detail_page_tabs()
                         do_action('geodir_after_' . $tab_index . '_tab_content');
                         ?> </li>
                     <?php
+                    /**
+                     * Filter the current tab content.
+                     *
+                     * @since 1.0.0
+                     */
                     $arr_detail_page_tabs[$tab_index]['tab_content'] = apply_filters("geodir_modify_" . $detail_page_tab['tab_content'] . "_tab_content", ob_get_clean());
                 } // end of if for is_display
             }// end of foreach

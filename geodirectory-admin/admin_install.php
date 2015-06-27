@@ -66,9 +66,10 @@ function geodir_install()
         geodir_register_defaults(); // geodir_functions/ taxonomy_functions.php
         geodir_create_default_fields();
         //geodir_default_taxonomies();
-        geodir_create_pages();
         geodir_set_default_options();
+        geodir_create_pages();
         geodir_set_default_widgets();
+        gd_install_theme_compat();
 
         update_option('geodir_default_data_installed', 1);
 
@@ -197,9 +198,33 @@ function geodir_installation_end()
 function geodir_set_default_options()
 {
     global $geodir_settings;
+    /**
+     * Contains settings array for general tab.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once("option-pages/general_settings_array.php");
+    /**
+     * Contains settings array for design tab.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once("option-pages/design_settings_array.php");
+    /**
+     * Contains settings array for notifications tab.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once("option-pages/notifications_settings_array.php");
+    /**
+     * Contains settings array for permalink tab.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once("option-pages/permalink_settings_array.php");
     foreach ($geodir_settings as $value) {
         geodir_update_options($value, true);

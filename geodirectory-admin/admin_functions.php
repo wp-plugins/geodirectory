@@ -368,6 +368,12 @@ function geodir_handle_option_form_submit($current_tab)
 {
     global $geodir_settings;
     if (file_exists(dirname(__FILE__) . '/option-pages/' . $current_tab . '_array.php')) {
+        /**
+         * Contains settings array for current tab.
+         *
+         * @since 1.0.0
+         * @package GeoDirectory
+         */
         include_once('option-pages/' . $current_tab . '_array.php');
     }
     if (isset($_POST) && $_POST && isset($_REQUEST['page']) && $_REQUEST['page'] == 'geodirectory') :
@@ -403,7 +409,7 @@ function geodir_handle_option_form_submit($current_tab)
          *
          * @since 1.0.0
          * @param string $current_tab The current settings tab name.
-         * @param array $geodir_settings[$current_tab] The array of settings for the current settigns tab.
+         * @param array $geodir_settings[$current_tab] The array of settings for the current settings tab.
          */
         do_action('geodir_update_options_' . $current_tab, $geodir_settings[$current_tab]);
 
@@ -578,6 +584,12 @@ function geodir_insert_dummy_posts()
 
     global $wpdb, $current_user;
 
+    /**
+     * Contains dumy post content.
+     *
+     * @since 1.0.0
+     * @package GeoDirectory
+     */
     include_once('place_dummy_post.php');
 
 }
@@ -886,7 +898,41 @@ function geodir_update_options($options, $dummy = false)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $tabs The tabs array.
+ * @param array $tabs {
+ *    Attributes of the tabs array.
+ *
+ *    @type array $general_settings {
+ *        Attributes of general settings.
+ *
+ *        @type string $label Default "General".
+ *
+ *    }
+ *    @type array $design_settings {
+ *        Attributes of design settings.
+ *
+ *        @type string $label Default "Design".
+ *
+ *    }
+ *    @type array $permalink_settings {
+ *        Attributes of permalink settings.
+ *
+ *        @type string $label Default "Permalinks".
+ *
+ *    }
+ *    @type array $notifications_settings {
+ *        Attributes of notifications settings.
+ *
+ *        @type string $label Default "Notifications".
+ *
+ *    }
+ *    @type array $default_location_settings {
+ *        Attributes of default location settings.
+ *
+ *        @type string $label Default "Set Default Location".
+ *
+ *    }
+ *
+ * }
  * @return array Modified tabs array.
  */
 function places_custom_fields_tab($tabs)
@@ -931,7 +977,7 @@ function places_custom_fields_tab($tabs)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $tabs Tab menu array.
+ * @param array $tabs Tab menu array {@see places_custom_fields_tab()}.
  * @return array Modified tab meny array.
  */
 function geodir_tools_setting_tab($tabs)
@@ -947,7 +993,7 @@ function geodir_tools_setting_tab($tabs)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $tabs Tab menu array.
+ * @param array $tabs Tab menu array {@see places_custom_fields_tab()}.
  * @return array Modified tab meny array.
  */
 function geodir_compatibility_setting_tab($tabs)
@@ -964,7 +1010,7 @@ function geodir_compatibility_setting_tab($tabs)
  *
  * @since 1.0.0
  * @package GeoDirectory
- * @param array $tabs Tab menu array.
+ * @param array $tabs Tab menu array {@see places_custom_fields_tab()}.
  * @return array Modified tab meny array.
  */
 function geodir_extend_geodirectory_setting_tab($tabs)
@@ -1119,10 +1165,14 @@ if (!function_exists('geodir_post_sortable_columns')) {
  * @global object $post WordPress Post object.
  * @param int $post_id The post ID.
  */
-function geodir_post_information_save($post_id)
+function geodir_post_information_save($post_id,$post)
 {
 
-    global $wpdb, $current_user, $post;
+    global $wpdb, $current_user;//, $post;
+
+    if(isset($post->post_type) && ($post->post_type=='nav_menu_item' || $post->post_type=='page' || $post->post_type=='post')){
+        return;
+    }
 
    /* echo '###post';
     print_r($_POST);
@@ -4320,6 +4370,7 @@ function geodir_init_filesystem()
 
 }
 
+
 add_action('admin_init', 'geodir_filesystem_notice');
 
 /**
@@ -4328,10 +4379,11 @@ add_action('admin_init', 'geodir_filesystem_notice');
  * Displays an admin message if the WordPress file system can't be automatically accessed. Called via admin_init hook.
  *
  * @since 1.4.8
+ * @since 1.4.9 Added check to not run function when doing ajax calls.
  * @package GeoDirectory
  */
 function geodir_filesystem_notice()
-{
+{   if ( defined( 'DOING_AJAX' ) ){return;}
     $access_type = get_filesystem_method();
     if ($access_type === 'direct') {
     } elseif (!defined('FTP_USER')) {
@@ -4846,6 +4898,8 @@ function geodir_ajax_import_export() {
 									$post_type = $row[$c];
 								} else if ( $column == 'post_status' ) {
 									$post_status = sanitize_key( $row[$c] );
+								} else if ( $column == 'is_featured' ) {
+									$is_featured = (int)$row[$c];
 								} else if ( $column == 'geodir_video' ) {
 									$geodir_video = $row[$c];
 								} else if ( $column == 'post_address' ) {
@@ -4880,14 +4934,14 @@ function geodir_ajax_import_export() {
 									$post_images[] = $row[$c];
 								} else if ( $column == 'alive_days' && (int)$row[$c] > 0 ) {
 									$expire_date = date_i18n( 'Y-m-d', strtotime( $current_date . '+' . (int)$row[$c] . ' days' ) );
-								} else if ( $column == 'expire_date' && $row[$c] != '' ) {
-									$expire_date = $row[$c];
+								} else if ( $column == 'expire_date' && $row[$c] != '' && strtolower($row[$c]) != 'never' ) {
+									$row[$c] = str_replace('/', '-', $row[$c]);
+									$expire_date = date_i18n( 'Y-m-d', strtotime( $row[$c] ) );
 								}
 								$c++;
 							}
-							
+
 							$gd_post['IMAGE'] = $post_images;
-							$gd_post['expire_date'] = $expire_date;
 							
 							$post_status = !empty( $post_status ) ? sanitize_key( $post_status ) : $default_status;
 							$post_status = !empty( $wp_post_statuses ) && !isset( $wp_post_statuses[$post_status] ) ? $default_status : $post_status;
@@ -4997,7 +5051,9 @@ function geodir_ajax_import_export() {
 								$invalid++;
 							}
 							
-							if ( (int)$saved_post_id > 0 ) {								
+							if ( (int)$saved_post_id > 0 ) {							
+								$gd_post_info = geodir_get_post_info( $saved_post_id );
+								
 								$gd_post['post_id'] = $saved_post_id;
 								$gd_post['ID'] = $saved_post_id;
 								$gd_post['post_tags'] = $post_tags;
@@ -5023,20 +5079,41 @@ function geodir_ajax_import_export() {
 								$gd_post['post_location_id'] = $post_location_id;
 								
 								// post package info
-								$package_id = isset( $gd_post['package_id'] ) && !empty( $gd_post['package_id'] ) ? $gd_post['package_id'] : '';
-								$package_info = (array)geodir_post_package_info( array(), '', $post_type );
-								 
-								if ( !empty( $package_info ) )	 {
-									$package_id = $package_info['pid'];
+								$package_id = isset( $gd_post['package_id'] ) && !empty( $gd_post['package_id'] ) ? (int)$gd_post['package_id'] : 0;
+								if (!$package_id && !empty($gd_post_info) && isset($gd_post_info->package_id) && $gd_post_info->package_id) {
+									$package_id = $gd_post_info->package_id;
+								}
+								
+								$package_info = array();
+								if ($package_id && function_exists('geodir_get_package_info_by_id')) {
+									$package_info = (array)geodir_get_package_info_by_id($package_id);
 									
-									if ( isset( $package_info['alive_days'] ) && (int)$package_info['alive_days'] > 0 ) {
-										$gd_post['expire_date'] = date_i18n( 'Y-m-d', strtotime( $current_date . '+' . (int)$package_info['alive_days'] . ' days' ) );
-									} else {
-										$gd_post['expire_date'] = 'Never';
+									if (!(!empty($package_info) && isset($package_info['post_type']) && $package_info['post_type'] == $post_type)) {
+										$package_info = array();
 									}
 								}
-								$gd_post['package_id'] = $package_id;
 								
+								if (empty($package_info)) {
+									$package_info = (array)geodir_post_package_info( array(), '', $post_type );
+								}
+								 
+								if (!empty($package_info))	 {
+									$package_id = $package_info['pid'];
+									
+									if (isset($gd_post['alive_days']) || isset($gd_post['expire_date'])) {
+										$gd_post['expire_date'] = $expire_date;
+									} else {
+										if ( isset( $package_info['days'] ) && (int)$package_info['days'] > 0 ) {
+											$gd_post['alive_days'] = (int)$package_info['days'];
+											$gd_post['expire_date'] = date_i18n( 'Y-m-d', strtotime( $current_date . '+' . (int)$package_info['days'] . ' days' ) );
+										} else {
+											$gd_post['expire_date'] = 'Never';
+										}
+									}
+									
+									$gd_post['package_id'] = $package_id;
+								}
+
 								$table = $plugin_prefix . $post_type . '_detail';
 								
 								if (isset($gd_post['post_id'])) {
@@ -5171,6 +5248,13 @@ function geodir_ajax_import_export() {
 								
 								/** This action is documented in geodirectory-functions/post-functions.php */
                     			do_action( 'geodir_after_save_listing', $saved_post_id, $gd_post );
+								
+								if (isset($is_featured)) {
+									geodir_save_post_meta($saved_post_id, 'is_featured', $is_featured);
+								}
+								if (isset($gd_post['expire_date'])) {
+									geodir_save_post_meta($saved_post_id, 'expire_date', $gd_post['expire_date']);
+								}
 							}
 						}
 					}
@@ -5201,7 +5285,19 @@ function geodir_ajax_import_export() {
  * @package GeoDirectory
  *
  * @param string $taxonomy Post taxonomy.
- * @param array $term_data Array of term data.
+ * @param array $term_data {
+ *    Attributes of term data.
+ *
+ *    @type string $name Term name.
+ *    @type string $slug Term slug.
+ *    @type string $description Term description.
+ *    @type string $top_description Term top description.
+ *    @type string $image Default Term image.
+ *    @type string $icon Default Term icon.
+ *    @type string $taxonomy Term taxonomy.
+ *    @type int $parent Term parent ID.
+ *
+ * }
  * @return int|bool Term id when success, false when fail.
  */
 function geodir_imex_insert_term( $taxonomy, $term_data ) {
@@ -5240,7 +5336,20 @@ function geodir_imex_insert_term( $taxonomy, $term_data ) {
  * @package GeoDirectory
  *
  * @param string $taxonomy Post taxonomy.
- * @param array $term_data Array of term data.
+ * @param array $term_data {
+ *    Attributes of term data.
+ *
+ *    @type string $term_id Term ID.
+ *    @type string $name Term name.
+ *    @type string $slug Term slug.
+ *    @type string $description Term description.
+ *    @type string $top_description Term top description.
+ *    @type string $image Default Term image.
+ *    @type string $icon Default Term icon.
+ *    @type string $taxonomy Term taxonomy.
+ *    @type int $parent Term parent ID.
+ *
+ * }
  * @return int|bool Term id when success, false when fail.
  */
 function geodir_imex_update_term( $taxonomy, $term_data ) {
@@ -5353,6 +5462,8 @@ function geodir_imex_get_posts( $post_type ) {
 	$csv_rows = array();
 	
 	if ( !empty( $posts ) ) {
+		$is_payment_plugin = is_plugin_active( 'geodir_payment_manager/geodir_payment_manager.php' );
+		
 		$csv_row = array();
 		$csv_row[] = 'post_id';
 		$csv_row[] = 'post_title';
@@ -5368,6 +5479,11 @@ function geodir_imex_get_posts( $post_type ) {
 			$csv_row[] = 'endtime';
 		}
 		$csv_row[] = 'post_status';
+		$csv_row[] = 'is_featured';
+		if ($is_payment_plugin) {
+			$csv_row[] = 'package_id';
+			$csv_row[] = 'expire_date';
+		}
 		$csv_row[] = 'geodir_video';
 		$csv_row[] = 'post_address';
 		$csv_row[] = 'post_city';
@@ -5512,6 +5628,11 @@ function geodir_imex_get_posts( $post_type ) {
 				$csv_row[] = isset( $post['endtime'] ) && $post['endtime'] != '' && $post['endtime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $post['endtime'] ) ) : ''; // endtime
 			}
 			$csv_row[] = $post_info['post_status']; // post_status
+			$csv_row[] = (int)$post_info['is_featured'] == 1 ? 1 : ''; // is_featured
+			if ($is_payment_plugin) {
+				$csv_row[] = (int)$post_info['package_id']; // package_id
+				$csv_row[] = $post_info['expire_date'] != '' && strtolower($post_info['expire_date']) != 'never' ? date_i18n('Y-m-d', strtotime($post_info['expire_date'])) : 'Never'; // expire_date
+			}
 			$csv_row[] = $post_info['geodir_video']; // geodir_video
 			$csv_row[] = $post_info['post_address']; // post_address
 			$csv_row[] = $post_info['post_city']; // post_city
@@ -5765,13 +5886,13 @@ function geodir_save_csv_data( $file_path, $csv_data = array(), $clear = true ) 
 	if ( function_exists( 'fputcsv' ) ) {
 		$file = fopen( $file_path, $mode );
 		foreach( $csv_data as $csv_row ) {
-			$csv_row = array_map( 'utf8_decode', $csv_row );
+			//$csv_row = array_map( 'utf8_decode', $csv_row );
 			$write_successful = fputcsv( $file, $csv_row, ",", $enclosure = '"' );
 		}
 		fclose( $file );
 	} else {
 		foreach( $csv_data as $csv_row ) {
-			$csv_row = array_map( 'utf8_decode', $csv_row );
+			//$csv_row = array_map( 'utf8_decode', $csv_row );
 			$wp_filesystem->put_contents( $file_path, $csv_row );
 		}
 	}

@@ -44,7 +44,7 @@ class geodir_bestof_widget extends WP_Widget
 		 * @param string $instance['tab_layout'] Best of widget tab layout name.
 		 */
 		$tab_layout = empty($instance['tab_layout']) ? 'bestof-tabs-on-top' : apply_filters('bestof_widget_tab_layout', $instance['tab_layout']);
-        echo '<div class="' . $tab_layout . '" id="bestof-widget-tab-layout">';
+        echo '<div class="bestof-widget-tab-layout ' . $tab_layout . '">';
         echo $before_widget;
         $loc_terms = geodir_get_current_location_terms();
         if ($loc_terms) {
@@ -486,7 +486,21 @@ register_widget('geodir_bestof_widget');
  */
 function geodir_bestof_places_by_term($query_args)
 {
+    /**
+     * This action called before querying widget listings.
+     *
+     * @since 1.0.0
+     */
+    do_action('geodir_bestof_get_widget_listings_before');
+
     $widget_listings = geodir_get_widget_listings($query_args);
+
+    /**
+     * This action called after querying widget listings.
+     *
+     * @since 1.0.0
+     */
+    do_action('geodir_bestof_get_widget_listings_after');
 
     $character_count = isset($query_args['excerpt_length']) ? $query_args['excerpt_length'] : '';
 
@@ -504,7 +518,10 @@ function geodir_bestof_places_by_term($query_args)
     $current_map_canvas_arr = $map_canvas_arr;
     $current_grid_view = $gridview_columns_widget;
     $gridview_columns_widget = null;
-    $gd_listing_view_old = $_SESSION['gd_listing_view'];
+    
+	$gd_listing_view_set = isset($_SESSION['gd_listing_view']) ? true : false;
+	$gd_listing_view_old = $gd_listing_view_set ? $_SESSION['gd_listing_view'] : '';
+	
     $_SESSION['gd_listing_view'] = '1';
     $geodir_is_widget_listing = true;
 
@@ -521,7 +538,11 @@ function geodir_bestof_places_by_term($query_args)
 	if (!empty($current_post)) {
     	setup_postdata($current_post);
 	}
-    $_SESSION['gd_listing_view'] = $gd_listing_view_old;
+	if ($gd_listing_view_set) { // Set back previous value
+		$_SESSION['gd_listing_view'] = $gd_listing_view_old;
+	} else {
+		unset($_SESSION['gd_listing_view']);
+	}
     $map_jason = $current_map_jason;
     $map_canvas_arr = $current_map_canvas_arr;
     $gridview_columns_widget = $current_grid_view;
@@ -644,10 +665,10 @@ jQuery(document).ready(function() {
 });
 jQuery(document).ready(function() {
 	if (jQuery(window).width() < 660) {
-		if (jQuery('#bestof-widget-tab-layout').hasClass('bestof-tabs-on-left')) {
-			jQuery('#bestof-widget-tab-layout').removeClass('bestof-tabs-on-left').addClass('bestof-tabs-as-dropdown');
-		} else if (jQuery('#bestof-widget-tab-layout').hasClass('bestof-tabs-on-top')) {
-			jQuery('#bestof-widget-tab-layout').removeClass('bestof-tabs-on-top').addClass('bestof-tabs-as-dropdown');
+		if (jQuery('.bestof-widget-tab-layout').hasClass('bestof-tabs-on-left')) {
+			jQuery('.bestof-widget-tab-layout').removeClass('bestof-tabs-on-left').addClass('bestof-tabs-as-dropdown');
+		} else if (jQuery('.bestof-widget-tab-layout').hasClass('bestof-tabs-on-top')) {
+			jQuery('.bestof-widget-tab-layout').removeClass('bestof-tabs-on-top').addClass('bestof-tabs-as-dropdown');
 		}
 	}
 });

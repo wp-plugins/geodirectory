@@ -285,6 +285,11 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
                                 }
                                 geodir_favourite_html($post->post_author, $post->ID);
 
+                                /**
+                                 * Called after printing favorite html.
+                                 *
+                                 * @since 1.0.0
+                                 */
                                 do_action( 'geodir_after_favorite_html', $post->ID, 'listing' );
 
                                 global $wp_query;
@@ -308,6 +313,11 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
                                        onmouseout="stop_marker_animation('listing_map_canvas' ,'<?php echo $post->ID; ?>')"><?php _e('Pinpoint', GEODIRECTORY_TEXTDOMAIN); ?></a>
                                 <?php }
 
+                                /**
+                                 * Called after printing map pin point.
+                                 *
+                                 * @since 1.0.0
+                                 */
                                 do_action( 'geodir_listing_after_pinpoint', $post->ID );
 
                                 if ($post->post_author == get_current_user_id()) { ?>
@@ -334,9 +344,21 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
                                                 ?>
 
                                                 <a href="<?php echo $editlink; ?>" class="geodir-edit"
-                                                   title="<?php _e('Edit Listing', GEODIRECTORY_TEXTDOMAIN); ?>"><?php _e('edit', GEODIRECTORY_TEXTDOMAIN); ?></a>
+                                                   title="<?php _e('Edit Listing', GEODIRECTORY_TEXTDOMAIN); ?>">
+                                                    <?php
+                                                    $geodir_listing_edit_icon = apply_filters('geodir_listing_edit_icon', 'fa fa-edit');
+                                                    echo '<i class="'. $geodir_listing_edit_icon .'"></i>';
+                                                    ?>
+                                                    <?php _e('Edit', GEODIRECTORY_TEXTDOMAIN); ?>
+                                                </a>
                                                 <a href="<?php echo $deletelink; ?>" class="geodir-delete"
-                                                   title="<?php _e('Delete Listing', GEODIRECTORY_TEXTDOMAIN); ?>"><?php _e('delete', GEODIRECTORY_TEXTDOMAIN); ?></a>
+                                                   title="<?php _e('Delete Listing', GEODIRECTORY_TEXTDOMAIN); ?>">
+                                                    <?php
+                                                    $geodir_listing_delete_icon = apply_filters('geodir_listing_delete_icon', 'fa fa-close');
+                                                    echo '<i class="'. $geodir_listing_delete_icon .'"></i>';
+                                                    ?>
+                                                    <?php _e('Delete', GEODIRECTORY_TEXTDOMAIN); ?>
+                                                </a>
                                                 <?php
 
                                                 /**
