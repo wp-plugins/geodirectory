@@ -8,12 +8,11 @@ Stable tag: 1.5.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Easily create huge location-based business directories with this fully-featured and scalable WordPress directory plugin. In a few clicks you could be the next Yelp, Tripadvisor or Yellow pages.
+Easily create huge location-based business directories with this fully-featured directory plugin. In a few clicks you could be the next Yelp or Tripadvisor.
 
 == Description ==
 
 Turn any WordPress theme into a lightning-fast global business directory. Now 100% Multisite compatible! Includes extensive new set of shortcodes. New! CSV import, export, re-import and update. You asked for it, we built it!
-
 
 = Scale easily - go global =
 
@@ -25,7 +24,7 @@ We developed GeoDirectory using WordPress standards and best practice to give yo
 
 = Universal =
 
-GeoDirectory was built to work with any theme. If you need extra help getting your theme to work smoothly with GeoDirectory, just hit us up for support in our forum — we'll be right on it.
+GeoDirectory was built to work with any theme. If you need extra help getting your theme to work smoothly with GeoDirectory, just hit us up for support in our forum - we'll be right on it.
 
 = Developer-friendly =
 
@@ -37,8 +36,9 @@ We have been wholly focused on directory tools for WordPress since 2011. That's 
 
 = Features =
 
-* Create a local directory, based on a single location, using the GeoDirectory free core plugin. Focus on a street or go as wide as a city. Expand to multiple locations or make a global directory with our MultiLocation premium add-on. * It provides a front end form that lets you edit through a drag and drop form builder, which allows visitors to submit their listings autonomously. 
-* Quickly create a front-end submission form, using GeoDirectory’s intuitive drag-and-drop form builder. Users submit listings autonomously. Add any custom field; choose from 13 field types. Use the Advanced Search premium add-on to filter search by any custom field.
+* Create a local directory, based on a single location, using the GeoDirectory free core plugin. Focus on a street or go as wide as a city. Expand to multiple locations or make a global directory with our MultiLocation premium add-on. 
+* It provides a front end form that lets you edit through a drag and drop form builder, which allows visitors to submit their listings autonomously. 
+* Quickly create a front-end submission form, using GeoDirectory's intuitive drag-and-drop form builder. Users submit listings autonomously. Add any custom field; choose from 13 field types. Use the Advanced Search premium add-on to filter search by any custom field.
 * 15+ widgets and 12+ widget areas.
 * 2 different Google Maps widgets. Create unlimited categories with ajax-loading custom markers
 * Built-in forms for User Reviews, Send-to-Friend and Business Enquiry.
@@ -49,7 +49,7 @@ We have been wholly focused on directory tools for WordPress since 2011. That's 
 * New! CSV import, export, re-import. Easily transfer millions of listings across instances. Edit data offline: live listings automagically update on re-import. You asked for it, we made it.
 * New! Theme Compatibility admin page. Set up GeoDirectory to perform just the way you want with your particular theme. You can even export your settings and use them on new installs.
 * New! Shortcodes for core elements, such as Add, Listing, Popular Post View, Related Listings and many more.
-* New! Yelp-like “Best Of” widget
+* New! Yelp-like 'Best Of' widget
 * New! Improved Google Analytics widget for listings owners.
 
 = WordPress Directory Theme? Whoop! =
@@ -83,17 +83,17 @@ Premium [Addons](http://wpgeodirectory.com/addons/ "Premium addons for GeoDirect
 * [Advance search filters](http://wpgeodirectory.com/addons/advanced-search-filters/ "Allows you to extended search with custom filters") - Adds advance filters to the search widget, search autocompleter, geolocation and much more (eg: "pet friendly" filter).
 * [Buddypress Integration](http://wpgeodirectory.com/addons/buddypress-integration/ "integrates Buddypress with GeoDirectory") - Smoothly integrates GeoDirectory with Buddypress.
 * [AffiliateWP Integration](http://wpgeodirectory.com/addons/affiliatewp-integration/ "integrates AffiliateWP with GeoDirectory") - Easily use GeoDirectory with AffiliateWP.
-* [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allow business owners to fine-tune their listings, add images, link to events and show an “owner-verified” badge on the listing.
+* [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allow business owners to fine-tune their listings, add images, link to events and show an 'owner-verified' badge on the listing.
 * [Marker Cluster](http://wpgeodirectory.com/addons/marker-cluster/ "To avoid overcrowded maps") - Avoid cluttered maps by using numbered markers at high zoom levels.
 * [Duplicate alert](http://wpgeodirectory.com/addons/ajax-duplicate-alert/ "Listing already exists?") - Alert users when they add a listing with the same title as another.
 * [Stripe Payment Gateway](http://wpgeodirectory.com/addons/stripe-payment-gateway/ "Extend Prices and Payments with Stripe Payment Geteway") -  Extend the Prices and Payments add-on with this seamless gateway for Stripe.
-* [GD Booster](http://wpgeodirectory.com/addons/gd-booster/ "Caching plugin for GeoDirectory") - Watch it fly! GD Booster uses some of the smartest caching, compression and minifying methods available today for WordPress, so your GeoDirectory listings won’t hog resources and slow down your site, however many you add. 
+* [GD Booster](http://wpgeodirectory.com/addons/gd-booster/ "Caching plugin for GeoDirectory") - Watch it fly! GD Booster uses some of the smartest caching, compression and minifying methods available today for WordPress, so your GeoDirectory listings won't hog resources and slow down your site, however many you add. 
 * [Custom Google Maps](http://wpgeodirectory.com/addons/custom-google-maps/ "Customize your maps look and feel") - Modify the look and feel of all Google Maps widgets via an intuitive user interface, with color pickers and simple-to-use options.
 * [Social Importer](http://wpgeodirectory.com/addons/social-importer/ "Import listings from Facebook and Yelp!") -  Import pages and events from Facebook and listings from Yelp.
 * [GD reCAPTCHA](http://wpgeodirectory.com/addons/gd-recaptcha/ "Stop spammers!") - Banish spam by adding the No CAPTCHA reCAPTCHA widget to any GeoDirectory form.
 
 
-= Go Pro — Become a member! =
+= Go Pro - Become a member! =
 
 Get your hands on all the premium add-ons and themes. Sign up at [wpgeodirectory.com](http://wpgeodirectory.com/ "Get GeoDirectory membership.").
 
