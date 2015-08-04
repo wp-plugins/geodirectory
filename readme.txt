@@ -8,7 +8,7 @@ Stable tag: 1.5.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Easily create huge location-based business directories with this fully-featured directory plugin. In a few clicks you could be the next Yelp or Tripadvisor.
+Create huge location-based business directories with this fully-featured directory plugin. In a few clicks you could be the next Yelp or Tripadvisor.
 
 == Description ==
 
