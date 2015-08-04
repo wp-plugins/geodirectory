@@ -606,6 +606,11 @@ if (!function_exists('geodir_sendEmail')) {
         $sitefromEmail = get_option('site_email');
         $sitefromEmailName = get_site_emailName();
         $productlink = get_permalink($post_id);
+		
+		$user_login = '';
+		if ($user_id > 0 && $user_info = get_userdata($user_id)) {
+			$user_login = $user_info->user_login;
+		}
 
         $posted_date = '';
         $listingLink = '';
@@ -629,12 +634,12 @@ if (!function_exists('geodir_sendEmail')) {
             $fromEmailName = get_option('site_email_name');
         }
 
-        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]','[#from_email#]');
-        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date,$fromEmail);
+        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]','[#from_email#]','[#user_login#]','[#username#]');
+        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date,$fromEmail, $user_login, $user_login);
         $message = str_replace($search_array, $replace_array, $message);
 
-        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]','[#from_email#]');
-        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date,$fromEmail);
+        $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]','[#from_email#]','[#user_login#]','[#username#]');
+        $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date,$fromEmail, $user_login, $user_login);
         $subject = str_replace($search_array, $replace_array, $subject);
 
         $headers = 'MIME-Version: 1.0' . "\r\n";
@@ -662,12 +667,12 @@ if (!function_exists('geodir_sendEmail')) {
             $message = stripslashes(get_option('geodir_post_submited_success_email_content_admin'));
 
 
-            $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]');
-            $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date);
+            $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#comments#]', '[#login_url#]', '[#login_details#]', '[#client_name#]', '[#posted_date#]','[#user_login#]','[#username#]');
+            $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $to_message, $loginurl_link, $login_details, $toEmailName, $posted_date, $user_login, $user_login);
             $message = str_replace($search_array, $replace_array, $message);
 
-            $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]');
-            $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date);
+            $search_array = array('[#listing_link#]', '[#site_name_url#]', '[#post_id#]', '[#site_name#]', '[#to_name#]', '[#from_name#]', '[#subject#]', '[#client_name#]', '[#posted_date#]','[#user_login#]','[#username#]');
+            $replace_array = array($listingLink, $siteurl_link, $post_id, $sitefromEmailName, $toEmailName, $fromEmailName, $to_subject, $toEmailName, $posted_date, $user_login, $user_login);
             $subject = str_replace($search_array, $replace_array, $subject);
 
             $subject .= ' - ADMIN BCC COPY';
@@ -967,7 +972,7 @@ function geodir_breadcrumb()
             $breadcrumb .= stripslashes_deep($page_title);
             $breadcrumb .= '</li>';
         } else if (is_tag()) {
-            $separator . single_tag_title();
+            $breadcrumb .=  "<li> " . $separator . single_tag_title('',false) . '</li>';
         } else if (is_day()) {
             $breadcrumb .= "<li> " . $separator . __(" Archive for", GEODIRECTORY_TEXTDOMAIN) . " ";
             the_time('F jS, Y');
@@ -1216,7 +1221,7 @@ if (!function_exists('adminEmail')) {
         $siteurl_link = '<a href="' . $siteurl . '">' . $fromEmailName . '</a>';
         $user_info = get_userdata($user_id);
         $user_email = $user_info->user_email;
-        $display_name = $user_info->first_name;
+        $display_name = geodir_get_client_name($user_id);
         $user_login = $user_info->user_login;
         $number_of_grace_days = get_option('ptthemes_listing_preexpiry_notice_days');
         if ($number_of_grace_days == '') {
@@ -1460,7 +1465,7 @@ function get_page_id_geodir_add_listing_page($page_id)
  */
 function geodir_wpml_multilingual_status()
 {
-    if (is_plugin_active('sitepress-multilingual-cms/sitepress.php')) {
+    if (function_exists('icl_object_id')) {
         return true;
     }
     return false;
@@ -2282,6 +2287,20 @@ function geodir_listing_slider_widget_output($args = '', $instance = '')
      */
     $post_number = empty($instance['post_number']) ? '5' : apply_filters('widget_post_number', $instance['post_number']);
     /**
+     * Filter the widget listings limit shown at one time.
+     *
+     * @since 1.5.0
+     * @param string $instance['max_show'] Number of listings to display on screen.
+     */
+    $max_show = empty($instance['max_show']) ? '1' : apply_filters('widget_max_show', $instance['max_show']);
+    /**
+     * Filter the widget slide width.
+     *
+     * @since 1.5.0
+     * @param string $instance['slide_width'] Width of the slides shown.
+     */
+    $slide_width = empty($instance['slide_width']) ? '' : apply_filters('widget_slide_width', $instance['slide_width']);
+    /**
      * Filter widget's "show title" value.
      *
      * @since 1.0.0
@@ -2367,6 +2386,8 @@ function geodir_listing_slider_widget_output($args = '', $instance = '')
                 slideshowSpeed: <?php echo $slideshowSpeed;?>,
                 animationSpeed: <?php echo $animationSpeed;?>,
                 directionNav: <?php echo $directionNav;?>,
+                maxItems: <?php echo $max_show;?>,
+                <?php if($slide_width){ echo "itemWidth: ".$slide_width.",";}?>
                 sync: "#geodir_widget_carousel",
                 start: function (slider) {
                     jQuery('.geodir-listing-flex-loader').hide();
@@ -2407,7 +2428,7 @@ function geodir_listing_slider_widget_output($args = '', $instance = '')
     }// show only upcomming events
 
     $widget_listings = geodir_get_widget_listings($query_args);
-    if (!empty($widget_listings) || $with_no_results) {
+    if (!empty($widget_listings) || (isset($with_no_results) && $with_no_results)) {
         if ($title) {
             echo $before_title . $title . $after_title;
         }
@@ -2541,7 +2562,7 @@ function geodir_loginwidget_output($args = '', $instance = '')
                 <li><select id="geodir_add_listing" class="chosen_select" onchange="window.location.href=this.value"
                             option-autoredirect="1" name="geodir_add_listing" option-ajaxchosen="false"
                             data-placeholder="<?php echo esc_attr(__('Add Listing', GEODIRECTORY_TEXTDOMAIN)); ?>">
-                        <option value=""></option>
+                        <option value="" disabled="disabled" selected="selected" style='display:none;'><?php echo esc_attr(__('Add Listing', GEODIRECTORY_TEXTDOMAIN)); ?></option>
                         <?php echo $addlisting_links; ?>
                     </select></li> <?php
 
@@ -2585,7 +2606,7 @@ function geodir_loginwidget_output($args = '', $instance = '')
                     <select id="geodir_my_favourites" class="chosen_select" onchange="window.location.href=this.value"
                             option-autoredirect="1" name="geodir_my_favourites" option-ajaxchosen="false"
                             data-placeholder="<?php echo esc_attr(__('My Favorites', GEODIRECTORY_TEXTDOMAIN)); ?>">
-                        <option value=""></option>
+                        <option value="" disabled="disabled" selected="selected" style='display:none;'><?php echo esc_attr(__('My Favorites', GEODIRECTORY_TEXTDOMAIN)); ?></option>
                         <?php echo $favourite_links; ?>
                     </select>
                 </li>
@@ -2630,7 +2651,7 @@ function geodir_loginwidget_output($args = '', $instance = '')
                     <select id="geodir_my_listings" class="chosen_select" onchange="window.location.href=this.value"
                             option-autoredirect="1" name="geodir_my_listings" option-ajaxchosen="false"
                             data-placeholder="<?php echo esc_attr(__('My Listings', GEODIRECTORY_TEXTDOMAIN)); ?>">
-                        <option value=""></option>
+                        <option value="" disabled="disabled" selected="selected" style='display:none;'><?php echo esc_attr(__('My Listings', GEODIRECTORY_TEXTDOMAIN)); ?></option>
                         <?php echo $listing_links; ?>
                     </select>
                 </li>
@@ -3449,4 +3470,30 @@ function geodir_allowed_mime_types() {
 			)
 		) 
 	);
+}
+
+/**
+ * Retrieve list of user display name for user id.
+ *
+ * @since 1.5.0
+ * 
+ * @param  string $user_id The WP user id.
+ * @return string User display name.
+ */
+function geodir_get_client_name($user_id) {
+	$client_name = '';
+	
+	$user_data = get_userdata($user_id);
+	
+	if (!empty($user_data)) {
+		if (isset($user_data->display_name) && trim($user_data->display_name) != '') {
+			$client_name = trim($user_data->display_name);
+		} else if (isset($user_data->user_nicename) && trim($user_data->user_nicename) != '') {
+			$client_name = trim($user_data->user_nicename);
+		} else {
+			$client_name = trim($user_data->user_login);
+		}
+	}
+	
+	return $client_name;
 }

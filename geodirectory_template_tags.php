@@ -121,7 +121,7 @@ function geodir_templates_scripts()
     wp_register_script('geodirectory-choose-ajax', geodir_plugin_url() . '/geodirectory-assets/js/ajax-chosen.min.js', array(), GEODIRECTORY_VERSION);
     wp_enqueue_script('geodirectory-choose-ajax');
 
-    wp_enqueue_script('geodirectory-jquery-ui-timepicker-js', geodir_plugin_url() . '/geodirectory-assets/ui/jquery.ui.timepicker.min.js#asyncload', array('jquery-ui-datepicker', 'jquery-ui-slider', 'jquery-effects-core', 'jquery-effects-slide'), '', true);
+    wp_enqueue_script('geodirectory-jquery-ui-timepicker-js', geodir_plugin_url() . '/geodirectory-assets/js/jquery.ui.timepicker.min.js#asyncload', array('jquery-ui-datepicker', 'jquery-ui-slider', 'jquery-effects-core', 'jquery-effects-slide'), '', true);
 
 
     if (is_page() && geodir_is_page('add-listing')) {
@@ -276,10 +276,10 @@ function geodir_templates_styles()
         wp_enqueue_style('geodirectory-media-style');
 
 
-        wp_register_style('geodirectory-jquery-ui-css', geodir_plugin_url() . '/geodirectory-assets/ui/jquery-ui.css', array(), GEODIRECTORY_VERSION);
+        wp_register_style('geodirectory-jquery-ui-css', geodir_plugin_url() . '/geodirectory-assets/css/jquery-ui.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-jquery-ui-css');
 
-        wp_register_style('geodirectory-jquery-ui-timepicker-css', geodir_plugin_url() . '/geodirectory-assets/ui/jquery.ui.timepicker.css', array(), GEODIRECTORY_VERSION);
+        wp_register_style('geodirectory-jquery-ui-timepicker-css', geodir_plugin_url() . '/geodirectory-assets/css/jquery.ui.timepicker.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-jquery-ui-timepicker-css');
 
         wp_register_style('geodirectory-flexslider-css', geodir_plugin_url() . '/geodirectory-assets/css/flexslider.css', array(), GEODIRECTORY_VERSION);
@@ -294,12 +294,8 @@ function geodir_templates_styles()
         wp_register_style('geodirectory-lightbox-css', geodir_plugin_url() . '/geodirectory-assets/css/jquery.lightbox-0.5.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-lightbox-css');
 
-
         wp_register_style('geodir-rating-style', geodir_plugin_url() . '/geodirectory-assets/css/jRating.jquery.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodir-rating-style');
-
-        wp_register_style('geodir-jslider-style', geodir_plugin_url() . '/geodirectory-assets/css/jslider.css', array(), GEODIRECTORY_VERSION);
-        wp_enqueue_style('geodir-jslider-style');
 
         wp_register_style('geodir-chosen-style', geodir_plugin_url() . '/geodirectory-assets/css/chosen.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodir-chosen-style');
@@ -379,7 +375,22 @@ function geodir_pagination($before = '', $after = '', $prelabel = '', $nxtlabel 
         }
 
         if ($max_page > 1 || $always_show) {
-            echo "$before <div class='Navi'>";
+			// Extra pagination info
+			$geodir_pagination_more_info = get_option('geodir_pagination_advance_info');
+			$start_no = ( $paged - 1 ) * $posts_per_page + 1;
+			$end_no = min($paged * $posts_per_page, $numposts);
+			
+			if ($geodir_pagination_more_info != '') {
+				$pagination_info = '<div class="gd-pagination-details">' . wp_sprintf(__('Showing listings %d-%d of %d', GEODIRECTORY_TEXTDOMAIN), $start_no, $end_no, $numposts) . '</div>';
+				
+				if ($geodir_pagination_more_info == 'before') {
+					$before = $before . $pagination_info;
+				} else if ($geodir_pagination_more_info == 'after') {
+					$after = $pagination_info . $after;
+				}
+			}
+			
+			echo "$before <div class='Navi'>";
             if ($paged >= ($pages_to_show - 1)) {
                 echo '<a href="' . str_replace('&paged', '&amp;paged', get_pagenum_link()) . '">&laquo;</a>';
             }

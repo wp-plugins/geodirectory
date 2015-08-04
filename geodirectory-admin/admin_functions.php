@@ -55,13 +55,10 @@ if (!function_exists('geodir_admin_styles')) {
         wp_register_style('geodir-chosen-style', geodir_plugin_url() . '/geodirectory-assets/css/chosen.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodir-chosen-style');
 
-        wp_register_style('geodirectory-jquery-ui-timepicker-css', geodir_plugin_url() . '/geodirectory-assets/ui/jquery.ui.timepicker.css', array(), GEODIRECTORY_VERSION);
+        wp_register_style('geodirectory-jquery-ui-timepicker-css', geodir_plugin_url() . '/geodirectory-assets/css/jquery.ui.timepicker.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-jquery-ui-timepicker-css');
 
-        wp_register_style('geodir-jslider-style', geodir_plugin_url() . '/geodirectory-assets/css/jslider.css', array(), GEODIRECTORY_VERSION);
-        wp_enqueue_style('geodir-jslider-style');
-
-        wp_register_style('geodirectory-jquery-ui-css', geodir_plugin_url() . '/geodirectory-assets/ui/jquery-ui.css', array(), GEODIRECTORY_VERSION);
+        wp_register_style('geodirectory-jquery-ui-css', geodir_plugin_url() . '/geodirectory-assets/css/jquery-ui.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-jquery-ui-css');
 
         wp_register_style('geodirectory-custom-fields-css', geodir_plugin_url() . '/geodirectory-assets/css/custom_field.css', array(), GEODIRECTORY_VERSION);
@@ -110,7 +107,7 @@ if (!function_exists('geodir_admin_scripts')) {
         wp_enqueue_script('jquery-ui-slider'); */
 
 
-        wp_enqueue_script('geodirectory-jquery-ui-timepicker-js', geodir_plugin_url() . '/geodirectory-assets/ui/jquery.ui.timepicker.js', array('jquery-ui-datepicker', 'jquery-ui-slider'), '', true);
+        wp_enqueue_script('geodirectory-jquery-ui-timepicker-js', geodir_plugin_url() . '/geodirectory-assets/js/jquery.ui.timepicker.js', array('jquery-ui-datepicker', 'jquery-ui-slider'), '', true);
 
         wp_register_script('chosen', geodir_plugin_url() . '/geodirectory-assets/js/chosen.jquery.js', array(), GEODIRECTORY_VERSION);
         wp_enqueue_script('chosen');
@@ -1205,13 +1202,13 @@ function geodir_post_information_save($post_id,$post)
         if (isset($_REQUEST['action']) && ($_REQUEST['action'] == 'trash' || $_REQUEST['action'] == 'untrash'))
             return;
 
-        if (!wp_verify_nonce($_POST['geodir_post_info_noncename'], plugin_basename(__FILE__)))
+        if (!isset($_POST['geodir_post_info_noncename']) || !wp_verify_nonce($_POST['geodir_post_info_noncename'], plugin_basename(__FILE__)))
             return;
 
         /*if ( !wp_verify_nonce( $_POST['geodir_post_addinfo_noncename'], plugin_basename( __FILE__ ) ) )
         return;*/
 
-        if (!wp_verify_nonce($_POST['geodir_post_attachments_noncename'], plugin_basename(__FILE__)))
+        if (!isset($_POST['geodir_post_attachments_noncename']) || !wp_verify_nonce($_POST['geodir_post_attachments_noncename'], plugin_basename(__FILE__)))
             return;
 
 
@@ -3519,6 +3516,43 @@ function geodir_import_export_page() {
   <h3><?php _e( 'GD Import & Export CSV', GEODIRECTORY_TEXTDOMAIN ) ;?></h3>
   <span class="description"><?php _e( 'Import & export csv for GD listings & categories.', GEODIRECTORY_TEXTDOMAIN ) ;?></span>
   <div class="gd-content-heading">
+
+  <?php
+    ini_set('max_execution_time', 999999);
+    $ini_max_execution_time_check = @ini_get( 'max_execution_time' );
+    ini_restore('max_execution_time');
+
+    if($ini_max_execution_time_check != 999999){ // only show these setting to the user if we can't change the ini setting
+        ?>
+	<div id="gd_ie_reqs" class="metabox-holder">
+      <div class="meta-box-sortables ui-sortable">
+        <div class="postbox">
+          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'PHP Requirements for GD Import & Export CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+          <div class="inside">
+            <span class="description"><?php echo __( 'Note: In case GD import & export csv not working for larger data then please check and configure following php settings.', GEODIRECTORY_TEXTDOMAIN );?></span>
+			<table class="form-table">
+				<thead>
+				  <tr>
+				  	<th><?php _e( 'PHP Settings', GEODIRECTORY_TEXTDOMAIN );?></th><th><?php _e( 'Current Value', GEODIRECTORY_TEXTDOMAIN );?></th><th><?php _e( 'Recommended Value', GEODIRECTORY_TEXTDOMAIN );?></th>
+				  </tr>
+				</thead>
+				<tbody>
+				  <tr>
+				  	<td>max_input_time</td><td><?php echo @ini_get( 'max_input_time' );?></td><td>3000</td>
+				  </tr>
+				  <tr>
+				  	<td>max_execution_time</td><td><?php  echo @ini_get( 'max_execution_time' );?></td><td>3000</td>
+				  </tr>
+				  <tr>
+				  	<td>memory_limit</td><td><?php echo @ini_get( 'memory_limit' );?></td><td>256M</td>
+				  </tr>
+				</tbody>
+		    </table>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<?php }?>
 	<div id="gd_ie_imposts" class="metabox-holder">
       <div class="meta-box-sortables ui-sortable">
         <div id="gd_ie_im_posts" class="postbox">
@@ -4412,7 +4446,11 @@ function geodir_filesystem_notice()
  */
 function geodir_ajax_import_export() {
 	global $wpdb, $plugin_prefix, $current_user, $wp_filesystem;
-	
+
+    // try to set higher limits for import
+    @ini_set('max_input_time', 3000);
+    @ini_set('max_execution_time', 3000);
+    @ini_set('memory_limit', '256M');
 	error_reporting(0);
 	
 	$json = array();
@@ -4451,6 +4489,15 @@ function geodir_ajax_import_export() {
 			
 	switch ( $task ) {
 		case 'export_posts': {
+			// WPML
+			$is_wpml = geodir_is_wpml();
+			if ($is_wpml) {
+				global $sitepress;
+				$active_lang = ICL_LANGUAGE_CODE;
+				
+				$sitepress->switch_lang('all', true);
+			}
+			// WPML
 			if ( $post_type == 'gd_event' ) {
 				add_filter( 'geodir_imex_count_posts', 'geodir_imex_count_events', 10, 2 );
 				add_filter( 'geodir_imex_export_posts_query', 'geodir_imex_get_events_query', 10, 2 );
@@ -4469,6 +4516,11 @@ function geodir_ajax_import_export() {
 				$percentage = min( $percentage, 100 );
 				
 				$json['percentage'] = $percentage;
+				// WPML
+				if ($is_wpml) {
+					$sitepress->switch_lang($active_lang, true);
+				}
+				// WPML
 				wp_send_json( $json );
 			} else {				
 				if ( $wp_filesystem->exists( $file_path ) ) {
@@ -4507,11 +4559,25 @@ function geodir_ajax_import_export() {
 						$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
 					}
 				}
+				// WPML
+				if ($is_wpml) {
+					$sitepress->switch_lang($active_lang, true);
+				}
+				// WPML
 				wp_send_json( $json );
 			}
 		}
 		break;
 		case 'export_cats': {
+			// WPML
+			$is_wpml = geodir_is_wpml();
+			if ($is_wpml) {
+				global $sitepress;
+				$active_lang = ICL_LANGUAGE_CODE;
+				
+				$sitepress->switch_lang('all', true);
+			}
+			// WPML
 			$file_name = $post_type . 'category_' . date( 'j_n_y' );
 			
 			$terms_count = geodir_get_terms_count( $post_type );
@@ -4525,6 +4591,11 @@ function geodir_ajax_import_export() {
 				$percentage = min( $percentage, 100 );
 				
 				$json['percentage'] = $percentage;
+				// WPML
+				if ($is_wpml) {
+					$sitepress->switch_lang($active_lang, true);
+				}
+				// WPML
 				wp_send_json( $json );
 			} else {				
 				if ( $wp_filesystem->exists( $file_path ) ) {
@@ -4563,6 +4634,11 @@ function geodir_ajax_import_export() {
 						$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
 					}
 				}
+				// WPML
+				if ($is_wpml) {
+					$sitepress->switch_lang($active_lang, true);
+				}
+				// WPML
 				wp_send_json( $json );
 			}
 		}
@@ -4570,6 +4646,14 @@ function geodir_ajax_import_export() {
 		case 'prepare_import':
 		case 'import_cat':
 		case 'import_post': {
+			// WPML
+			$is_wpml = geodir_is_wpml();
+			if ($is_wpml) {
+				global $sitepress;
+				$active_lang = ICL_LANGUAGE_CODE;
+			}
+			// WPML
+			
 			ini_set( 'auto_detect_line_endings', true );
 			
 			$uploads = wp_upload_dir();
@@ -4675,6 +4759,7 @@ function geodir_ajax_import_export() {
 							$cat_top_description = '';
 							$cat_image = '';
 							$cat_icon = '';
+							$cat_language = '';
 							
 							$c = 0;
 							foreach ($columns as $column ) {
@@ -4697,6 +4782,11 @@ function geodir_ajax_import_export() {
 								} else if ( $column == 'cat_icon' ) {
 									$cat_icon = $row[$c];
 								}
+								// WPML
+								if ($is_wpml && $column == 'cat_language') {
+									$cat_language = strtolower(trim($row[$c]));
+								}
+								// WPML
 								$c++;
 							}
 							
@@ -4704,6 +4794,12 @@ function geodir_ajax_import_export() {
 								$invalid++;
 								continue;
 							}
+							
+							// WPML
+							if ($is_wpml && $cat_language != '') {
+								$sitepress->switch_lang($cat_language, true);
+							}
+							// WPML
 														
 							$term_data = array();
 							$term_data['name'] = $cat_name;
@@ -4815,6 +4911,12 @@ function geodir_ajax_import_export() {
 									$images++;
 								}
 							}
+							
+							// WPML
+							if ($is_wpml && $cat_language != '') {
+								$sitepress->switch_lang($active_lang, true);
+							}
+							// WPML
 						}
 					}
 				}
@@ -4877,6 +4979,9 @@ function geodir_ajax_import_export() {
 							$post_images = array();
 							
 							$expire_date = 'Never';
+							
+							$language = '';
+							$original_post_id = '';
 														
 							$c = 0;
 							foreach ($columns as $column ) {
@@ -4938,8 +5043,23 @@ function geodir_ajax_import_export() {
 									$row[$c] = str_replace('/', '-', $row[$c]);
 									$expire_date = date_i18n( 'Y-m-d', strtotime( $row[$c] ) );
 								}
+								// WPML
+								if ($is_wpml) {
+									if ($column == 'language') {
+										$language = strtolower(trim($row[$c]));
+									} else if ($column == 'original_post_id') {
+										$original_post_id = (int)$row[$c];
+									}
+								}
+								// WPML
 								$c++;
 							}
+							
+							// WPML
+							if ($is_wpml && $language != '') {
+								$sitepress->switch_lang($language, true);
+							}
+							// WPML
 
 							$gd_post['IMAGE'] = $post_images;
 							
@@ -5052,6 +5172,17 @@ function geodir_ajax_import_export() {
 							}
 							
 							if ( (int)$saved_post_id > 0 ) {							
+								// WPML
+								if ($is_wpml && $original_post_id > 0 && $language != '') {
+									$wpml_post_type = 'post_' . $post_type;
+									$source_language = geodir_get_language_for_element( $original_post_id, $wpml_post_type );
+									$source_language = $source_language != '' ? $source_language : $sitepress->get_default_language();
+
+									$trid = $sitepress->get_element_trid( $original_post_id, $wpml_post_type );
+									
+									$sitepress->set_element_language_details( $saved_post_id, $wpml_post_type, $trid, $language, $source_language );
+								}
+								// WPML
 								$gd_post_info = geodir_get_post_info( $saved_post_id );
 								
 								$gd_post['post_id'] = $saved_post_id;
@@ -5256,6 +5387,12 @@ function geodir_ajax_import_export() {
 									geodir_save_post_meta($saved_post_id, 'expire_date', $gd_post['expire_date']);
 								}
 							}
+							
+							// WPML
+							if ($is_wpml && $language != '') {
+								$sitepress->switch_lang($active_lang, true);
+							}
+							// WPML
 						}
 					}
 				}
@@ -5316,7 +5453,7 @@ function geodir_imex_insert_term( $taxonomy, $term_data ) {
 		$defaults = array( 'alias_of' => '', 'description' => '', 'parent' => 0, 'slug' => '');
 		$term_args = wp_parse_args( $term_args, $defaults );
 		$term_args = sanitize_term( $term_args, $taxonomy, 'db' );
-		$args['slug'] = wp_unique_term_slug( $term_data['slug'], (object)$term_args );
+		$args['slug'] = wp_unique_term_slug( $args['slug'], (object)$term_args );
 	}
 	
     if( !empty( $term ) ) {
@@ -5500,6 +5637,13 @@ function geodir_imex_get_posts( $post_type ) {
 		$csv_row[] = 'geodir_facebook';
 		$csv_row[] = 'geodir_video';
 		$csv_row[] = 'geodir_special_offers';
+		// WPML
+		$is_wpml = geodir_is_wpml();
+		if ($is_wpml) {
+			$csv_row[] = 'language';
+			$csv_row[] = 'original_post_id';
+		}
+		// WPML
 				
 		$custom_fields = geodir_imex_get_custom_fields( $post_type );
 		if ( !empty( $custom_fields ) ) {
@@ -5649,6 +5793,12 @@ function geodir_imex_get_posts( $post_type ) {
 			$csv_row[] = $post_info['geodir_facebook']; // geodir_facebook
 			$csv_row[] = $post_info['geodir_video']; // geodir_video
 			$csv_row[] = $post_info['geodir_special_offers']; // geodir_special_offers
+			// WPML
+			if ($is_wpml) {
+				$csv_row[] = geodir_get_language_for_element( $post_id, 'post_' . $post_type );
+				$csv_row[] = get_post_meta( $post_id, '_icl_lang_duplicate_of', true );
+			}
+			// WPML
 			
 			if ( !empty( $custom_fields ) ) {
 				foreach ( $custom_fields as $custom_field ) {
@@ -5813,6 +5963,12 @@ function geodir_imex_get_terms( $post_type ) {
 		$csv_row[] = 'cat_top_description';
 		$csv_row[] = 'cat_image';
 		$csv_row[] = 'cat_icon';
+		// WPML
+		$is_wpml = geodir_is_wpml();
+		if ($is_wpml) {
+			$csv_row[] = 'cat_language';
+		}
+		// WPML
 		
 		$csv_rows[] = $csv_row;
 		
@@ -5839,6 +5995,11 @@ function geodir_imex_get_terms( $post_type ) {
 			$csv_row[] = get_tax_meta( $term->term_id, 'ct_cat_top_desc', false, $post_type );
 			$csv_row[] = $cat_image;
 			$csv_row[] = $cat_icon;
+			// WPML
+			if ($is_wpml) {
+				$csv_row[] = geodir_get_language_for_element( $term->term_id, 'tax_' . $taxonomy );
+			}
+			// WPML
 			
 			$csv_rows[] = $csv_row;
 		}
@@ -5941,4 +6102,182 @@ function geodir_imex_get_custom_fields( $post_type ) {
 	 $rows = $wpdb->get_results( $sql );
 	 
 	 return $rows;
+}
+
+/**
+ * Check wpml active or not.
+ *
+ * @since 1.5.0
+ *
+ * @return True if WPML is active else False.
+ */
+function geodir_is_wpml() {
+	if (function_exists('icl_object_id')) {
+		return true;
+	}
+	
+	return false;
+}
+
+/**
+ * Get WPML language code for current term.
+ *
+ * @since 1.5.0
+ *
+ * @global object $sitepress Sitepress WPML object.
+ *
+ * @param int $element_id Post ID or Term id.
+ * @param string $element_type Element type. Ex: post_gd_place or tax_gd_placecategory.
+ * @return Language code.
+ */
+function geodir_get_language_for_element($element_id, $element_type) {
+	global $sitepress;
+	
+	return $sitepress->get_language_for_element($element_id, $element_type);
+}
+
+/**
+ * Duplicate post details for WPML translation post.
+ *
+ * @since 1.5.0
+ *
+ * @param int $master_post_id Original Post ID.
+ * @param string $lang Language code for translating post.
+ * @param array $postarr Arraty of post data.
+ * @param int $tr_post_id Translation Post ID.
+ */
+function geodir_icl_make_duplicate($master_post_id, $lang, $postarr, $tr_post_id) {
+	$post_type = get_post_type($master_post_id);
+
+	if (in_array($post_type, geodir_get_posttypes())) {				
+		// Duplicate post details
+		geodir_icl_duplicate_post_details($master_post_id, $tr_post_id, $lang);
+		
+		// Duplicate taxonomies
+		geodir_icl_duplicate_taxonomies($master_post_id, $tr_post_id, $lang);
+		
+		// Duplicate post images
+		geodir_icl_duplicate_post_images($master_post_id, $tr_post_id, $lang);
+	}
+}
+
+/**
+ * Duplicate post general details for WPML translation post.
+ *
+ * @since 1.5.0
+ *
+ * @global object $wpdb WordPress Database object.
+ * @global string $plugin_prefix Geodirectory plugin table prefix.
+ *
+ * @param int $master_post_id Original Post ID.
+ * @param int $tr_post_id Translation Post ID.
+ * @param string $lang Language code for translating post.
+ * @return bool True for success, False for fail.
+ */
+function geodir_icl_duplicate_post_details($master_post_id, $tr_post_id, $lang) {
+	global $wpdb, $plugin_prefix;
+	
+	$post_type = get_post_type($master_post_id);
+	$post_table = $plugin_prefix . $post_type . '_detail';
+	
+	$query = $wpdb->prepare("SELECT * FROM " . $post_table . " WHERE post_id = %d", array($master_post_id));
+	$data = (array)$wpdb->get_row($query);
+	
+	if ( !empty( $data ) ) {
+		$data['post_id'] = $tr_post_id;
+		unset($data['default_category'], $data['marker_json'], $data['featured_image'], $data[$post_type . 'category'], $data['overall_rating'], $data['rating_count'], $data['ratings']);
+		
+		$wpdb->update($post_table, $data, array('post_id' => $tr_post_id));		
+		return true;
+	}
+	
+	return false;
+}
+
+/**
+ * Duplicate post taxonomies for WPML translation post.
+ *
+ * @since 1.5.0
+ *
+ * @global object $sitepress Sitepress WPML object.
+ * @global object $wpdb WordPress Database object.
+ *
+ * @param int $master_post_id Original Post ID.
+ * @param int $tr_post_id Translation Post ID.
+ * @param string $lang Language code for translating post.
+ * @return bool True for success, False for fail.
+ */
+function geodir_icl_duplicate_taxonomies($master_post_id, $tr_post_id, $lang) {
+	global $sitepress, $wpdb;
+	$post_type = get_post_type($master_post_id);
+	
+	remove_filter('get_term', array($sitepress,'get_term_adjust_id')); // AVOID filtering to current language
+
+	$taxonomies = get_object_taxonomies($post_type);
+	foreach ($taxonomies as $taxonomy) {
+		$terms = get_the_terms($master_post_id, $taxonomy);
+		$terms_array = array();
+		
+		if ($terms) {
+			foreach ($terms as $term) {
+				$tr_id = apply_filters( 'translate_object_id',$term->term_id, $taxonomy, false, $lang);
+				
+				if (!is_null($tr_id)){
+					// not using get_term - unfiltered get_term
+					$translated_term = $wpdb->get_row($wpdb->prepare("
+						SELECT * FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} x ON x.term_id = t.term_id WHERE t.term_id = %d AND x.taxonomy = %s", $tr_id, $taxonomy));
+
+					$terms_array[] = $translated_term->term_id;
+				}
+			}
+
+			if (!is_taxonomy_hierarchical($taxonomy)){
+				$terms_array = array_unique( array_map( 'intval', $terms_array ) );
+			}
+
+			wp_set_post_terms($tr_post_id, $terms_array, $taxonomy);
+			
+			if ($taxonomy == $post_type . 'category') {
+				geodir_set_postcat_structure($tr_post_id, $post_type . 'category');
+			}
+		}
+	}
+}
+
+/**
+ * Duplicate post images for WPML translation post.
+ *
+ * @since 1.5.0
+ *
+ * @global object $wpdb WordPress Database object.
+ *
+ * @param int $master_post_id Original Post ID.
+ * @param int $tr_post_id Translation Post ID.
+ * @param string $lang Language code for translating post.
+ * @return bool True for success, False for fail.
+ */
+function geodir_icl_duplicate_post_images($master_post_id, $tr_post_id, $lang) {
+	global $wpdb;
+	
+	$query = $wpdb->prepare("DELETE FROM " . GEODIR_ATTACHMENT_TABLE . " WHERE mime_type like %s AND post_id = %d", array('%image%', $tr_post_id));
+	$wpdb->query($query);
+	
+	$query = $wpdb->prepare("SELECT * FROM " . GEODIR_ATTACHMENT_TABLE . " WHERE mime_type like %s AND post_id = %d ORDER BY menu_order ASC", array('%image%', $master_post_id));
+	$post_images = $wpdb->get_results($query);
+	
+	if ( !empty( $post_images ) ) {
+		foreach ( $post_images as $post_image) {
+			$image_data = (array)$post_image;
+			unset($image_data['ID']);
+			$image_data['post_id'] = $tr_post_id;
+			
+			$wpdb->insert(GEODIR_ATTACHMENT_TABLE, $image_data);
+			
+			geodir_set_wp_featured_image($tr_post_id);
+		}
+		
+		return true;
+	}
+	
+	return false;
 }
