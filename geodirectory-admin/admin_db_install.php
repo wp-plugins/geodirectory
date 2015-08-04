@@ -448,7 +448,7 @@ if (!function_exists('geodir_create_tables')) {
 						post_title text NULL DEFAULT NULL,
 						post_status varchar(20) NULL DEFAULT NULL,
 						default_category INT NULL DEFAULT NULL,
-						post_tags varchar(254) NULL DEFAULT NULL,
+						post_tags text NULL DEFAULT NULL,
 						post_location_id int(11) NOT NULL,
 						marker_json text NULL DEFAULT NULL,
 						claimed enum( '1', '0' ) NULL DEFAULT '0',
@@ -487,12 +487,15 @@ if (!function_exists('geodir_create_tables')) {
         $attechment_table = "CREATE TABLE " . GEODIR_ATTACHMENT_TABLE . " (
 						ID int(11) NOT NULL AUTO_INCREMENT,
 						post_id int(11) NOT NULL,
+						user_id int(11) DEFAULT NULL,
 						title varchar(254) NULL DEFAULT NULL,
+						caption varchar(254) NULL DEFAULT NULL,
 						content text NULL DEFAULT NULL,
 						file varchar(254) NOT NULL, 
 						mime_type varchar(150) NOT NULL,
 						menu_order int(11) NOT NULL DEFAULT '0',
 						is_featured enum( '1', '0' ) NULL DEFAULT '0',
+						is_approved enum( '1', '0' ) NULL DEFAULT '1',
 						metadata text NULL DEFAULT NULL,
 						PRIMARY KEY  (ID)
 						) $collate ";

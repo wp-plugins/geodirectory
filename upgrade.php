@@ -29,6 +29,10 @@ if (get_option(GEODIRECTORY_TEXTDOMAIN . '_db_version') != GEODIRECTORY_VERSION)
     if (GEODIRECTORY_VERSION <= '1.4.8') {
         add_action('init', 'geodir_upgrade_148', 11);
     }
+
+    if (GEODIRECTORY_VERSION <= '1.5.0') {
+        add_action('init', 'geodir_upgrade_150', 11);
+    }
     update_option(GEODIRECTORY_TEXTDOMAIN . '_db_version', GEODIRECTORY_VERSION);
 
 }
@@ -66,6 +70,16 @@ function geodir_upgrade_136()
  */
 function geodir_upgrade_146(){
     gd_convert_virtual_pages();
+}
+
+/**
+ * Handles upgrade for geodirectory versions <= 1.5.0.
+ *
+ * @since 1.5.0
+ * @package GeoDirectory
+ */
+function geodir_upgrade_150(){
+    gd_fix_cpt_rewrite_slug();
 }
 
 
@@ -276,6 +290,42 @@ function gd_install_theme_compat()
         'geodir_theme_compat_code' => ''
     );
 
+//Directory Theme
+    $theme_compat['Directory_Theme'] = array(
+        'geodir_wrapper_open_id' => 'geodir_wrapper',
+        'geodir_wrapper_open_class' => '',
+        'geodir_wrapper_open_replace' => '',
+        'geodir_wrapper_close_replace' => '</div></div><!-- content ends here-->',
+        'geodir_wrapper_content_open_id' => 'geodir_content',
+        'geodir_wrapper_content_open_class' => '',
+        'geodir_wrapper_content_open_replace' => '',
+        'geodir_wrapper_content_close_replace' => '',
+        'geodir_article_open_id' => '',
+        'geodir_article_open_class' => '',
+        'geodir_article_open_replace' => '',
+        'geodir_article_close_replace' => '',
+        'geodir_sidebar_right_open_id' => '',
+        'geodir_sidebar_right_open_class' => '',
+        'geodir_sidebar_right_open_replace' => '<aside id="gd-sidebar-wrapper" class="sidebar [class]" role="complementary" itemscope itemtype="[itemtype]" [width_css]>',
+        'geodir_sidebar_right_close_replace' => '',
+        'geodir_sidebar_left_open_id' => '',
+        'geodir_sidebar_left_open_class' => '',
+        'geodir_sidebar_left_open_replace' => '<aside  id="gd-sidebar-wrapper" class="sidebar [class]" role="complementary" itemscope itemtype="[itemtype]" [width_css]>',
+        'geodir_sidebar_left_close_replace' => '',
+        'geodir_main_content_open_id' => '',
+        'geodir_main_content_open_class' => '',
+        'geodir_main_content_open_replace' => '<!-- removed -->',
+        'geodir_main_content_close_replace' => '<!-- removed -->',
+        'geodir_top_content_add' => '',
+        'geodir_before_main_content_add' => '<div class="clearfix geodir-common">',
+        'geodir_before_widget_filter' => '',
+        'geodir_after_widget_filter' => '',
+        'geodir_theme_compat_css' => '',
+        'geodir_theme_compat_js' => '',
+        'geodir_theme_compat_default_options' => '',
+        'geodir_theme_compat_code' => ''
+    );
+
 //Avada
     $theme_compat['Avada'] = array(
         'geodir_wrapper_open_id' => '',
@@ -450,6 +500,7 @@ function gd_install_theme_compat()
         'geodir_before_main_content_add' => '',
         'geodir_before_widget_filter' => '',
         'geodir_after_widget_filter' => '',
+        'geodir_location_switcher_menu_li_class_filter' => 'menu-item menu-item-gd-location-switcher menu-item-has-children gd-location-switcher',
         'geodir_theme_compat_css' => stripslashes('.full-width-content #geodir-wrapper-content{width:100%}.geodir_full_page .geodir-listing-search{text-align:center}.geodir_full_page .geodir-search{float:none;margin:0}.geodir_full_page .geodir-search select,.geodir_full_page .geodir-search .search_by_post,.geodir_full_page .geodir-search input[type="text"],.geodir_full_page .geodir-search input[type="button"],.geodir_full_page .geodir-search input[type="submit"]{display:inline-block;float:none}.content{float:left}.sidebar-content .content,.sidebar-content #geodir-wrapper-content{float:right}.sidebar .geodir-company_info{background-color:#fff;border:none}.geodir_full_page .geodir-loc-bar{padding:0;margin:0;border:none}.geodir_full_page .geodir-category-list-in{margin-top:0}.geodir_full_page .top_banner_section{margin-bottom:0}.geodir-breadcrumb-bar{margin-bottom:-35px} .search-page .entry-title,.listings-page .entry-title{font-size: 20px;}.site-inner .geodir-breadcrumb-bar{margin-bottom:0px}'),
         'geodir_theme_compat_js' => '',
         'geodir_theme_compat_default_options' => '',
@@ -624,7 +675,41 @@ function gd_convert_virtual_pages(){
 }
 
 
+/**
+ * Converts all GD CPT's to the new rewrite slug by removing /%gd_taxonomy% from the slug
+ *
+ * @since 1.5.0
+ * @package GeoDirectory
+ */
+function gd_fix_cpt_rewrite_slug()
+{
 
+    $alt_post_types = array();
+    $post_types = get_option('geodir_post_types');
+
+
+    if (is_array($post_types)){
+
+        foreach ($post_types as $post_type => $args) {
+
+
+            if(isset($args['rewrite']['slug'])){
+                $args['rewrite']['slug'] = str_replace("/%gd_taxonomy%","",$args['rewrite']['slug']);
+            }
+
+                $alt_post_types[$post_type] = $args;
+
+        }
+    }
+
+    if(!empty($alt_post_types)) {
+        update_option('geodir_post_types',$alt_post_types);
+        }
+
+
+    // flush the rewrite rules
+    flush_rewrite_rules();
+}
 
 
 

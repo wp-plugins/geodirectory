@@ -930,11 +930,20 @@ if (!function_exists('geodir_custom_field_save')) {
                         break;
 
                     case 'checkbox':
+                        $data_type = 'TINYINT';
+
+                        $meta_field_add = $data_type . "( 1 ) NOT NULL ";
+                        if ($default_value != '') {
+                            $meta_field_add .= " DEFAULT '" . $default_value . "'";
+                        }
+
+                        geodir_add_column_if_not_exist($detail_table, $htmlvar_name, $meta_field_add);
+
+
+                        break;
                     case 'multiselect':
 
                         $data_type = 'VARCHAR';
-
-                        $default_value_add = " `" . $htmlvar_name . "` " . $data_type . "( 500 ) NULL  ";
 
                         $meta_field_add = $data_type . "( 500 ) NULL ";
                         if ($default_value != '') {
@@ -943,7 +952,6 @@ if (!function_exists('geodir_custom_field_save')) {
 
                         geodir_add_column_if_not_exist($detail_table, $htmlvar_name, $meta_field_add);
 
-                        //$wpdb->query("ALTER TABLE ".$detail_table." ADD".$default_value_add);
 
                         break;
                     case 'textarea':
@@ -1711,6 +1719,16 @@ function geodir_get_custom_fields_html($package_id = '', $default = 'custom', $p
             if ($extra_fields['date_format'] == '')
                 $extra_fields['date_format'] = 'yy-mm-dd';
 
+
+            $search = array('dd', 'mm', 'yy');
+            $replace = array('d', 'm', 'Y');
+
+            $date_format = str_replace($search, $replace, $extra_fields['date_format']);
+
+            if($value && !isset($_REQUEST['backandedit'])) {
+                $time = strtotime($value);
+                $value = date($date_format, $time);
+            }
             ?>
             <script type="text/javascript">
 
@@ -2412,8 +2430,10 @@ if (!function_exists('geodir_show_listing_info')) {
                             $post_htmlvar_value = $date_format == 'd/m/Y' ? str_replace('/', '-', $post->$type['htmlvar_name']) : $post->$type['htmlvar_name']; // PHP doesn't work well with dd/mm/yyyy format
 
                             $value = '';
-                            if ($post->$type['htmlvar_name'] != '') {
+                            if ($post->$type['htmlvar_name'] != '' && $post->$type['htmlvar_name']!="0000-00-00") {
                                 $value = date($date_format, strtotime($post_htmlvar_value));
+                            }else{
+                                continue;
                             }
 
                             if (strpos($field_icon, 'http') !== false) {
@@ -2995,7 +3015,7 @@ if (!function_exists('geodir_show_listing_info')) {
                      * @since 1.0.0
                      * @param string $html_var The HTML variable name for the field.
                      */
-                    do_action('geodir_before_show_' . $html_var);
+                    do_action("geodir_before_show_{$html_var}");
                     /**
                      * Filter custom field output.
                      *
@@ -3005,7 +3025,7 @@ if (!function_exists('geodir_show_listing_info')) {
                      * @param string $html Custom field unfiltered HTML.
                      * @param array $variables_array Custom field variables array.
                      */
-                    if ($html) echo apply_filters('geodir_show_' . $html_var, $html, $variables_array);
+                    if ($html) echo apply_filters("geodir_show_{$html_var}", $html, $variables_array);
 
                     /**
                      * Called after a custom fields is output on the frontend.
@@ -3013,7 +3033,7 @@ if (!function_exists('geodir_show_listing_info')) {
                      * @since 1.0.0
                      * @param string $html_var The HTML variable name for the field.
                      */
-                    do_action('geodir_after_show_' . $html_var);
+                    do_action("geodir_after_show_{$html_var}");
 
                 endif;
 
