@@ -36,7 +36,7 @@ function geodir_sc_add_listing($atts)
     $defaults = array(
         'pid' => '',
         'listing_type' => 'gd_place',
-        'login_msg' => __('You must login to post.', GEODIRECTORY_TEXTDOMAIN),
+        'login_msg' => __('You must login to post.', 'geodirectory'),
         'show_login' => false,
     );
     $params = shortcode_atts($defaults, $atts);
@@ -82,13 +82,14 @@ function geodir_sc_add_listing($atts)
  * This implements the functionality of the shortcode for displaying map on home page.
  *
  * @since 1.0.0
+ * @since 1.5.2 Added TERRAIN map type.
  * @package GeoDirectory
  * @param array $atts {
  *     Attributes of the shortcode.
  *
  *     @type string $width           Map width in pixels. Default 960.
  *     @type string $height          Map height in pixels. Default 425.
- *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID.
+ *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID | TERRAIN.
  *     @type string $zoom            The zoom level of the map. Between 1-19. Default 13.
  *     @type string $autozoom        True if the map should autozoom, false if not.
  *     @type string $child_collapse  True if the map should collapse the categories, false if not.
@@ -136,7 +137,8 @@ function geodir_sc_home_map($atts)
          * Filter the widget maptype of the map on home/listings page.
          *
          * @since 1.0.0
-         * @param string $params['maptype'] The map type. Can be ROADMAP | SATELLITE | HYBRID.
+		 * @since 1.5.2 Added TERRAIN map type.
+         * @param string $params['maptype'] The map type. Can be ROADMAP | SATELLITE | HYBRID | TERRAIN.
          */
         'maptype' => apply_filters('widget_maptype', $params['maptype']),
         /**
@@ -219,6 +221,7 @@ add_shortcode('gd_listing_map', 'geodir_sc_listing_map');
  * This implements the functionality of the shortcode for displaying listing map.
  *
  * @since 1.0.0
+ * @since 1.5.2 Added TERRAIN for $maptype attribute.
  * @package GeoDirectory
  * @global object $post The current post object.
  * @param array $atts {
@@ -226,7 +229,7 @@ add_shortcode('gd_listing_map', 'geodir_sc_listing_map');
  *
  *     @type string $width           Map width in pixels. Default 294.
  *     @type string $height          Map height in pixels. Default 370.
- *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID.
+ *     @type string $maptype         Map type. Default ROADMAP. Can be ROADMAP | SATELLITE | HYBRID | TERRAIN.
  *     @type string $zoom            The zoom level of the map. Between 1-19. Default 13.
  *     @type string $autozoom        True if the map should autozoom, false if not.
  *     @type bool   $sticky          True if should be sticky, false if not
@@ -520,6 +523,7 @@ add_shortcode('gd_popular_post_category', 'geodir_sc_popular_post_category');
  * This implements the functionality of the shortcode for displaying popular post category.
  *
  * @since 1.0.0
+ * @since 1.5.1 Added default_post_type parameter.
  * @package GeoDirectory
  * @global string $geodir_post_category_str The geodirectory post category.
  * @param array $atts {
@@ -531,6 +535,7 @@ add_shortcode('gd_popular_post_category', 'geodir_sc_popular_post_category');
  *     @type string $after_title        HTML content to append to the title when displayed. Default. Empty.
  *     @type int $category_limit        Number of categories to display. Default. 15.
  *     @type string $title              Widget title. Default. Empty.
+ *     @type string $default_post_type  Default post type. Default. Empty.
  *
  * }
  * @return string Popular post category HTML.
@@ -546,10 +551,12 @@ function geodir_sc_popular_post_category($atts)
         'before_title' => '',
         'after_title' => '',
         'title' => '',
+		'default_post_type' => '',
     );
 
     $params = shortcode_atts($defaults, $atts, 'popular_post_category');
     $params['category_limit'] = absint($params['category_limit']);
+	$params['default_post_type'] = gdsc_is_post_type_valid($params['default_post_type']) ? $params['default_post_type'] : '';
     geodir_popular_post_category_output($params, $params);
 
     $output = ob_get_contents();
@@ -696,20 +703,22 @@ add_shortcode('gd_recent_reviews', 'geodir_sc_recent_reviews');
  * This implements the functionality of the shortcode for displaying recent reviews.
  *
  * @since 1.0.0
+ * @since 1.5.0 New title attribute added.
  * @package GeoDirectory
  * @param array $atts {
  *     Attributes of the shortcode.
  *
+ *     @type string $title The title displayed above recent reviews. Default empty.
  *     @type int $count Number of reviews you want to display. Default. 5.
  *
  * }
  * @return string Recent reviews HTML.
  */
-function geodir_sc_recent_reviews($atts)
-{
+function geodir_sc_recent_reviews($atts) {
     ob_start();
     $defaults = array(
-        'count' => 5,
+		'title' => '',
+		'count' => 5,
     );
 
     $params = shortcode_atts($defaults, $atts);
@@ -718,11 +727,15 @@ function geodir_sc_recent_reviews($atts)
     if (0 == $count) {
         $count = 1;
     }
+	
+	$title = !empty($params['title']) ? __($params['title'], 'geodirectory') : '';
 
     $comments_li = geodir_get_recent_reviews(30, $count, 100, false);
 
     if ($comments_li) {
-        ?>
+        if ($title != '') { ?>
+		<h3 class="geodir-sc-recent-reviews-title widget-title"><?php echo $title; ?></h3>
+		<?php } ?>
         <div class="geodir_sc_recent_reviews_section">
             <ul class="geodir_sc_recent_reviews"><?php echo $comments_li; ?></ul>
         </div>

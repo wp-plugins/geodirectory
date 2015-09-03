@@ -32,6 +32,10 @@ function geodir_on_wp_loaded()
         geodir_send_friend($_REQUEST); // function in custom_functions.php
 
     }
+
+    if (isset($_REQUEST['geodir_signup'])) {
+        geodir_user_signup();
+    }
 }
 
 /**
@@ -51,9 +55,7 @@ function geodir_on_init()
     do_action('giodir_handle_request');
     global $wpdb;
 
-    if (isset($_REQUEST['geodir_signup'])) {
-        geodir_user_signup();
-    }
+
 
 
     if (get_option('geodir_allow_wpadmin') == '0' && is_user_logged_in() && !current_user_can('manage_options')) {
@@ -327,8 +329,13 @@ function geodir_ajax_handler()
 
                         global $current_user;
                         get_currentuserinfo();
-                        $post_type = get_post_type($_REQUEST['pid']);
-                        $lastid = wp_delete_post($_REQUEST['pid']);
+
+                        if(get_option('geodir_disable_perm_delete')){
+                            $lastid = wp_trash_post($_REQUEST['pid']);
+                        }else{
+                            $lastid = wp_delete_post($_REQUEST['pid']);
+                        }
+
                         if ($lastid && !is_wp_error($lastid))
                             wp_redirect($_SERVER['HTTP_REFERER']);
 

@@ -492,7 +492,8 @@ if (!function_exists('geodir_save_listing')) {
         //die;
 
         if ($send_post_submit_mail) { // if new post send out email
-            geodir_sendEmail('', '', $current_user->user_email, $current_user->display_name, '', '', $request_info, 'post_submit', $last_post_id, $current_user->ID);
+            $to_name = geodir_get_client_name($current_user->ID);
+			geodir_sendEmail('', '', $current_user->user_email, $to_name, '', '', $request_info, 'post_submit', $last_post_id, $current_user->ID);
         }
         /*
          * Unset the session so we don't loop.
@@ -1384,8 +1385,10 @@ if (!function_exists('geodir_get_images')) {
 
         if (!empty($arrImages)) {
             foreach ($arrImages as $attechment) {
+
                 $img_arr = array();
                 $img_arr['id'] = $attechment->ID;
+                $img_arr['user_id'] = isset($attechment->user_id) ? $attechment->user_id : 0;
 
                 $file_info = pathinfo($attechment->file);
 
@@ -1408,7 +1411,9 @@ if (!function_exists('geodir_get_images')) {
 
                 $img_arr['file'] = $file_name; // add the title to the array
                 $img_arr['title'] = $attechment->title; // add the title to the array
+                $img_arr['caption'] = isset($attechment->caption) ? $attechment->caption : ''; // add the caption to the array
                 $img_arr['content'] = $attechment->content; // add the description to the array
+                $img_arr['is_approved'] = isset($attechment->is_approved) ? $attechment->is_approved : ''; // used for user image moderation. For backward compatibility Default value is 1.
 
                 $return_arr[] = (object)$img_arr;
 
@@ -1793,8 +1798,8 @@ if (!function_exists('geodir_get_infowindow_html')) {
 
         if ($lat && $lng) {
             ob_start(); ?>
-            <div class="bubble">
-                <div style="position: relative;margin:5px 0px;">
+            <div class="gd-bubble" style="">
+                <div class="gd-bubble-inside">
                     <?php
                     $comment_count = '';
                     $rating_star = '';
@@ -1929,8 +1934,9 @@ if (!function_exists('geodir_get_infowindow_html')) {
 
                             $post_author = isset($postinfo_obj->post_author) ? $postinfo_obj->post_author : get_post_field('post_author', $ID);
                             ?>
+                        <div class="geodir-bubble-meta-fade"></div>
 
-                            <div class="geodir-bubble-meta-bottom">
+                        <div class="geodir-bubble-meta-bottom">
                                 <span class="geodir-bubble-rating"><?php echo $rating_star;?></span>
 
                                 <span
@@ -2943,16 +2949,7 @@ function geodir_function_post_updated($post_ID, $post_after, $post_before)
             $post_author_id = !empty($post_after->post_author) ? $post_after->post_author : NULL;
             $post_author_data = get_userdata($post_author_id);
 
-            $to_name = '';
-            if (!empty($post_author_data)) {
-                if (!empty($post_author_data->display_name)) {
-                    $to_name = $post_author_data->display_name;
-                } else if ($post_author_data->user_nicename) {
-                    $to_name = $post_author_data->user_nicename;
-                } else {
-                    $to_name = $post_author_data->user_login;
-                }
-            }
+            $to_name = geodir_get_client_name($post_author_id);
 
             $from_email = geodir_get_site_email_id();
             $from_name = get_site_emailName();
@@ -2965,11 +2962,11 @@ function geodir_function_post_updated($post_ID, $post_after, $post_before)
             $message_type = 'listing_published';
 
             if (get_option('geodir_post_published_email_subject') == '') {
-                update_option('geodir_post_published_email_subject', __('Listing Published Successfully', GEODIRECTORY_TEXTDOMAIN));
+                update_option('geodir_post_published_email_subject', __('Listing Published Successfully', 'geodirectory'));
             }
 
             if (get_option('geodir_post_published_email_content') == '') {
-                update_option('geodir_post_published_email_content', __("<p>Dear [#client_name#],</p><p>Your listing [#listing_link#] has been published. This email is just for your information.</p><p>[#listing_link#]</p><br><p>Thank you for your contribution.</p><p>[#site_name#]</p>", GEODIRECTORY_TEXTDOMAIN));
+                update_option('geodir_post_published_email_content', __("<p>Dear [#client_name#],</p><p>Your listing [#listing_link#] has been published. This email is just for your information.</p><p>[#listing_link#]</p><br><p>Thank you for your contribution.</p><p>[#site_name#]</p>", 'geodirectory'));
             }
 
             /**

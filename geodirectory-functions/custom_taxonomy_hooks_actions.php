@@ -25,7 +25,7 @@ function geodir_register_taxonomies()
             // Allow taxonomie names to be translated
             if (!empty($args['args']['labels'])) {
                 foreach ($args['args']['labels'] as $key => $tax_label) {
-                    $args['args']['labels'][$key] = __($tax_label, GEODIRECTORY_TEXTDOMAIN);
+                    $args['args']['labels'][$key] = __($tax_label, 'geodirectory');
                 }
             }
 
@@ -42,7 +42,7 @@ function geodir_register_taxonomies()
 /**
  * Get available custom posttypes and taxonomies and register them.
  */
-_x('places', 'URL slug', GEODIRECTORY_TEXTDOMAIN);
+_x('places', 'URL slug', 'geodirectory');
 
 /**
  * Register the post types.
@@ -66,13 +66,13 @@ function geodir_register_post_types()
                 continue;
             }
             if (!empty($args['rewrite']['slug'])) {
-                $args['rewrite']['slug'] = _x($args['rewrite']['slug'], 'URL slug', GEODIRECTORY_TEXTDOMAIN);
+                $args['rewrite']['slug'] = _x($args['rewrite']['slug'], 'URL slug', 'geodirectory');
             }
             $args = stripslashes_deep($args);
 
             if (!empty($args['labels'])) {
                 foreach ($args['labels'] as $key => $val) {
-                    $args['labels'][$key] = __($val, GEODIRECTORY_TEXTDOMAIN);// allow translation
+                    $args['labels'][$key] = __($val, 'geodirectory');// allow translation
                 }
             }
 
@@ -113,7 +113,7 @@ function geodir_post_type_args_modify($args, $post_type)
 
             if (array_key_exists('rewrite', $args)) {
                 if (array_key_exists('slug', $args['rewrite']))
-                    $args['rewrite']['slug'] = $listing_slug . '/%gd_taxonomy%';
+                    $args['rewrite']['slug'] = $listing_slug;// . '/%gd_taxonomy%';
             }
 
             $geodir_post_types = get_option('geodir_post_types');
@@ -125,7 +125,7 @@ function geodir_post_type_args_modify($args, $post_type)
 
                 if (array_key_exists('rewrite', $geodir_post_types[$post_type]))
                     if (array_key_exists('slug', $geodir_post_types[$post_type]['rewrite']))
-                        $geodir_post_types[$post_type]['rewrite']['slug'] = $listing_slug . '/%gd_taxonomy%';
+                        $geodir_post_types[$post_type]['rewrite']['slug'] = $listing_slug;// . '/%gd_taxonomy%';
 
                 update_option('geodir_post_types', $geodir_post_types);
 
@@ -227,7 +227,7 @@ function geodir_listing_rewrite_rules($rules)
         global $wpdb;
         $location_prefix = $wpdb->get_var($wpdb->prepare("SELECT post_name FROM $wpdb->posts WHERE post_type='page' AND ID=%d", $location_page));
     }
-    if ($location_prefix == '')
+    if (!isset($location_prefix))
         $location_prefix = 'location';
 
 
@@ -265,7 +265,7 @@ function geodir_listing_rewrite_rules($rules)
  * @since 1.0.0
  *
  * @global wpdb $wpdb WordPress database abstraction object.
- *
+ * @deprecated 1.5.0 No longer required.
  * @param string $rules mod_rewrite Rewrite rules formatted for .htaccess.
  * @return array Rewrite rules.
  */
@@ -279,12 +279,12 @@ function geodir_htaccess_contents($rules)
     }
     $my_content = <<<EOD
 \n# BEGIN GeoDirectory Rules
-Redirect 301 /location/ /$location_prefix/
+#Redirect 301 /location/ /$location_prefix/
 # END GeoDirectory Rules\n\n
 EOD;
     return $my_content . $rules;
 }
-add_filter('mod_rewrite_rules', 'geodir_htaccess_contents');
+//add_filter('mod_rewrite_rules', 'geodir_htaccess_contents');
 
 /**
  * Add the location variables to the query variables.
@@ -685,12 +685,12 @@ function geodir_custom_post_status()
 {
     // Vertual Page Status
     register_post_status('virtual', array(
-        'label' => _x('Virtual', 'page', GEODIRECTORY_TEXTDOMAIN),
+        'label' => _x('Virtual', 'page', 'geodirectory'),
         'public' => true,
         'exclude_from_search' => true,
         'show_in_admin_all_list' => true,
         'show_in_admin_status_list' => true,
-        'label_count' => _n_noop('Virtual <span class="count">(%s)</span>', 'Virtual <span class="count">(%s)</span>', GEODIRECTORY_TEXTDOMAIN),
+        'label_count' => _n_noop('Virtual <span class="count">(%s)</span>', 'Virtual <span class="count">(%s)</span>', 'geodirectory'),
     ));
 
     /**

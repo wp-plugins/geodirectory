@@ -151,6 +151,18 @@ ul#breadcrumbs {
 }
 
 /* tabs */
+#geodir-tab-mobile-menu{display: none;}
+#geodir-tab-mobile-menu {
+  font-size: 30px;
+  border: 1px #ccc solid;
+  padding: 15px;
+}
+
+#geodir-tab-mobile-menu i.fa-sort-desc{
+  float: right;
+  margin-top: -5px;
+}
+
 dl.geodir-tab-head {
     margin: 0px;
     height: auto;
@@ -1103,7 +1115,7 @@ section.widget {
 }
 
 .geodir_category_list_view li.geodir-gridview h3 {
-    margin: 0;
+    margin: 5px 0 0;
     font-size: 14px;
     line-height: 18px;
     text-overflow: ellipsis;
@@ -1370,7 +1382,7 @@ ul.geodir_recent_reviews li {
 
 .login_form_box .error_msg, .registration_form_box .error_msg {
     margin: 7px 0 5px 0;
-    border-left: 2px solid #7ad03a;
+    border-left: 2px solid #dd3d36;
     padding: 5px 7px
 }
 

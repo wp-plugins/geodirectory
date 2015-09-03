@@ -53,7 +53,7 @@ add_action('add_meta_boxes_comment', 'geodir_comment_add_meta_box');
  */
 function geodir_comment_add_meta_box($comment)
 {
-    add_meta_box('gd-comment-rating', __('Comment Rating', GEODIRECTORY_TEXTDOMAIN), 'geodir_comment_rating_meta', 'comment', 'normal', 'high');
+    add_meta_box('gd-comment-rating', __('Comment Rating', 'geodirectory'), 'geodir_comment_rating_meta', 'comment', 'normal', 'high');
 }
 
 /**
@@ -367,7 +367,7 @@ function geodir_comment_delete_comment($comment_id)
 
 }
 
-add_filter('comment_text', 'geodir_wrap_comment_text', 10, 2);
+add_filter('comment_text', 'geodir_wrap_comment_text', 40, 2);
 /**
  * Add rating information in comment text.
  *
@@ -383,7 +383,7 @@ function geodir_wrap_comment_text($content, $comment = '')
     if (!empty($comment))
         $rating = geodir_get_commentoverall($comment->comment_ID);
     if ($rating != 0 && !is_admin()) {
-        return '<div>' . __('Overall Rating', GEODIRECTORY_TEXTDOMAIN) . ': <div class="rating">' . $rating . '</div>' . geodir_get_rating_stars($rating, $comment->comment_ID) . '</div><div class="description">' . $content . '</div>';
+        return '<div>' . __('Overall Rating', 'geodirectory') . ': <div class="rating">' . $rating . '</div>' . geodir_get_rating_stars($rating, $comment->comment_ID) . '</div><div class="description">' . $content . '</div>';
     } else
         return $content;
 
@@ -709,6 +709,7 @@ function geodir_get_commentoverall_number($post_id = 0)
  * Sets the comment template using filter {@see 'comments_template'}.
  *
  * @since 1.0.0
+ * @since 1.5.1 Reviews template can be overridden from theme.
  * @package GeoDirectory
  * @global object $post The current post object.
  * @param string $comment_template Old comment template.
@@ -724,7 +725,11 @@ function geodir_comment_template($comment_template)
         return;
     }
     if (in_array($post->post_type, $post_types)) { // assuming there is a post type called business
-        return dirname(__FILE__) . '/reviews.php';
+        $template = locate_template(array("geodirectory/reviews.php")); // Use theme template if available
+        if (!$template) {
+            $template = dirname(__FILE__) . '/reviews.php';
+        }
+        return $template;
     }
 }
 
@@ -770,7 +775,7 @@ if (!function_exists('geodir_comment')) {
                 // Display trackbacks differently than normal comments.
                 ?>
                 <li <?php comment_class('geodir-comment'); ?> id="comment-<?php comment_ID(); ?>">
-                <p><?php _e('Pingback:', GEODIRECTORY_TEXTDOMAIN); ?> <?php comment_author_link(); ?> <?php edit_comment_link(__('(Edit)', GEODIRECTORY_TEXTDOMAIN), '<span class="edit-link">', '</span>'); ?></p>
+                <p><?php _e('Pingback:', 'geodirectory'); ?> <?php comment_author_link(); ?> <?php edit_comment_link(__('(Edit)', 'geodirectory'), '<span class="edit-link">', '</span>'); ?></p>
                 <?php
                 break;
             default :
@@ -781,36 +786,48 @@ if (!function_exists('geodir_comment')) {
                 <article id="comment-<?php comment_ID(); ?>" class="comment hreview">
                     <header class="comment-meta comment-author vcard">
                         <?php
-                        echo get_avatar($comment, 44);
+                        /**
+                         * Filter to modify comment avatar size
+                         *
+                         * You can use this filter to change comment avatar size.
+                         *
+                         * @since 1.0.0
+                         * @package GeoDirectory
+                         */
+                        $avatar_size = apply_filters('geodir_comment_avatar_size', 44);
+                        echo get_avatar($comment, $avatar_size);
                         printf('<cite><b class="reviewer">%1$s</b> %2$s</cite>',
                             get_comment_author_link(),
                             // If current post author is also comment author, make it known visually.
-                            ($comment->user_id === $post->post_author) ? '<span>' . __('Post author', GEODIRECTORY_TEXTDOMAIN) . '</span>' : ''
+                            ($comment->user_id === $post->post_author) ? '<span>' . __('Post author', 'geodirectory') . '</span>' : ''
                         );
                         echo "<span class='item'><small><span class='fn'>$post->post_title</span></small></span>";
                         printf('<a href="%1$s"><time datetime="%2$s" class="dtreviewed">%3$s<span class="value-title" title="%2$s"></span></time></a>',
                             esc_url(get_comment_link($comment->comment_ID)),
                             get_comment_time('c'),
                             /* translators: 1: date, 2: time */
-                            sprintf(__('%1$s at %2$s', GEODIRECTORY_TEXTDOMAIN), get_comment_date(), get_comment_time())
+                            sprintf(__('%1$s at %2$s', 'geodirectory'), get_comment_date(), get_comment_time())
                         );
                         ?>
                     </header>
                     <!-- .comment-meta -->
 
                     <?php if ('0' == $comment->comment_approved) : ?>
-                        <p class="comment-awaiting-moderation"><?php _e('Your comment is awaiting moderation.', GEODIRECTORY_TEXTDOMAIN); ?></p>
+                        <p class="comment-awaiting-moderation"><?php _e('Your comment is awaiting moderation.', 'geodirectory'); ?></p>
                     <?php endif; ?>
 
                     <section class="comment-content comment">
                         <?php comment_text(); ?>
-                        <?php edit_comment_link(__('Edit', GEODIRECTORY_TEXTDOMAIN), '<p class="edit-link">', '</p>'); ?>
                     </section>
                     <!-- .comment-content -->
 
-                    <div class="reply">
-                        <?php comment_reply_link(array_merge($args, array('reply_text' => __('Reply', GEODIRECTORY_TEXTDOMAIN), 'after' => ' <span>&darr;</span>', 'depth' => $depth, 'max_depth' => $args['max_depth']))); ?>
+                    <div class="comment-links">
+                        <?php edit_comment_link(__('Edit', 'geodirectory'), '<p class="edit-link">', '</p>'); ?>
+                        <div class="reply">
+                            <?php comment_reply_link(array_merge($args, array('reply_text' => __('Reply', 'geodirectory'), 'after' => ' <span>&darr;</span>', 'depth' => $depth, 'max_depth' => $args['max_depth']))); ?>
+                        </div>
                     </div>
+
                     <!-- .reply -->
                 </article>
                 <!-- #comment-## -->
@@ -927,3 +944,35 @@ function geodir_is_reviews_show($pageview = '')
      */
     return apply_filters('geodir_is_reviews_show', $is_display, $pageview);
 }
+
+
+/*
+ * If Disqus plugin is active, do some fixes to show on blogs but no on GD post types
+ */
+if(function_exists('dsq_can_replace')) {
+    remove_filter('comments_template', 'dsq_comments_template');
+    add_filter('comments_template', 'dsq_comments_template', 100);
+    add_filter('pre_option_disqus_active', 'geodir_option_disqus_active',10,1);
+}
+
+
+
+/**
+ * Disable Disqus plugin on the fly when visiting GeoDirectory post types.
+ *
+ * @since 1.5.0
+ * @package GeoDirectory
+ * @param string $disqus_active Hook called before DB call for option so this is empty.
+ * @return string `1` if active `0` if disabled.
+ */
+function geodir_option_disqus_active($disqus_active){
+    global $post;
+    $all_postypes = geodir_get_posttypes();
+
+    if(isset($post->post_type) && is_array($all_postypes) && in_array($post->post_type,$all_postypes)){
+        $disqus_active = '0';
+    }
+
+    return $disqus_active;
+}
+

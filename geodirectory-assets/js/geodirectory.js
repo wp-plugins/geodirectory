@@ -117,6 +117,11 @@
 
 jQuery(document).ready(function () {
 
+    //toggle detail page tabs mobile menu
+    jQuery('#geodir-tab-mobile-menu').click(function(){
+        jQuery('#gd-tabs .geodir-tab-head').toggle();
+    });
+
     gd_infowindow = new google.maps.InfoWindow();
 
     // Chosen selects
@@ -173,7 +178,13 @@ jQuery(window).load(function () {
     jQuery('.geodir-tabs-content').show(); // set the tabs to show once js loaded to avoid double scroll bar in chrome
     tabNoRun = false;
     function activateTab(tab) {
-        //alert(tab);//return;
+
+        // change name for mobile tabs menu
+        tabName = urlHash = tab.find('a').html();
+        if(tabName && jQuery('.geodir-mobile-active-tab').length){
+            jQuery('.geodir-mobile-active-tab').html(tabName);
+        }
+
         if (tabNoRun) {
             tabNoRun = false;
             return;
@@ -357,6 +368,20 @@ jQuery(document).ready(function () {
             setCookie('geodir_stickystatus', 'sshow', 1);
         }
     });
+	
+	var gd_modal = "undefined" != typeof geodir_var.geodir_gd_modal && 1 == parseInt(geodir_var.geodir_gd_modal) ? false : true;
+	if (gd_modal) {
+		jQuery(".geodir-custom-post-gallery").each(function(){
+			jQuery("a", this).lightBox({
+				overlayOpacity: .5,
+				imageLoading: geodir_var.geodir_plugin_url + "/geodirectory-assets/images/lightbox-ico-loading.gif",
+				imageBtnNext: geodir_var.geodir_plugin_url + "/geodirectory-assets/images/lightbox-btn-next.gif",
+				imageBtnPrev: geodir_var.geodir_plugin_url + "/geodirectory-assets/images/lightbox-btn-prev.gif",
+				imageBtnClose: geodir_var.geodir_plugin_url + "/geodirectory-assets/images/lightbox-btn-close.gif",
+				imageBlank: geodir_var.geodir_plugin_url + "/geodirectory-assets/images/lightbox-blank.gif"
+			})
+		});
+	}
 });
 
 /* Show Hide Rating for reply */
@@ -468,3 +493,4 @@ function geodir_resize_rating_stars(re) {
 		$this.width(width_calc);
 	});
 }
+
