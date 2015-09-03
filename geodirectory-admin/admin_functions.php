@@ -86,7 +86,7 @@ if (!function_exists('geodir_admin_styles_req')) {
     function geodir_admin_styles_req()
     {
 
-        wp_register_style('geodirectory-font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css', array(), GEODIRECTORY_VERSION);
+        wp_register_style('geodirectory-font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', array(), GEODIRECTORY_VERSION);
         wp_enqueue_style('geodirectory-font-awesome');
     }
 }
@@ -161,7 +161,7 @@ if (!function_exists('geodir_admin_scripts')) {
             'url' => admin_url('admin-ajax.php'),
             'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
             'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
-            'filters' => array(array('title' => __('Allowed Files', GEODIRECTORY_TEXTDOMAIN), 'extensions' => '*')),
+            'filters' => array(array('title' => __('Allowed Files', 'geodirectory'), 'extensions' => '*')),
             'multipart' => true,
             'urlstream_upload' => true,
             'multi_selection' => false, // will be added per uploader
@@ -236,7 +236,7 @@ if (!function_exists('geodir_admin_menu')) {
 
         if (current_user_can('manage_options')) $menu[] = array('', 'read', 'separator-geodirectory', '', 'wp-menu-separator geodirectory');
 
-        add_menu_page(__('Geodirectory', GEODIRECTORY_TEXTDOMAIN), __('Geodirectory', GEODIRECTORY_TEXTDOMAIN), 'manage_options', 'geodirectory', 'geodir_admin_panel', geodir_plugin_url() . '/geodirectory-assets/images/favicon.ico', '55.1984');
+        add_menu_page(__('Geodirectory', 'geodirectory'), __('Geodirectory', 'geodirectory'), 'manage_options', 'geodirectory', 'geodir_admin_panel', geodir_plugin_url() . '/geodirectory-assets/images/favicon.ico', '55.1984');
 
 
     }
@@ -318,8 +318,8 @@ function geodir_before_admin_panel()
 {
     if (isset($_REQUEST['installed']) && $_REQUEST['installed'] != '') {
         echo '<div id="message" class="updated fade">
-                        <p style="float:right;">' . __('Like Geodirectory?', GEODIRECTORY_TEXTDOMAIN) . ' <a href="http://wordpress.org/extend/plugins/Geodirectory/" target="_blank">' . __('Support us by leaving a rating!', GEODIRECTORY_TEXTDOMAIN) . '</a></p>
-                        <p><strong>' . __('Geodirectory has been installed and setup. Enjoy :)', GEODIRECTORY_TEXTDOMAIN) . '</strong></p>
+                        <p style="float:right;">' . __('Like Geodirectory?', 'geodirectory') . ' <a href="http://wordpress.org/extend/plugins/Geodirectory/" target="_blank">' . __('Support us by leaving a rating!', 'geodirectory') . '</a></p>
+                        <p><strong>' . __('Geodirectory has been installed and setup. Enjoy :)', 'geodirectory') . '</strong></p>
                 </div>';
 
     }
@@ -327,7 +327,7 @@ function geodir_before_admin_panel()
     if (isset($_REQUEST['msg']) && $_REQUEST['msg'] != '') {
         switch ($_REQUEST['msg']) {
             case 'success':
-                echo '<div id="message" class="updated fade"><p><strong>' . __('Your settings have been saved.', GEODIRECTORY_TEXTDOMAIN) . '</strong></p></div>';
+                echo '<div id="message" class="updated fade"><p><strong>' . __('Your settings have been saved.', 'geodirectory') . '</strong></p></div>';
                 flush_rewrite_rules(false);
 
                 break;
@@ -335,20 +335,20 @@ function geodir_before_admin_panel()
 				$gderr = isset($_REQUEST['gderr']) ? $_REQUEST['gderr'] : '';
 				
 				if ($gderr == 21)
-			    	echo '<div id="message" class="error fade"><p><strong>' . __('Error: You can not add same permalinks for both Listing and Location, please try again.', GEODIRECTORY_TEXTDOMAIN) . '</strong></p></div>';
+			    	echo '<div id="message" class="error fade"><p><strong>' . __('Error: You can not add same permalinks for both Listing and Location, please try again.', 'geodirectory') . '</strong></p></div>';
 				else
-					echo '<div id="message" class="error fade"><p><strong>' . __('Error: Your settings have not been saved, please try again.', GEODIRECTORY_TEXTDOMAIN) . '</strong></p></div>';
+					echo '<div id="message" class="error fade"><p><strong>' . __('Error: Your settings have not been saved, please try again.', 'geodirectory') . '</strong></p></div>';
                 break;
         }
     }
 
     if (!geodir_is_default_location_set()) {
-        echo '<div class="updated fade"><p><strong>' . sprintf(__('Please %sclick here%s to set a default location, this will make the plugin work properly.', GEODIRECTORY_TEXTDOMAIN), '<a href=\'' . admin_url('admin.php?page=geodirectory&tab=default_location_settings') . '\'>', '</a>') . '</strong></p></div>';
+        echo '<div class="updated fade"><p><strong>' . sprintf(__('Please %sclick here%s to set a default location, this will make the plugin work properly.', 'geodirectory'), '<a href=\'' . admin_url('admin.php?page=geodirectory&tab=default_location_settings') . '\'>', '</a>') . '</strong></p></div>';
 
     }
 
     if (!function_exists('curl_init')) {
-        echo '<div class="error"><p><strong>' . __('CURL is not installed on this server, this can cause problems, please ask your server admin to install it.', GEODIRECTORY_TEXTDOMAIN) . '</strong></p></div>';
+        echo '<div class="error"><p><strong>' . __('CURL is not installed on this server, this can cause problems, please ask your server admin to install it.', 'geodirectory') . '</strong></p></div>';
 
     }
 }
@@ -374,8 +374,8 @@ function geodir_handle_option_form_submit($current_tab)
         include_once('option-pages/' . $current_tab . '_array.php');
     }
     if (isset($_POST) && $_POST && isset($_REQUEST['page']) && $_REQUEST['page'] == 'geodirectory') :
-        if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'geodir-settings')) die(__('Action failed. Please refresh the page and retry.', GEODIRECTORY_TEXTDOMAIN));
-        if (!wp_verify_nonce($_REQUEST['_wpnonce-' . $current_tab], 'geodir-settings-' . $current_tab)) die(__('Action failed. Please refresh the page and retry.', GEODIRECTORY_TEXTDOMAIN));
+        if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'geodir-settings')) die(__('Action failed. Please refresh the page and retry.', 'geodirectory'));
+        if (!wp_verify_nonce($_REQUEST['_wpnonce-' . $current_tab], 'geodir-settings-' . $current_tab)) die(__('Action failed. Please refresh the page and retry.', 'geodirectory'));
 		
 		/**
 		 * Fires before updating geodirectory admin settings.
@@ -440,7 +440,7 @@ if (!function_exists('geodir_autoinstall_admin_header') && get_option('geodir_in
         global $wpdb, $plugin_prefix;
 
         if (!geodir_is_default_location_set()) {
-            echo '<div class="updated fade"><p><strong>' . sprintf(__('Please %sclick here%s to set a default location, this will help to set location of all dummy data.', GEODIRECTORY_TEXTDOMAIN), '<a href=\'' . admin_url('admin.php?page=geodirectory&tab=default_location_settings') . '\'>', '</a>') . '</strong></p></div>';
+            echo '<div class="updated fade"><p><strong>' . sprintf(__('Please %sclick here%s to set a default location, this will help to set location of all dummy data.', 'geodirectory'), '<a href=\'' . admin_url('admin.php?page=geodirectory&tab=default_location_settings') . '\'>', '</a>') . '</strong></p></div>';
         } else {
 
             $geodir_url = admin_url() . 'admin.php?page=geodirectory&tab=general_settings&active_tab=';
@@ -515,7 +515,7 @@ if (!function_exists('geodir_autoinstall_admin_header') && get_option('geodir_in
                             );
 
                         } else {
-                            alert("<?php _e('Geocode was not successful for the following reason:',GEODIRECTORY_TEXTDOMAIN);?> " + status);
+                            alert("<?php _e('Geocode was not successful for the following reason:','geodirectory');?> " + status);
                         }
                     });
 
@@ -528,7 +528,7 @@ if (!function_exists('geodir_autoinstall_admin_header') && get_option('geodir_in
                     var total_dummy_post_count = jQuery('#sub_' + active_tab).find('.selected_sample_data').val();
 
                     if (id == 'geodir_dummy_delete') {
-                        if (confirm('<?php _e('Are you sure you want to delete dummy data?' , GEODIRECTORY_TEXTDOMAIN); ?>')) {
+                        if (confirm('<?php _e('Are you sure you want to delete dummy data?' , 'geodirectory'); ?>')) {
                             jQuery('#sub_' + active_tab).find('.geodir_auto_install').hide();
                             jQuery('#sub_' + active_tab).find('.geodir_show_progress').show();
                             jQuery.post('<?php echo geodir_get_ajax_url(); ?>&geodir_autofill=' + id + '&posttype=' + posttype + '&_wpnonce=' + nonce,
@@ -547,7 +547,7 @@ if (!function_exists('geodir_autoinstall_admin_header') && get_option('geodir_in
                         jQuery.post('<?php echo geodir_get_ajax_url(); ?>&geodir_autofill=' + id + '&posttype=' + posttype + '&insert_dummy_post_index=' + dummy_post_index + '&city_bound_lat1=' + bound_lat_lng[0] + '&city_bound_lng1=' + bound_lat_lng[1] + '&city_bound_lat2=' + bound_lat_lng[2] + '&city_bound_lng2=' + bound_lat_lng[3] + '&_wpnonce=' + nonce,
                             function (data) {
 
-                                jQuery(obj).closest('form').find('.dummy_post_inserted').html('<?php _e('Dummy post(s) inserted:',GEODIRECTORY_TEXTDOMAIN);?> ' + dummy_post_index + ' <?php _e('of' ,GEODIRECTORY_TEXTDOMAIN); ?> ' + total_dummy_post_count + '');
+                                jQuery(obj).closest('form').find('.dummy_post_inserted').html('<?php _e('Dummy post(s) inserted:','geodirectory');?> ' + dummy_post_index + ' <?php _e('of' ,'geodirectory'); ?> ' + total_dummy_post_count + '');
                                 dummy_post_index++;
                                 if (dummy_post_index <= total_dummy_post_count)
                                     geodir_autoinstall(obj, id, nonce, posttype);
@@ -946,13 +946,13 @@ function places_custom_fields_tab($tabs)
             $listing_slug = $geodir_posttype_info['labels']['singular_name'];
 
             $tabs[$geodir_post_type . '_fields_settings'] = array(
-                'label' => __(ucfirst($listing_slug) . ' Settings', GEODIRECTORY_TEXTDOMAIN),
+                'label' => __(ucfirst($listing_slug) . ' Settings', 'geodirectory'),
                 'subtabs' => array(
                     array('subtab' => 'custom_fields',
-                        'label' => __('Custom Fields', GEODIRECTORY_TEXTDOMAIN),
+                        'label' => __('Custom Fields', 'geodirectory'),
                         'request' => array('listing_type' => $geodir_post_type)),
                     array('subtab' => 'sorting_options',
-                        'label' => __('Sorting Options', GEODIRECTORY_TEXTDOMAIN),
+                        'label' => __('Sorting Options', 'geodirectory'),
                         'request' => array('listing_type' => $geodir_post_type)),
                 ),
                 'tab_index' => 9,
@@ -979,7 +979,7 @@ function places_custom_fields_tab($tabs)
  */
 function geodir_tools_setting_tab($tabs)
 {
-    $tabs['tools_settings'] = array('label' => __('GD Tools', GEODIRECTORY_TEXTDOMAIN));
+    $tabs['tools_settings'] = array('label' => __('GD Tools', 'geodirectory'));
     return $tabs;
 }
 
@@ -995,7 +995,7 @@ function geodir_tools_setting_tab($tabs)
  */
 function geodir_compatibility_setting_tab($tabs)
 {
-    $tabs['compatibility_settings'] = array('label' => __('Theme Compatibility', GEODIRECTORY_TEXTDOMAIN));
+    $tabs['compatibility_settings'] = array('label' => __('Theme Compatibility', 'geodirectory'));
     return $tabs;
 }
 
@@ -1012,7 +1012,7 @@ function geodir_compatibility_setting_tab($tabs)
  */
 function geodir_extend_geodirectory_setting_tab($tabs)
 {
-    $tabs['extend_geodirectory_settings'] = array('label' => __('Extend Geodirectory', GEODIRECTORY_TEXTDOMAIN), 'url' => 'http://wpgeodirectory.com', 'target' => '_blank');
+    $tabs['extend_geodirectory_settings'] = array('label' => __('Extend Geodirectory', 'geodirectory'), 'url' => 'http://wpgeodirectory.com', 'target' => '_blank');
     return $tabs;
 }
 
@@ -1029,8 +1029,8 @@ if (!function_exists('geodir_edit_post_columns')) {
     function geodir_edit_post_columns($columns)
     {
 
-        $new_columns = array('location' => __('Location (ID)', GEODIRECTORY_TEXTDOMAIN),
-            'categorys' => __('Categories', GEODIRECTORY_TEXTDOMAIN));
+        $new_columns = array('location' => __('Location (ID)', 'geodirectory'),
+            'categorys' => __('Categories', 'geodirectory'));
 
         if (($offset = array_search('author', array_keys($columns))) === false) // if the key doesn't exist
         {
@@ -1040,7 +1040,7 @@ if (!function_exists('geodir_edit_post_columns')) {
 
         $columns = array_merge(array_slice($columns, 0, $offset), $new_columns, array_slice($columns, $offset));
 
-        $columns = array_merge($columns, array('expire' => __('Expires', GEODIRECTORY_TEXTDOMAIN)));
+        $columns = array_merge($columns, array('expire' => __('Expires', 'geodirectory')));
 
         return $columns;
     }
@@ -1069,11 +1069,11 @@ if (!function_exists('geodir_manage_post_columns')) {
                 $location = geodir_get_location($location_id);
                 /* If no city is found, output a default message. */
                 if (empty($location)) {
-                    _e('Unknown', GEODIRECTORY_TEXTDOMAIN);
+                    _e('Unknown', 'geodirectory');
                 } else {
                     /* If there is a city id, append 'city name' to the text string. */
                     $add_location_id = $location_id > 0 ? ' (' . $location_id . ')' : '';
-                    echo(__($location->country, GEODIRECTORY_TEXTDOMAIN) . '-' . $location->region . '-' . $location->city . $add_location_id);
+                    echo(__($location->country, 'geodirectory') . '-' . $location->region . '-' . $location->city . $add_location_id);
                 }
                 break;
 
@@ -1082,12 +1082,12 @@ if (!function_exists('geodir_manage_post_columns')) {
                 $expire_date = geodir_get_post_meta($post->ID, 'expire_date', true);
                 $d1 = $expire_date; // get expire_date
                 $d2 = date('Y-m-d'); // get current date
-                $state = __('days left', GEODIRECTORY_TEXTDOMAIN);
+                $state = __('days left', 'geodirectory');
                 $date_diff_text = '';
                 $expire_class = 'expire_left';
                 if ($expire_date != 'Never') {
                     if (strtotime($d1) < strtotime($d2)) {
-                        $state = __('days overdue', GEODIRECTORY_TEXTDOMAIN);
+                        $state = __('days overdue', 'geodirectory');
                         $expire_class = 'expire_over';
                     }
                     $date_diff = round(abs(strtotime($d1) - strtotime($d2)) / 86400); // get the differance in days
@@ -1095,7 +1095,7 @@ if (!function_exists('geodir_manage_post_columns')) {
                 }
                 /* If no expire_date is found, output a default message. */
                 if (empty($expire_date))
-                    echo __('Unknown', GEODIRECTORY_TEXTDOMAIN);
+                    echo __('Unknown', 'geodirectory');
                 /* If there is a expire_date, append 'days left' to the text string. */
                 else
                     echo $expire_date . $date_diff_text;
@@ -1125,7 +1125,7 @@ if (!function_exists('geodir_manage_post_columns')) {
                     echo(join(', ', $out));
                 } /* If no terms were found, output a default message. */
                 else {
-                    _e('No Categories', GEODIRECTORY_TEXTDOMAIN);
+                    _e('No Categories', 'geodirectory');
                 }
                 break;
 
@@ -1375,7 +1375,7 @@ if (!function_exists('geodir_insert_csv_post_data') && get_option('geodir_instal
 
                         <div class="plupload-upload-uic hide-if-no-js" id="<?php echo $id; ?>plupload-upload-ui">
                         <input type="text" readonly="readonly" name="<?php echo $id; ?>" class="csv_filename" id="<?php echo $id; ?>" value="<?php echo $svalue; ?>" /><input id="<?php echo $id; ?>plupload-browse-button" type="button" value="<?php echo SELECT_UPLOAD_CSV; ?>" class="uploadcsv_button" /><br />
-                       <a href="<?php echo geodir_plugin_url() . '/geodirectory-assets/place_listing.csv'?>" ><?php _e("Download sample csv", GEODIRECTORY_TEXTDOMAIN)?></a>
+                       <a href="<?php echo geodir_plugin_url() . '/geodirectory-assets/place_listing.csv'?>" ><?php _e("Download sample csv", 'geodirectory')?></a>
                        <?php do_action('geodir_sample_csv_download_link'); ?>
 
                         <span class="ajaxnonceplu" id="ajaxnonceplu<?php echo wp_create_nonce($id . 'pluploadan'); ?>"></span><br /><br />
@@ -1756,7 +1756,7 @@ if (!function_exists('geodir_insert_csv_post_data') && get_option('geodir_instal
                                 <input id="<?php echo $id; ?>plupload-browse-button" type="button"
                                        value="<?php echo SELECT_UPLOAD_CSV; ?>" class="gd_uploadcsv_button"/>
                                 <br/>
-                                <a href="<?php echo geodir_plugin_url() . '/geodirectory-assets/place_listing.csv'?>"><?php _e("Download sample csv", GEODIRECTORY_TEXTDOMAIN)?></a>
+                                <a href="<?php echo geodir_plugin_url() . '/geodirectory-assets/place_listing.csv'?>"><?php _e("Download sample csv", 'geodirectory')?></a>
                                 <?php
                                 /**
                                  * Called just after the sample CSV download link.
@@ -1781,12 +1781,12 @@ if (!function_exists('geodir_insert_csv_post_data') && get_option('geodir_instal
                                id="gd_import_data" class="button-primary" name="save">
                         <input onclick="gdContinueImport()" type="button" value="Continue Import Data"
                                id="gd_continue_data" class="button-primary" style="display:none"/>
-                        <input type="button" value="<?php _e("Terminate Import Data", GEODIRECTORY_TEXTDOMAIN);?>"
+                        <input type="button" value="<?php _e("Terminate Import Data", 'geodirectory');?>"
                                id="gd_stop_import" class="button-primary" name="gd_stop_import" style="display:none"
                                onclick="gdTerminateImport()"/>
 
                         <div id="gd_process_data" style="display:none"><span class="spinner"
-                                                                             style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", GEODIRECTORY_TEXTDOMAIN);?>
+                                                                             style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", 'geodirectory');?>
                         </div>
                     </div>
                     <div id="gd_importer" style="display:none">
@@ -1804,7 +1804,7 @@ if (!function_exists('geodir_insert_csv_post_data') && get_option('geodir_instal
                         <input type="hidden" id="gd_total_records" value="0"/>
                     </div>
                     <div class="gd-import-progress" id="gd-import-progress" style="display:none">
-                        <div class="gd-import-file"><b><?php _e("Import Data Status :", GEODIRECTORY_TEXTDOMAIN);?> </b><font
+                        <div class="gd-import-file"><b><?php _e("Import Data Status :", 'geodirectory');?> </b><font
                                 id="gd-import-done">0</font> / <font id="gd-import-total">0</font>&nbsp;( <font
                                 id="gd-import-perc">0%</font> )
                             <div class="gd-fileprogress"></div>
@@ -2354,17 +2354,17 @@ function geodir_admin_fields($options)
                 <th scope="row" class="titledesc"><?php echo $value['name'] ?></th>
                 <td class="forminp">
 
-                    <?php _e('Width', GEODIRECTORY_TEXTDOMAIN); ?> <input
+                    <?php _e('Width', 'geodirectory'); ?> <input
                         name="<?php echo esc_attr($value['id']); ?>_width"
                         id="<?php echo esc_attr($value['id']); ?>_width" type="text" size="3"
                         value="<?php if ($size = get_option($value['id'] . '_width')) echo stripslashes($size); else echo $value['std']; ?>"/>
 
-                    <?php _e('Height', GEODIRECTORY_TEXTDOMAIN); ?> <input
+                    <?php _e('Height', 'geodirectory'); ?> <input
                         name="<?php echo esc_attr($value['id']); ?>_height"
                         id="<?php echo esc_attr($value['id']); ?>_height" type="text" size="3"
                         value="<?php if ($size = get_option($value['id'] . '_height')) echo stripslashes($size); else echo $value['std']; ?>"/>
 
-                    <label><?php _e('Hard Crop', GEODIRECTORY_TEXTDOMAIN); ?> <input
+                    <label><?php _e('Hard Crop', 'geodirectory'); ?> <input
                             name="<?php echo esc_attr($value['id']); ?>_crop"
                             id="<?php echo esc_attr($value['id']); ?>_crop"
                             type="checkbox" <?php if (get_option($value['id'] . '_crop') != '') checked(get_option($value['id'] . '_crop'), 1); else checked(1); ?> /></label>
@@ -2448,8 +2448,8 @@ function geodir_admin_fields($options)
                         <span class="description"> <?php $uploads = wp_upload_dir(); ?> <a
                                 href="<?php echo get_option($value['id']); ?>"
                                 target="_blank"><?php echo get_option($value['id']); ?></a> <i
-                                title="<?php _e('remove file (set to empty)', GEODIRECTORY_TEXTDOMAIN); ?>"
-                                onclick="jQuery('#<?php echo esc_attr($value['id']); ?>_remove').val('1'); jQuery( this ).parent().text('<?php _e('save to remove file', GEODIRECTORY_TEXTDOMAIN); ?>');"
+                                title="<?php _e('remove file (set to empty)', 'geodirectory'); ?>"
+                                onclick="jQuery('#<?php echo esc_attr($value['id']); ?>_remove').val('1'); jQuery( this ).parent().text('<?php _e('save to remove file', 'geodirectory'); ?>');"
                                 class="fa fa-times gd-remove-file"></i></span>
 
                     <?php } ?>
@@ -2460,66 +2460,66 @@ function geodir_admin_fields($options)
                 ?>
 
                 <tr valign="top">
-                    <th class="titledesc" width="40%"><?php _e('Default map language', GEODIRECTORY_TEXTDOMAIN);?></th>
+                    <th class="titledesc" width="40%"><?php _e('Default map language', 'geodirectory');?></th>
                     <td width="60%">
                         <select name="geodir_default_map_language" style="width:60%">
                             <?php
                             $arr_map_langages = array(
-                                'ar' => __('ARABIC', GEODIRECTORY_TEXTDOMAIN),
-                                'eu' => __('BASQUE', GEODIRECTORY_TEXTDOMAIN),
-                                'bg' => __('BULGARIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'bn' => __('BENGALI', GEODIRECTORY_TEXTDOMAIN),
-                                'ca' => __('CATALAN', GEODIRECTORY_TEXTDOMAIN),
-                                'cs' => __('CZECH', GEODIRECTORY_TEXTDOMAIN),
-                                'da' => __('DANISH', GEODIRECTORY_TEXTDOMAIN),
-                                'de' => __('GERMAN', GEODIRECTORY_TEXTDOMAIN),
-                                'el' => __('GREEK', GEODIRECTORY_TEXTDOMAIN),
-                                'en' => __('ENGLISH', GEODIRECTORY_TEXTDOMAIN),
-                                'en-AU' => __('ENGLISH (AUSTRALIAN)', GEODIRECTORY_TEXTDOMAIN),
-                                'en-GB' => __('ENGLISH (GREAT BRITAIN)', GEODIRECTORY_TEXTDOMAIN),
-                                'es' => __('SPANISH', GEODIRECTORY_TEXTDOMAIN),
-                                'eu' => __('BASQUE', GEODIRECTORY_TEXTDOMAIN),
-                                'fa' => __('FARSI', GEODIRECTORY_TEXTDOMAIN),
-                                'fi' => __('FINNISH', GEODIRECTORY_TEXTDOMAIN),
-                                'fil' => __('FILIPINO', GEODIRECTORY_TEXTDOMAIN),
-                                'fr' => __('FRENCH', GEODIRECTORY_TEXTDOMAIN),
-                                'gl' => __('GALICIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'gu' => __('GUJARATI', GEODIRECTORY_TEXTDOMAIN),
-                                'hi' => __('HINDI', GEODIRECTORY_TEXTDOMAIN),
-                                'hr' => __('CROATIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'hu' => __('HUNGARIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'id' => __('INDONESIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'it' => __('ITALIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'iw' => __('HEBREW', GEODIRECTORY_TEXTDOMAIN),
-                                'ja' => __('JAPANESE', GEODIRECTORY_TEXTDOMAIN),
-                                'kn' => __('KANNADA', GEODIRECTORY_TEXTDOMAIN),
-                                'ko' => __('KOREAN', GEODIRECTORY_TEXTDOMAIN),
-                                'lt' => __('LITHUANIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'lv' => __('LATVIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'ml' => __('MALAYALAM', GEODIRECTORY_TEXTDOMAIN),
-                                'mr' => __('MARATHI', GEODIRECTORY_TEXTDOMAIN),
-                                'nl' => __('DUTCH', GEODIRECTORY_TEXTDOMAIN),
-                                'no' => __('NORWEGIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'pl' => __('POLISH', GEODIRECTORY_TEXTDOMAIN),
-                                'pt' => __('PORTUGUESE', GEODIRECTORY_TEXTDOMAIN),
-                                'pt-BR' => __('PORTUGUESE (BRAZIL)', GEODIRECTORY_TEXTDOMAIN),
-                                'pt-PT' => __('PORTUGUESE (PORTUGAL)', GEODIRECTORY_TEXTDOMAIN),
-                                'ro' => __('ROMANIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'ru' => __('RUSSIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'ru' => __('RUSSIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'sk' => __('SLOVAK', GEODIRECTORY_TEXTDOMAIN),
-                                'sl' => __('SLOVENIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'sr' => __('SERBIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'sv' => __('	SWEDISH', GEODIRECTORY_TEXTDOMAIN),
-                                'tl' => __('TAGALOG', GEODIRECTORY_TEXTDOMAIN),
-                                'ta' => __('TAMIL', GEODIRECTORY_TEXTDOMAIN),
-                                'te' => __('TELUGU', GEODIRECTORY_TEXTDOMAIN),
-                                'th' => __('THAI', GEODIRECTORY_TEXTDOMAIN),
-                                'tr' => __('TURKISH', GEODIRECTORY_TEXTDOMAIN),
-                                'uk' => __('UKRAINIAN', GEODIRECTORY_TEXTDOMAIN),
-                                'vi' => __('VIETNAMESE', GEODIRECTORY_TEXTDOMAIN),
-                                'zh-CN' => __('CHINESE (SIMPLIFIED)', GEODIRECTORY_TEXTDOMAIN),
-                                'zh-TW' => __('CHINESE (TRADITIONAL)', GEODIRECTORY_TEXTDOMAIN),
+                                'ar' => __('ARABIC', 'geodirectory'),
+                                'eu' => __('BASQUE', 'geodirectory'),
+                                'bg' => __('BULGARIAN', 'geodirectory'),
+                                'bn' => __('BENGALI', 'geodirectory'),
+                                'ca' => __('CATALAN', 'geodirectory'),
+                                'cs' => __('CZECH', 'geodirectory'),
+                                'da' => __('DANISH', 'geodirectory'),
+                                'de' => __('GERMAN', 'geodirectory'),
+                                'el' => __('GREEK', 'geodirectory'),
+                                'en' => __('ENGLISH', 'geodirectory'),
+                                'en-AU' => __('ENGLISH (AUSTRALIAN)', 'geodirectory'),
+                                'en-GB' => __('ENGLISH (GREAT BRITAIN)', 'geodirectory'),
+                                'es' => __('SPANISH', 'geodirectory'),
+                                'eu' => __('BASQUE', 'geodirectory'),
+                                'fa' => __('FARSI', 'geodirectory'),
+                                'fi' => __('FINNISH', 'geodirectory'),
+                                'fil' => __('FILIPINO', 'geodirectory'),
+                                'fr' => __('FRENCH', 'geodirectory'),
+                                'gl' => __('GALICIAN', 'geodirectory'),
+                                'gu' => __('GUJARATI', 'geodirectory'),
+                                'hi' => __('HINDI', 'geodirectory'),
+                                'hr' => __('CROATIAN', 'geodirectory'),
+                                'hu' => __('HUNGARIAN', 'geodirectory'),
+                                'id' => __('INDONESIAN', 'geodirectory'),
+                                'it' => __('ITALIAN', 'geodirectory'),
+                                'iw' => __('HEBREW', 'geodirectory'),
+                                'ja' => __('JAPANESE', 'geodirectory'),
+                                'kn' => __('KANNADA', 'geodirectory'),
+                                'ko' => __('KOREAN', 'geodirectory'),
+                                'lt' => __('LITHUANIAN', 'geodirectory'),
+                                'lv' => __('LATVIAN', 'geodirectory'),
+                                'ml' => __('MALAYALAM', 'geodirectory'),
+                                'mr' => __('MARATHI', 'geodirectory'),
+                                'nl' => __('DUTCH', 'geodirectory'),
+                                'no' => __('NORWEGIAN', 'geodirectory'),
+                                'pl' => __('POLISH', 'geodirectory'),
+                                'pt' => __('PORTUGUESE', 'geodirectory'),
+                                'pt-BR' => __('PORTUGUESE (BRAZIL)', 'geodirectory'),
+                                'pt-PT' => __('PORTUGUESE (PORTUGAL)', 'geodirectory'),
+                                'ro' => __('ROMANIAN', 'geodirectory'),
+                                'ru' => __('RUSSIAN', 'geodirectory'),
+                                'ru' => __('RUSSIAN', 'geodirectory'),
+                                'sk' => __('SLOVAK', 'geodirectory'),
+                                'sl' => __('SLOVENIAN', 'geodirectory'),
+                                'sr' => __('SERBIAN', 'geodirectory'),
+                                'sv' => __('	SWEDISH', 'geodirectory'),
+                                'tl' => __('TAGALOG', 'geodirectory'),
+                                'ta' => __('TAMIL', 'geodirectory'),
+                                'te' => __('TELUGU', 'geodirectory'),
+                                'th' => __('THAI', 'geodirectory'),
+                                'tr' => __('TURKISH', 'geodirectory'),
+                                'uk' => __('UKRAINIAN', 'geodirectory'),
+                                'vi' => __('VIETNAMESE', 'geodirectory'),
+                                'zh-CN' => __('CHINESE (SIMPLIFIED)', 'geodirectory'),
+                                'zh-TW' => __('CHINESE (TRADITIONAL)', 'geodirectory'),
                             );
                             $geodir_default_map_language = get_option('geodir_default_map_language');
                             if (empty($geodir_default_map_language))
@@ -2542,7 +2542,7 @@ function geodir_admin_fields($options)
 
                 <tr valign="top">
                     <th class="titledesc"
-                        width="40%"><?php _e('Default post type search on map', GEODIRECTORY_TEXTDOMAIN);?></th>
+                        width="40%"><?php _e('Default post type search on map', 'geodirectory');?></th>
                     <td width="60%">
                         <select name="geodir_default_map_search_pt" style="width:60%">
                             <?php
@@ -2622,7 +2622,7 @@ function geodir_admin_fields($options)
                                 <?php $count++; endforeach; ?>
                             </thead>
                         </table>
-                        <p><?php _e('Note: Tick respective post type or categories which you want to hide from home page map widget.', GEODIRECTORY_TEXTDOMAIN)?></p>
+                        <p><?php _e('Note: Tick respective post type or categories which you want to hide from home page map widget.', 'geodirectory')?></p>
                     </td>
                 </tr>
                 <?php
@@ -2764,7 +2764,7 @@ function geodir_admin_fields($options)
                 <th scope="rpw" class="titledesc"><?php echo $value['name'] ?></th>
                 <td class="forminp"><select name="<?php echo esc_attr($value['id']); ?>"
                                             style="<?php echo esc_attr($value['css']); ?>"
-                                            data-placeholder="<?php _e('Choose a country&hellip;', GEODIRECTORY_TEXTDOMAIN); ?>"
+                                            data-placeholder="<?php _e('Choose a country&hellip;', 'geodirectory'); ?>"
                                             title="Country" class="chosen_select">
                         <?php echo $geodirectory->countries->country_dropdown_options($country, $state); ?>
                     </select> <span class="description"><?php echo $value['desc'] ?></span>
@@ -2780,7 +2780,7 @@ function geodir_admin_fields($options)
                 <th scope="row" class="titledesc"><?php echo $value['name'] ?></th>
                 <td class="forminp">
                     <select multiple="multiple" name="<?php echo esc_attr($value['id']); ?>[]" style="width:450px;"
-                            data-placeholder="<?php _e('Choose countries&hellip;', GEODIRECTORY_TEXTDOMAIN); ?>"
+                            data-placeholder="<?php _e('Choose countries&hellip;', 'geodirectory'); ?>"
                             title="Country" class="chosen_select">
                         <?php
                         if ($countries) foreach ($countries as $key => $val) :
@@ -2836,14 +2836,14 @@ function geodir_admin_fields($options)
                             if (get_option('gd_ga_refresh_token')) {
                                 ?>
                                 <span class="button-primary"
-                                      onclick="gd_ga_popup();"><?php _e('Re-authorize', GEODIRECTORY_TEXTDOMAIN); ?></span>
+                                      onclick="gd_ga_popup();"><?php _e('Re-authorize', 'geodirectory'); ?></span>
                                 <span
-                                    style="color: green; font-weight: bold;"><?php _e('Authorized', GEODIRECTORY_TEXTDOMAIN); ?></span>
+                                    style="color: green; font-weight: bold;"><?php _e('Authorized', 'geodirectory'); ?></span>
                             <?php
                             } else {
                                 ?>
                                 <span class="button-primary"
-                                      onclick="gd_ga_popup();"><?php _e('Authorize', GEODIRECTORY_TEXTDOMAIN);?></span>
+                                      onclick="gd_ga_popup();"><?php _e('Authorize', 'geodirectory');?></span>
                             <?php
                             }
                             ?>
@@ -3015,7 +3015,7 @@ function geodir_post_attachments()
     wp_nonce_field(plugin_basename(__FILE__), 'geodir_post_attachments_noncename');
 
     if (geodir_get_featured_image($post_id, 'thumbnail')) {
-        echo '<h4>' . __('Featured Image', GEODIRECTORY_TEXTDOMAIN) . '</h4>';
+        echo '<h4>' . __('Featured Image', 'geodirectory') . '</h4>';
         geodir_show_featured_image($post_id, 'thumbnail');
     }
 
@@ -3026,13 +3026,13 @@ function geodir_post_attachments()
 
     <h5 class="form_title">
         <?php if ($image_limit != 0 && $image_limit == 1) {
-            echo '<br /><small>(' . __('You can upload', GEODIRECTORY_TEXTDOMAIN) . ' ' . $image_limit . ' ' . __('image with this package', GEODIRECTORY_TEXTDOMAIN) . ')</small>';
+            echo '<br /><small>(' . __('You can upload', 'geodirectory') . ' ' . $image_limit . ' ' . __('image with this package', 'geodirectory') . ')</small>';
         } ?>
         <?php if ($image_limit != 0 && $image_limit > 1) {
-            echo '<br /><small>(' . __('You can upload', GEODIRECTORY_TEXTDOMAIN) . ' ' . $image_limit . ' ' . __('images with this package', GEODIRECTORY_TEXTDOMAIN) . ')</small>';
+            echo '<br /><small>(' . __('You can upload', 'geodirectory') . ' ' . $image_limit . ' ' . __('images with this package', 'geodirectory') . ')</small>';
         } ?>
         <?php if ($image_limit == 0) {
-            echo '<br /><small>(' . __('You can upload unlimited images with this package', GEODIRECTORY_TEXTDOMAIN) . ')</small>';
+            echo '<br /><small>(' . __('You can upload unlimited images with this package', 'geodirectory') . ')</small>';
         } ?>
     </h5>
 
@@ -3072,9 +3072,9 @@ function geodir_post_attachments()
         <div
             class="plupload-upload-uic hide-if-no-js <?php if ($multiple): ?>plupload-upload-uic-multiple<?php endif; ?>"
             id="<?php echo $id; ?>plupload-upload-ui">
-            <h4><?php _e('Drop files to upload', GEODIRECTORY_TEXTDOMAIN);?></h4>
+            <h4><?php _e('Drop files to upload', 'geodirectory');?></h4>
             <input id="<?php echo $id; ?>plupload-browse-button" type="button"
-                   value="<?php _e('Select Files', GEODIRECTORY_TEXTDOMAIN); ?>" class="button"/>
+                   value="<?php _e('Select Files', 'geodirectory'); ?>" class="button"/>
             <span class="ajaxnonceplu" id="ajaxnonceplu<?php echo wp_create_nonce($id . 'pluploadan'); ?>"></span>
             <?php if ($width && $height): ?>
                 <span class="plupload-resize"></span>
@@ -3087,7 +3087,7 @@ function geodir_post_attachments()
              id="<?php echo $id; ?>plupload-thumbs" style="border-top:1px solid #ccc; padding-top:10px;">
         </div>
         <span
-            id="upload-msg"><?php _e('Please drag &amp; drop the images to rearrange the order', GEODIRECTORY_TEXTDOMAIN);?></span>
+            id="upload-msg"><?php _e('Please drag &amp; drop the images to rearrange the order', 'geodirectory');?></span>
         <span id="<?php echo $id; ?>upload-error" style="display:none"></span>
     </div>
 
@@ -3132,8 +3132,8 @@ function geodir_notification_add_bcc_option($settings)
         foreach ($settings as $setting) {
             if (isset($setting['id']) && $setting['id'] == 'site_bcc_options' && isset($setting['type']) && $setting['type'] == 'sectionend') {
                 $geodir_bcc_listing_published_yes = array(
-                    'name' => __('Listing published', GEODIRECTORY_TEXTDOMAIN),
-                    'desc' => __('Yes', GEODIRECTORY_TEXTDOMAIN),
+                    'name' => __('Listing published', 'geodirectory'),
+                    'desc' => __('Yes', 'geodirectory'),
                     'id' => 'geodir_bcc_listing_published',
                     'std' => 'yes',
                     'type' => 'radio',
@@ -3142,8 +3142,8 @@ function geodir_notification_add_bcc_option($settings)
                 );
 
                 $geodir_bcc_listing_published_no = array(
-                    'name' => __('Listing published', GEODIRECTORY_TEXTDOMAIN),
-                    'desc' => __('No', GEODIRECTORY_TEXTDOMAIN),
+                    'name' => __('Listing published', 'geodirectory'),
+                    'desc' => __('No', 'geodirectory'),
                     'id' => 'geodir_bcc_listing_published',
                     'std' => 'yes',
                     'type' => 'radio',
@@ -3296,7 +3296,7 @@ function gd_avada_compat_warning()
 
     $plugin = 'avada-nag';
     $timestamp = 'avada-nag1234';
-    $message = __('Since Avada 3.8+ they have added hooks for compatibility for GeoDirectory so the header.php modification is no longer required. <a href="http://docs.wpgeodirectory.com/avada-compatibility-header-php/" target="_blank">See here</a>', GEODIRECTORY_TEXTDOMAIN);
+    $message = __('Welcome to GeoDirectory, please have a look <a href="https://docs.wpgeodirectory.com/category/getting-started/" target="_blank">here</a> to get started. :)', 'geodirectory');
     echo '<div id="' . $timestamp . '"  class="error">';
     echo '<span class="gd-remove-noti" onclick="gdRemoveANotification(\'' . $plugin . '\',\'' . $timestamp . '\');" ><i class="fa fa-times"></i></span>';
     echo "<img class='gd-icon-noti' src='" . plugin_dir_url('') . "geodirectory/geodirectory-assets/images/favicon.ico' > ";
@@ -3465,7 +3465,7 @@ add_action( 'admin_head-post.php', 'geodir_hide_admin_preview_button' );
  * @return array Array of tab data.
  */
 function geodir_import_export_tab( $tabs ) {
-	$tabs['import_export'] = array( 'label' => __( 'Import & Export', GEODIRECTORY_TEXTDOMAIN ) );
+	$tabs['import_export'] = array( 'label' => __( 'Import & Export', 'geodirectory' ) );
     return $tabs;
 }
 
@@ -3505,7 +3505,7 @@ function geodir_import_export_page() {
 	
 	$gd_posttypes_option = '';
 	foreach ( $gd_posttypes as $gd_posttype => $row ) {
-		$gd_posttypes_option .= '<option value="' . $gd_posttype . '">' . __( $row['labels']['name'], GEODIRECTORY_TEXTDOMAIN ) . '</option>';
+		$gd_posttypes_option .= '<option value="' . $gd_posttype . '">' . __( $row['labels']['name'], 'geodirectory' ) . '</option>';
 	}
 	wp_enqueue_script( 'jquery-ui-progressbar' );
 	
@@ -3513,8 +3513,8 @@ function geodir_import_export_page() {
 ?>
 </form>
 <div class="inner_content_tab_main gd-import-export">
-  <h3><?php _e( 'GD Import & Export CSV', GEODIRECTORY_TEXTDOMAIN ) ;?></h3>
-  <span class="description"><?php _e( 'Import & export csv for GD listings & categories.', GEODIRECTORY_TEXTDOMAIN ) ;?></span>
+  <h3><?php _e( 'GD Import & Export CSV', 'geodirectory' ) ;?></h3>
+  <span class="description"><?php _e( 'Import & export csv for GD listings & categories.', 'geodirectory' ) ;?></span>
   <div class="gd-content-heading">
 
   <?php
@@ -3527,13 +3527,13 @@ function geodir_import_export_page() {
 	<div id="gd_ie_reqs" class="metabox-holder">
       <div class="meta-box-sortables ui-sortable">
         <div class="postbox">
-          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'PHP Requirements for GD Import & Export CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'PHP Requirements for GD Import & Export CSV', 'geodirectory' );?></span></h3>
           <div class="inside">
-            <span class="description"><?php echo __( 'Note: In case GD import & export csv not working for larger data then please check and configure following php settings.', GEODIRECTORY_TEXTDOMAIN );?></span>
+            <span class="description"><?php echo __( 'Note: In case GD import & export csv not working for larger data then please check and configure following php settings.', 'geodirectory' );?></span>
 			<table class="form-table">
 				<thead>
 				  <tr>
-				  	<th><?php _e( 'PHP Settings', GEODIRECTORY_TEXTDOMAIN );?></th><th><?php _e( 'Current Value', GEODIRECTORY_TEXTDOMAIN );?></th><th><?php _e( 'Recommended Value', GEODIRECTORY_TEXTDOMAIN );?></th>
+				  	<th><?php _e( 'PHP Settings', 'geodirectory' );?></th><th><?php _e( 'Current Value', 'geodirectory' );?></th><th><?php _e( 'Recommended Value', 'geodirectory' );?></th>
 				  </tr>
 				</thead>
 				<tbody>
@@ -3556,19 +3556,19 @@ function geodir_import_export_page() {
 	<div id="gd_ie_imposts" class="metabox-holder">
       <div class="meta-box-sortables ui-sortable">
         <div id="gd_ie_im_posts" class="postbox">
-          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Listings: Import CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Listings: Import CSV', 'geodirectory' );?></span></h3>
           <div class="inside">
             <table class="form-table">
 				<tbody>
 				  <tr>
 					<td class="gd-imex-box">
 						<div class="gd-im-choices">
-						<p><input type="radio" value="update" name="gd_im_choicepost" id="gd_im_pchoice_u" /><label for="gd_im_pchoice_u"><?php _e( 'Update listing if post with post_id already exists.', GEODIRECTORY_TEXTDOMAIN );?></label></p>
-						<p><input type="radio" checked="checked" value="skip" name="gd_im_choicepost" id="gd_im_pchoice_s" /><label for="gd_im_pchoice_s"><?php _e( 'Ignore listing if post with post_id already exists.', GEODIRECTORY_TEXTDOMAIN );?></label></p>
+						<p><input type="radio" value="update" name="gd_im_choicepost" id="gd_im_pchoice_u" /><label for="gd_im_pchoice_u"><?php _e( 'Update listing if post with post_id already exists.', 'geodirectory' );?></label></p>
+						<p><input type="radio" checked="checked" value="skip" name="gd_im_choicepost" id="gd_im_pchoice_s" /><label for="gd_im_pchoice_s"><?php _e( 'Ignore listing if post with post_id already exists.', 'geodirectory' );?></label></p>
 						</div>
 						<div class="plupload-upload-uic hide-if-no-js" id="gd_im_postplupload-upload-ui">
 							<input type="text" readonly="readonly" name="gd_im_post_file" class="gd-imex-file gd_im_post_file" id="gd_im_post" onclick="jQuery('#gd_im_postplupload-browse-button').trigger('click');" />
-							<input id="gd_im_postplupload-browse-button" type="button" value="<?php echo SELECT_UPLOAD_CSV; ?>" class="gd-imex-pupload button-primary" /><input type="button" value="<?php echo esc_attr( __( 'Download Sample CSV', GEODIRECTORY_TEXTDOMAIN ) );?>" class="button-secondary" name="gd_ie_imposts_sample" id="gd_ie_imposts_sample">
+							<input id="gd_im_postplupload-browse-button" type="button" value="<?php echo SELECT_UPLOAD_CSV; ?>" class="gd-imex-pupload button-primary" /><input type="button" value="<?php echo esc_attr( __( 'Download Sample CSV', 'geodirectory' ) );?>" class="button-secondary" name="gd_ie_imposts_sample" id="gd_ie_imposts_sample">
 						<input type="hidden" id="gd_ie_imposts_csv" value="<?php echo $gd_posts_sample_csv;?>" />
 							<?php
 							/**
@@ -3596,7 +3596,7 @@ function geodir_import_export_page() {
 							<input type="hidden" id="gd_terminateaction" value="continue"/>
 						</div>
 						<div class="gd-import-progress" id="gd-import-progress" style="display:none">
-							<div class="gd-import-file"><b><?php _e("Import Data Status :", GEODIRECTORY_TEXTDOMAIN);?> </b><font
+							<div class="gd-import-file"><b><?php _e("Import Data Status :", 'geodirectory');?> </b><font
 									id="gd-import-done">0</font> / <font id="gd-import-total">0</font>&nbsp;( <font
 									id="gd-import-perc">0%</font> )
 								<div class="gd-fileprogress"></div>
@@ -3608,10 +3608,10 @@ function geodir_import_export_page() {
                     	<div class="gd-imex-btns" style="display:none;">
                         	<input type="hidden" class="geodir_import_file" name="geodir_import_file" value="save"/>
                         	<input onclick="gd_imex_PrepareImport(this, 'post')" type="button" value="<?php echo CSV_IMPORT_DATA; ?>" id="gd_import_data" class="button-primary" />
-                        	<input onclick="gd_imex_ContinueImport(this, 'post')" type="button" value="<?php _e( "Continue Import Data", GEODIRECTORY_TEXTDOMAIN );?>" id="gd_continue_data" class="button-primary" style="display:none"/>
-                        	<input type="button" value="<?php _e("Terminate Import Data", GEODIRECTORY_TEXTDOMAIN);?>" id="gd_stop_import" class="button-primary" name="gd_stop_import" style="display:none" onclick="gd_imex_TerminateImport(this, 'post')"/>
+                        	<input onclick="gd_imex_ContinueImport(this, 'post')" type="button" value="<?php _e( "Continue Import Data", 'geodirectory' );?>" id="gd_continue_data" class="button-primary" style="display:none"/>
+                        	<input type="button" value="<?php _e("Terminate Import Data", 'geodirectory');?>" id="gd_stop_import" class="button-primary" name="gd_stop_import" style="display:none" onclick="gd_imex_TerminateImport(this, 'post')"/>
 							<div id="gd_process_data" style="display:none">
-								<span class="spinner is-active" style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", GEODIRECTORY_TEXTDOMAIN);?>
+								<span class="spinner is-active" style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", 'geodirectory');?>
 							</div>
 						</div>
 					</td>
@@ -3625,13 +3625,13 @@ function geodir_import_export_page() {
 	<div id="gd_ie_excategs" class="metabox-holder">
 	  <div class="meta-box-sortables ui-sortable">
 		<div id="gd_ie_ex_posts" class="postbox">
-		  <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Listings: Export CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+		  <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Listings: Export CSV', 'geodirectory' );?></span></h3>
 		  <div class="inside">
 			<table class="form-table">
 			  <tbody>
 				<tr>
 				  <td class="fld"><label for="gd_post_type">
-					<?php _e( 'Post Type:', GEODIRECTORY_TEXTDOMAIN );?>
+					<?php _e( 'Post Type:', 'geodirectory' );?>
 					</label></td>
 				  <td><select name="gd_post_type" id="gd_post_type" style="min-width:140px">
 					  <?php echo $gd_posttypes_option;?>
@@ -3639,7 +3639,7 @@ function geodir_import_export_page() {
 				</tr>
 				<tr>
 				  <td class="fld" style="vertical-align: top"><label>
-					<?php _e( 'Progress:', GEODIRECTORY_TEXTDOMAIN );?>
+					<?php _e( 'Progress:', 'geodirectory' );?>
 					</label></td>
 				  <td><div id='gd_progressbar_box'>
 					  <div id="gd_progressbar" class="gd_progressbar">
@@ -3647,13 +3647,13 @@ function geodir_import_export_page() {
 					  </div>
 					</div>
 					<p style="display:inline-block">
-					  <?php _e( 'Elapsed Time:', GEODIRECTORY_TEXTDOMAIN );?>
+					  <?php _e( 'Elapsed Time:', 'geodirectory' );?>
 					</p>
 					  
 					<p id="gd_timer" class="gd_timer">00:00:00</p></td>
 				</tr>
 				<tr>
-				  <td colspan="2"><input type="submit" value="<?php echo esc_attr( __( 'Export CSV', GEODIRECTORY_TEXTDOMAIN ) );?>" class="button-primary" name="gd_ie_exposts_submit" id="gd_ie_exposts_submit">
+				  <td colspan="2"><input type="submit" value="<?php echo esc_attr( __( 'Export CSV', 'geodirectory' ) );?>" class="button-primary" name="gd_ie_exposts_submit" id="gd_ie_exposts_submit">
 				  </td>
 				</tr>
 			  </tbody>
@@ -3665,19 +3665,19 @@ function geodir_import_export_page() {
 	<div id="gd_ie_imcategs" class="metabox-holder">
       <div class="meta-box-sortables ui-sortable">
         <div id="gd_ie_imcats" class="postbox">
-          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Categories: Import CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Categories: Import CSV', 'geodirectory' );?></span></h3>
           <div class="inside">
             <table class="form-table">
 				<tbody>
 				  <tr>
 					<td class="gd-imex-box">
 						<div class="gd-im-choices">
-						<p><input type="radio" value="update" name="gd_im_choicecat" id="gd_im_cchoice_u" /><label for="gd_im_cchoice_u"><?php _e( 'Update item if item with cat_id/cat_slug already exists.', GEODIRECTORY_TEXTDOMAIN );?></label></p>
-						<p><input type="radio" checked="checked" value="skip" name="gd_im_choicecat" id="gd_im_cchoice_s" /><label for="gd_im_cchoice_s"><?php _e( 'Ignore item if item with cat_id/cat_slug already exists.', GEODIRECTORY_TEXTDOMAIN );?></label></p>
+						<p><input type="radio" value="update" name="gd_im_choicecat" id="gd_im_cchoice_u" /><label for="gd_im_cchoice_u"><?php _e( 'Update item if item with cat_id/cat_slug already exists.', 'geodirectory' );?></label></p>
+						<p><input type="radio" checked="checked" value="skip" name="gd_im_choicecat" id="gd_im_cchoice_s" /><label for="gd_im_cchoice_s"><?php _e( 'Ignore item if item with cat_id/cat_slug already exists.', 'geodirectory' );?></label></p>
 						</div>
 						<div class="plupload-upload-uic hide-if-no-js" id="gd_im_catplupload-upload-ui">
 							<input type="text" readonly="readonly" name="gd_im_cat_file" class="gd-imex-file gd_im_cat_file" id="gd_im_cat" onclick="jQuery('#gd_im_catplupload-browse-button').trigger('click');" />
-							<input id="gd_im_catplupload-browse-button" type="button" value="<?php echo SELECT_UPLOAD_CSV; ?>" class="gd-imex-cupload button-primary" /><input type="button" value="<?php echo esc_attr( __( 'Download Sample CSV', GEODIRECTORY_TEXTDOMAIN ) );?>" class="button-secondary" name="gd_ie_imcats_sample" id="gd_ie_imcats_sample">
+							<input id="gd_im_catplupload-browse-button" type="button" value="<?php echo SELECT_UPLOAD_CSV; ?>" class="gd-imex-cupload button-primary" /><input type="button" value="<?php echo esc_attr( __( 'Download Sample CSV', 'geodirectory' ) );?>" class="button-secondary" name="gd_ie_imcats_sample" id="gd_ie_imcats_sample">
 						<input type="hidden" id="gd_ie_imcats_csv" value="<?php echo $gd_cats_sample_csv;?>" />
 						<?php
 						/**
@@ -3705,7 +3705,7 @@ function geodir_import_export_page() {
 							<input type="hidden" id="gd_terminateaction" value="continue"/>
 						</div>
 						<div class="gd-import-progress" id="gd-import-progress" style="display:none">
-							<div class="gd-import-file"><b><?php _e("Import Data Status :", GEODIRECTORY_TEXTDOMAIN);?> </b><font
+							<div class="gd-import-file"><b><?php _e("Import Data Status :", 'geodirectory');?> </b><font
 									id="gd-import-done">0</font> / <font id="gd-import-total">0</font>&nbsp;( <font
 									id="gd-import-perc">0%</font> )
 								<div class="gd-fileprogress"></div>
@@ -3717,10 +3717,10 @@ function geodir_import_export_page() {
                     	<div class="gd-imex-btns" style="display:none;">
                         	<input type="hidden" class="geodir_import_file" name="geodir_import_file" value="save"/>
                         	<input onclick="gd_imex_PrepareImport(this, 'cat')" type="button" value="<?php echo CSV_IMPORT_DATA; ?>" id="gd_import_data" class="button-primary" />
-                        	<input onclick="gd_imex_ContinueImport(this, 'cat')" type="button" value="<?php _e( "Continue Import Data", GEODIRECTORY_TEXTDOMAIN );?>" id="gd_continue_data" class="button-primary" style="display:none"/>
-                        	<input type="button" value="<?php _e("Terminate Import Data", GEODIRECTORY_TEXTDOMAIN);?>" id="gd_stop_import" class="button-primary" name="gd_stop_import" style="display:none" onclick="gd_imex_TerminateImport(this, 'cat')"/>
+                        	<input onclick="gd_imex_ContinueImport(this, 'cat')" type="button" value="<?php _e( "Continue Import Data", 'geodirectory' );?>" id="gd_continue_data" class="button-primary" style="display:none"/>
+                        	<input type="button" value="<?php _e("Terminate Import Data", 'geodirectory');?>" id="gd_stop_import" class="button-primary" name="gd_stop_import" style="display:none" onclick="gd_imex_TerminateImport(this, 'cat')"/>
 							<div id="gd_process_data" style="display:none">
-								<span class="spinner is-active" style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", GEODIRECTORY_TEXTDOMAIN);?>
+								<span class="spinner is-active" style="display:inline-block;margin:0 5px 0 5px;float:left"></span><?php _e("Wait, processing import data...", 'geodirectory');?>
 							</div>
 						</div>
 					</td>
@@ -3734,21 +3734,21 @@ function geodir_import_export_page() {
 	<div id="gd_ie_excategs" class="metabox-holder">
       <div class="meta-box-sortables ui-sortable">
         <div id="gd_ie_ex_cats" class="postbox">
-          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Categories: Export CSV', GEODIRECTORY_TEXTDOMAIN );?></span></h3>
+          <h3 class="hndle"><span style='vertical-align:top;'><?php echo __( 'GD Categories: Export CSV', 'geodirectory' );?></span></h3>
           <div class="inside">
             <table class="form-table">
 				<tbody>
 				  <tr>
-					<td class="fld"><label for="gd_post_type"><?php _e( 'Post Type:', GEODIRECTORY_TEXTDOMAIN );?></label></td>
+					<td class="fld"><label for="gd_post_type"><?php _e( 'Post Type:', 'geodirectory' );?></label></td>
 					<td><select name="gd_post_type" id="gd_post_type" style="min-width:140px"><?php echo $gd_posttypes_option;?></select></td>
 				  </tr>
 				  <tr>
-					<td class="fld" style="vertical-align: top"><label><?php _e( 'Progress:', GEODIRECTORY_TEXTDOMAIN );?></label></td>
-					<td><div id='gd_progressbar_box'><div id="gd_progressbar" class="gd_progressbar"><div class="gd-progress-label"></div></div></div><p style="display:inline-block"><?php _e( 'Elapsed Time:', GEODIRECTORY_TEXTDOMAIN );?></p>&nbsp;&nbsp;<p id="gd_timer" class="gd_timer">00:00:00</p></td>
+					<td class="fld" style="vertical-align: top"><label><?php _e( 'Progress:', 'geodirectory' );?></label></td>
+					<td><div id='gd_progressbar_box'><div id="gd_progressbar" class="gd_progressbar"><div class="gd-progress-label"></div></div></div><p style="display:inline-block"><?php _e( 'Elapsed Time:', 'geodirectory' );?></p>&nbsp;&nbsp;<p id="gd_timer" class="gd_timer">00:00:00</p></td>
 				  </tr>
 				  <tr>
 					<td colspan="2">
-						<input type="submit" value="<?php echo esc_attr( __( 'Export CSV', GEODIRECTORY_TEXTDOMAIN ) );?>" class="button-primary" name="gd_ie_excats_submit" id="gd_ie_excats_submit">
+						<input type="submit" value="<?php echo esc_attr( __( 'Export CSV', 'geodirectory' ) );?>" class="button-primary" name="gd_ie_excats_submit" id="gd_ie_excats_submit">
 					</td>
 				  </tr>
 				</tbody>
@@ -4056,41 +4056,41 @@ function gd_imex_showStatusMsg(el, type) {
 	
 	var gdMsg = '<p></p>';
 	if ( processed > 0 ) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( 'Total %s item(s) found.', GEODIRECTORY_TEXTDOMAIN ), '%s' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( 'Total %s item(s) found.', 'geodirectory' ), '%s' ) );?></p>';
 		msgParse = msgParse.replace("%s", processed);
 		gdMsg += msgParse;
 	}
 	
 	if ( updated > 0 ) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) updated.', GEODIRECTORY_TEXTDOMAIN ), '%s', '%d' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) updated.', 'geodirectory' ), '%s', '%d' ) );?></p>';
 		msgParse = msgParse.replace("%s", updated);
 		msgParse = msgParse.replace("%d", processed);
 		gdMsg += msgParse;
 	}
 	
 	if ( created > 0 ) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) added.', GEODIRECTORY_TEXTDOMAIN ), '%s', '%d' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) added.', 'geodirectory' ), '%s', '%d' ) );?></p>';
 		msgParse = msgParse.replace("%s", created);
 		msgParse = msgParse.replace("%d", processed);
 		gdMsg += msgParse;
 	}
 	
 	if ( skipped > 0 ) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) ignored due to already exists.', GEODIRECTORY_TEXTDOMAIN ), '%s', '%d' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) ignored due to already exists.', 'geodirectory' ), '%s', '%d' ) );?></p>';
 		msgParse = msgParse.replace("%s", skipped);
 		msgParse = msgParse.replace("%d", processed);
 		gdMsg += msgParse;
 	}
 	
 	if (type=='post' && invalid_addr > 0) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) could not be added due to blank/invalid address(city, region, country, latitude, longitude).', GEODIRECTORY_TEXTDOMAIN ), '%s', '%d' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) could not be added due to blank/invalid address(city, region, country, latitude, longitude).', 'geodirectory' ), '%s', '%d' ) );?></p>';
 		msgParse = msgParse.replace("%s", invalid_addr);
 		msgParse = msgParse.replace("%d", total);
 		gdMsg += msgParse;
 	}
 	
 	if (invalid > 0) {
-		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) could not be added due to blank title/invalid post type.', GEODIRECTORY_TEXTDOMAIN ), '%s', '%d' ) );?></p>';
+		var msgParse = '<p><?php echo addslashes( sprintf( __( '%s / %s item(s) could not be added due to blank title/invalid post type.', 'geodirectory' ), '%s', '%d' ) );?></p>';
 		msgParse = msgParse.replace("%s", invalid);
 		msgParse = msgParse.replace("%d", total);
 		gdMsg += msgParse;
@@ -4231,7 +4231,7 @@ jQuery(function(){
 	}
 		
 	function gd_process_export_posts(el, post_type) {
-		gd_progressbar(el, 0, "<?php echo esc_attr( __( 'Exporting...', GEODIRECTORY_TEXTDOMAIN ) );?>");
+		gd_progressbar(el, 0, "<?php echo esc_attr( __( 'Exporting...', 'geodirectory' ) );?>");
 		jQuery(el).find('#gd_timer').text('00:00:00');
 
 		jQuery.ajax({
@@ -4259,7 +4259,7 @@ jQuery(function(){
 						gd_progressbar(el, 0, data.error);
 					} else {
 						if (typeof data.total != 'undefined' && parseInt(data.total) > 0) {
-							gd_progressbar(el, 100, "<?php echo esc_attr( __( 'Complete!', GEODIRECTORY_TEXTDOMAIN ) );?>");
+							gd_progressbar(el, 100, "<?php echo esc_attr( __( 'Complete!', 'geodirectory' ) );?>");
 						}
 						if (typeof data.csv_file != 'undefined' && data.csv_file != '' ) {
 							window.location.href = data.csv_file;
@@ -4277,7 +4277,7 @@ jQuery(function(){
 	}
 	
 	function gd_process_export_cats(el, post_type) {
-		gd_progressbar(el, 0, "<?php echo esc_attr( __( 'Exporting...', GEODIRECTORY_TEXTDOMAIN ) );?>");
+		gd_progressbar(el, 0, "<?php echo esc_attr( __( 'Exporting...', 'geodirectory' ) );?>");
 		jQuery(el).find('#gd_timer').text('00:00:00');
 
 		jQuery.ajax({
@@ -4301,7 +4301,7 @@ jQuery(function(){
 						gd_progressbar(el, 0, data.error);
 					} else {
 						if (typeof data.total != 'undefined' && parseInt(data.total) > 0) {
-							gd_progressbar(el, 100, "<?php echo esc_attr( __( 'Complete!', GEODIRECTORY_TEXTDOMAIN ) );?>");
+							gd_progressbar(el, 100, "<?php echo esc_attr( __( 'Complete!', 'geodirectory' ) );?>");
 						}
 						if (typeof data.csv_file != 'undefined' && data.csv_file != '' ) {
 							window.location.href = data.csv_file;
@@ -4423,7 +4423,7 @@ function geodir_filesystem_notice()
     } elseif (!defined('FTP_USER')) {
         ?>
         <div class="error">
-            <p><?php _e('GeoDirectory does not have access to your filesystem, thing like import/export will not work. Please define your details in wp-config.php as explained here', GEODIRECTORY_TEXTDOMAIN); ?>
+            <p><?php _e('GeoDirectory does not have access to your filesystem, thing like import/export will not work. Please define your details in wp-config.php as explained here', 'geodirectory'); ?>
                 <a target="_blank" href="http://codex.wordpress.org/Editing_wp-config.php#WordPress_Upgrade_Constants">http://codex.wordpress.org/Editing_wp-config.php#WordPress_Upgrade_Constants</a>
             </p>
         </div>
@@ -4477,7 +4477,7 @@ function geodir_ajax_import_export() {
 
     $wp_filesystem = geodir_init_filesystem();
     if (!$wp_filesystem) {
-        $json['error'] = __( 'Fail, something wrong to create csv file.', GEODIRECTORY_TEXTDOMAIN );
+        $json['error'] = __( 'Fail, something wrong to create csv file.', 'geodirectory' );
         wp_send_json( $json );
         exit;
     }
@@ -4499,7 +4499,7 @@ function geodir_ajax_import_export() {
 			}
 			// WPML
 			if ( $post_type == 'gd_event' ) {
-				add_filter( 'geodir_imex_count_posts', 'geodir_imex_count_events', 10, 2 );
+				//add_filter( 'geodir_imex_count_posts', 'geodir_imex_count_events', 10, 2 );
 				add_filter( 'geodir_imex_export_posts_query', 'geodir_imex_get_events_query', 10, 2 );
 			}
 
@@ -4528,7 +4528,7 @@ function geodir_ajax_import_export() {
 				}
 				
 				if ( !$posts_count > 0 ) {
-					$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
+					$json['error'] = __( 'No records to export.', 'geodirectory' );
 				} else {
 					$args = array( 'hide_empty' => 0 );
 					$posts = geodir_imex_get_posts( $post_type );
@@ -4553,10 +4553,10 @@ function geodir_ajax_import_export() {
 							$json['total'] = $posts_count;
 							$json['csv_file'] = $file_url;
 						} else {
-							$json['error'] = __( 'Fail, something wrong to create csv file.', GEODIRECTORY_TEXTDOMAIN );
+							$json['error'] = __( 'Fail, something wrong to create csv file.', 'geodirectory' );
 						}
 					} else {
-						$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
+						$json['error'] = __( 'No records to export.', 'geodirectory' );
 					}
 				}
 				// WPML
@@ -4603,7 +4603,7 @@ function geodir_ajax_import_export() {
 				}
 				
 				if ( !$terms_count > 0 ) {
-					$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
+					$json['error'] = __( 'No records to export.', 'geodirectory' );
 				} else {
 					$args = array( 'hide_empty' => 0 );
 					$terms = geodir_imex_get_terms( $post_type );
@@ -4628,10 +4628,10 @@ function geodir_ajax_import_export() {
 							$json['total'] = $terms_count;
 							$json['csv_file'] = $file_url;
 						} else {
-							$json['error'] = __( 'Fail, something wrong to create csv file.', GEODIRECTORY_TEXTDOMAIN );
+							$json['error'] = __( 'Fail, something wrong to create csv file.', 'geodirectory' );
 						}
 					} else {
-						$json['error'] = __( 'No records to export.', GEODIRECTORY_TEXTDOMAIN );
+						$json['error'] = __( 'No records to export.', 'geodirectory' );
 					}
 				}
 				// WPML
@@ -4668,8 +4668,8 @@ function geodir_ajax_import_export() {
 			$target_path = $uploads_dir . '/temp_' . $current_user->data->ID . '/' . $csv_filename;
 			
 			$json['file'] = $csv_file;
-			$json['error'] = __( 'The uploaded file is not a valid csv file. Please try again.', GEODIRECTORY_TEXTDOMAIN );
-			
+			$json['error'] = __( 'The uploaded file is not a valid csv file. Please try again.', 'geodirectory' );
+
 			if ( $csv_file && $wp_filesystem->is_file( $target_path ) && $wp_filesystem->exists( $target_path ) ) {
 				$wp_filetype = wp_check_filetype_and_ext( $target_path, $csv_filename );
 				
@@ -4689,7 +4689,7 @@ function geodir_ajax_import_export() {
 					$json['rows'] = (!empty($file) && count($file) > 1) ? count($file) - 1 : 0;
 					
 					if (!$json['rows'] > 0) {
-						$json['error'] = __('No data found in csv file.', GEODIRECTORY_TEXTDOMAIN);
+						$json['error'] = __('No data found in csv file.', 'geodirectory');
 					}
 				} else {
 					wp_send_json( $json );
@@ -5247,6 +5247,10 @@ function geodir_ajax_import_export() {
 
 								$table = $plugin_prefix . $post_type . '_detail';
 								
+								if ($post_type == 'gd_event') {
+									$gd_post = geodir_imex_process_event_data($gd_post);
+								}
+								
 								if (isset($gd_post['post_id'])) {
 									unset($gd_post['post_id']);
 								}
@@ -5584,6 +5588,7 @@ function geodir_imex_count_events( $posts_count, $post_type ) {
  * Retrives the posts for the current post type.
  *
  * @since 1.4.6
+ * @since 1.5.1 Updated to import & export recurring events.
  * @package GeoDirectory
  *
  * @global object $wp_filesystem WordPress FileSystem object.
@@ -5614,6 +5619,19 @@ function geodir_imex_get_posts( $post_type ) {
 			$csv_row[] = 'event_enddate';
 			$csv_row[] = 'starttime';
 			$csv_row[] = 'endtime';
+			
+			$csv_row[] = 'is_recurring_event';
+			$csv_row[] = 'event_duration_days';
+			$csv_row[] = 'recurring_dates';
+			$csv_row[] = 'is_whole_day_event';
+			$csv_row[] = 'event_starttimes';
+			$csv_row[] = 'event_endtimes';
+			$csv_row[] = 'recurring_type';
+			$csv_row[] = 'recurring_interval';
+			$csv_row[] = 'recurring_week_days';
+			$csv_row[] = 'recurring_week_nos';
+			$csv_row[] = 'max_recurring_count';
+			$csv_row[] = 'recurring_end_date';
 		}
 		$csv_row[] = 'post_status';
 		$csv_row[] = 'is_featured';
@@ -5766,10 +5784,24 @@ function geodir_imex_get_posts( $post_type ) {
 			$csv_row[] = $post_tags; // post_tags
 			$csv_row[] = $post_type; // post_type
 			if ( $post_type == 'gd_event' ) {
-				$csv_row[] = isset( $post['event_date'] ) && $post['event_date'] != '' && $post['event_date'] != '0000-00-00 00:00:00' ? date_i18n( 'd/m/Y', strtotime( $post['event_date'] ) ) : ''; // event_date
-				$csv_row[] = isset( $post['event_date'] ) && $post['event_date'] != '' && $post['event_date'] != '0000-00-00' ? date_i18n( 'd/m/Y', strtotime( $post['event_date'] ) ) : ''; // enddate
-				$csv_row[] = isset( $post['starttime'] ) && $post['starttime'] != '' && $post['starttime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $post['starttime'] ) ) : ''; // starttime
-				$csv_row[] = isset( $post['endtime'] ) && $post['endtime'] != '' && $post['endtime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $post['endtime'] ) ) : ''; // endtime
+				$event_data = geodir_imex_get_event_data($post, $gd_post_info);
+				$csv_row[] = $event_data['event_date']; // event_date
+				$csv_row[] = $event_data['event_enddate']; // enddate
+				$csv_row[] = $event_data['starttime']; // starttime
+				$csv_row[] = $event_data['endtime']; // endtime
+				
+				$csv_row[] = $event_data['is_recurring_event']; // is_recurring
+				$csv_row[] = $event_data['event_duration_days']; // duration_x
+				$csv_row[] = $event_data['recurring_dates']; // recurring_dates
+				$csv_row[] = $event_data['is_whole_day_event']; // all_day
+				$csv_row[] = $event_data['event_starttimes']; // starttimes
+				$csv_row[] = $event_data['event_endtimes']; // endtimes
+				$csv_row[] = $event_data['recurring_type']; // repeat_type
+				$csv_row[] = $event_data['recurring_interval']; // repeat_x
+				$csv_row[] = $event_data['recurring_week_days']; // repeat_days
+				$csv_row[] = $event_data['recurring_week_nos']; // repeat_weeks
+				$csv_row[] = $event_data['max_recurring_count']; // max_repeat
+				$csv_row[] = $event_data['recurring_end_date']; // repeat_end
 			}
 			$csv_row[] = $post_info['post_status']; // post_status
 			$csv_row[] = (int)$post_info['is_featured'] == 1 ? 1 : ''; // is_featured
@@ -5858,7 +5890,7 @@ function geodir_get_export_posts( $post_type ) {
 		
 	$table = $plugin_prefix . $post_type . '_detail';
 
-	$query = "SELECT {$wpdb->posts}.ID FROM {$wpdb->posts} INNER JOIN {$table} ON {$table}.post_id = {$wpdb->posts}.ID WHERE {$wpdb->posts}.post_type = %s ORDER BY {$wpdb->posts}.ID ASC";
+	$query = "SELECT {$wpdb->posts}.ID FROM {$wpdb->posts} INNER JOIN {$table} ON {$table}.post_id = {$wpdb->posts}.ID WHERE {$wpdb->posts}.post_type = %s ORDER BY {$wpdb->posts}.ID DESC";
 	/**
 	 * Modify returned posts SQL query for the current post type.
 	 *
@@ -5888,6 +5920,7 @@ function geodir_get_export_posts( $post_type ) {
  * Get the posts SQL query for the current post type.
  *
  * @since 1.4.6
+ * @since 1.5.1 Query updated to get distinct posts. 
  * @package GeoDirectory
  *
  * @global object $wpdb WordPress Database object.
@@ -5904,7 +5937,7 @@ function geodir_imex_get_events_query( $query, $post_type ) {
 		$table = $plugin_prefix . $post_type . '_detail';
 		$schedule_table = EVENT_SCHEDULE;
 
-		$query = "SELECT {$wpdb->posts}.ID, {$schedule_table}.event_date, {$schedule_table}.event_enddate AS enddate, {$schedule_table}.event_starttime AS starttime, {$schedule_table}.event_endtime AS endtime FROM {$wpdb->posts} INNER JOIN {$table} ON ({$table}.post_id = {$wpdb->posts}.ID) INNER JOIN {$schedule_table} ON ({$schedule_table}.event_id = {$wpdb->posts}.ID) WHERE {$wpdb->posts}.post_type = %s ORDER BY {$wpdb->posts}.ID ASC";
+		$query = "SELECT {$wpdb->posts}.ID, {$schedule_table}.event_date, {$schedule_table}.event_enddate AS enddate, {$schedule_table}.event_starttime AS starttime, {$schedule_table}.event_endtime AS endtime FROM {$wpdb->posts} INNER JOIN {$table} ON ({$table}.post_id = {$wpdb->posts}.ID) INNER JOIN {$schedule_table} ON ({$schedule_table}.event_id = {$wpdb->posts}.ID) WHERE {$wpdb->posts}.post_type = %s GROUP BY {$table}.post_id ORDER BY {$wpdb->posts}.ID ASC, {$schedule_table}.schedule_id ASC";
 	}
 	
 	return $query; 
@@ -6280,4 +6313,353 @@ function geodir_icl_duplicate_post_images($master_post_id, $tr_post_id, $lang) {
 	}
 	
 	return false;
+}
+
+/**
+ * Retrives the event data to export.
+ *
+ * @since 1.5.1
+ * @package GeoDirectory
+ *
+ * @param array $post Post array.
+ * @param object $gd_post_info Geodirectory Post object.
+ * @return array Event data array.
+ */
+function geodir_imex_get_event_data($post, $gd_post_info) {
+	$event_date = isset( $post['event_date'] ) && $post['event_date'] != '' && $post['event_date'] != '0000-00-00 00:00:00' ? date_i18n( 'd/m/Y', strtotime( $post['event_date'] ) ) : '';
+	$event_enddate = $event_date;
+	$starttime = isset( $post['starttime'] ) && $post['starttime'] != '' && $post['starttime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $post['starttime'] ) ) : '';
+	$endtime = isset( $post['endtime'] ) && $post['endtime'] != '' && $post['endtime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $post['endtime'] ) ) : '';
+	
+	$is_recurring_event = '';
+	$event_duration_days = '';
+	$is_whole_day_event = '';
+	$recurring_dates = '';
+	$event_starttimes = '';
+	$event_endtimes = '';
+	$recurring_type = '';
+	$recurring_interval = '';
+	$recurring_week_days = '';
+	$recurring_week_nos = '';
+	$max_recurring_count = '';
+	$recurring_end_date = '';
+	$recurring_dates = '';
+		
+	$recurring_data = isset($gd_post_info->recurring_dates) ? maybe_unserialize($gd_post_info->recurring_dates) : array();
+	if (!empty($recurring_data)) {
+		$event_date = isset( $recurring_data['event_start'] ) && $recurring_data['event_start'] != '' && $recurring_data['event_start'] != '0000-00-00 00:00:00' ? date_i18n( 'd/m/Y', strtotime( $recurring_data['event_start'] ) ) : $event_date;
+		$event_enddate = isset( $recurring_data['event_end'] ) && $recurring_data['event_end'] != '' && $recurring_data['event_end'] != '0000-00-00 00:00:00' ? date_i18n( 'd/m/Y', strtotime( $recurring_data['event_end'] ) ) : $event_date;
+		$starttime = isset( $recurring_data['starttime'] ) && $recurring_data['starttime'] != '' && $recurring_data['starttime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $recurring_data['starttime'] ) ) : $starttime;
+		$endtime = isset( $recurring_data['endtime'] ) && $recurring_data['endtime'] != '' && $recurring_data['endtime'] != '00:00:00' ? date_i18n( 'H:i', strtotime( $recurring_data['endtime'] ) ) : $endtime;
+		$is_whole_day_event = !empty($recurring_data['all_day']) ? 1 : '';
+		$different_times = !empty($recurring_data['different_times']) ? true : false;
+	
+		$recurring_pkg = geodir_event_recurring_pkg( $gd_post_info );
+		$is_recurring = isset( $gd_post_info->is_recurring ) && (int)$gd_post_info->is_recurring == 0 ? false : true;
+			
+		if ($recurring_pkg && $is_recurring) {
+			$recurring_dates = $event_date;
+			$event_enddate = '';
+			$is_recurring_event = 1;
+						
+			$recurring_type = !empty($recurring_data['repeat_type']) && in_array($recurring_data['repeat_type'], array('day', 'week', 'month', 'year', 'custom')) ? $recurring_data['repeat_type'] : 'custom';
+			
+			if (!empty($recurring_data['event_recurring_dates'])) {
+				$event_recurring_dates = explode( ',', $recurring_data['event_recurring_dates'] );
+				
+				if (!empty($event_recurring_dates)) {
+					$recurring_dates = array();
+					
+					foreach ($event_recurring_dates as $date) {
+						$recurring_dates[] = date_i18n( 'd/m/Y', strtotime( $date ) );
+					}
+					
+					$recurring_dates = implode(",", $recurring_dates);
+				}
+			}
+			
+			if ($recurring_type == 'custom') {
+				if (!$is_whole_day_event) {
+					$event_starttimes = $starttime;
+					$event_endtimes = $endtime;
+			
+					if (!empty($recurring_data['starttimes'])) {
+						$times = array();
+						
+						foreach ($recurring_data['starttimes'] as $time) {
+							$times[] = $time != '00:00:00' ? date_i18n( 'H:i', strtotime( $time ) ) : '00:00';
+						}
+						
+						$event_starttimes = implode(",", $times);
+					}
+					
+					if (!empty($recurring_data['endtimes'])) {
+						$times = array();
+						
+						foreach ($recurring_data['endtimes'] as $time) {
+							$times[] = $time != '00:00:00' ? date_i18n( 'H:i', strtotime( $time ) ) : '00:00';
+						}
+						
+						$event_endtimes = implode(",", $times);
+					}
+					
+					if (!$different_times) {
+						$event_starttimes = '';
+						$event_endtimes = '';
+					}
+				}
+			} else {
+				$event_duration_days = isset($recurring_data['duration_x']) ? (int)$recurring_data['duration_x'] : 1;
+				$recurring_interval = !empty($recurring_data['repeat_x']) && (int)$recurring_data['repeat_x'] > 0 ? $recurring_data['repeat_x'] : 1;
+				
+				if (($recurring_type == 'week' || $recurring_type == 'month') && !empty($recurring_data['repeat_days'])) {
+					$week_days = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+					
+					$days = array();
+					foreach ($recurring_data['repeat_days'] as $day) {
+						if (isset($week_days[$day])) {
+							$days[] = $week_days[$day];
+						}
+					}
+					
+					$recurring_week_days = implode(",", array_unique($days));
+				}
+				
+				$recurring_week_nos = $recurring_type == 'month' && !empty($recurring_data['repeat_weeks']) ? implode(",", $recurring_data['repeat_weeks']) : $recurring_week_nos;
+				if (!empty($recurring_data['repeat_end_type']) && (int)$recurring_data['repeat_end_type'] == 1) {
+					$recurring_end_date = isset($recurring_data['repeat_end']) && $recurring_data['repeat_end'] != '' && $recurring_data['repeat_end'] != '0000-00-00 00:00:00' ? date_i18n( 'd/m/Y', strtotime( $recurring_data['repeat_end'] ) ) : '';
+					$max_recurring_count = empty($recurring_end_date) ? 1 : '';
+				} else {
+					$max_recurring_count = (!empty($recurring_data['max_repeat']) && (int)$recurring_data['max_repeat'] > 0 ? (int)$recurring_data['max_repeat'] : 1);
+				}
+			}
+		}
+	}
+	if ($is_whole_day_event) {
+		$starttime = '';
+		$endtime = '';
+		$event_starttimes = '';
+		$event_endtimes = '';
+	}
+	
+	$data = array();
+	$data['event_date'] = $event_date;
+	$data['event_enddate'] = $event_enddate;
+	$data['starttime'] = $starttime;
+	$data['endtime'] = $endtime;
+	$data['is_recurring_event'] = $is_recurring_event;
+	$data['recurring_dates'] = $recurring_dates;
+	$data['event_duration_days'] = $event_duration_days;
+	$data['is_whole_day_event'] = $is_whole_day_event;
+	$data['event_starttimes'] = $event_starttimes;
+	$data['event_endtimes'] = $event_endtimes;
+	$data['recurring_type'] = $recurring_type;
+	$data['recurring_interval'] = $recurring_interval;
+	$data['recurring_week_days'] = $recurring_week_days;
+	$data['recurring_week_nos'] = $recurring_week_nos;
+	$data['max_recurring_count'] = $max_recurring_count;
+	$data['recurring_end_date'] = $recurring_end_date;
+	
+	return $data;
+}
+
+/**
+ * Convert date format to store in database.
+ *
+ * PHP date() function doesn't work well with d/m/Y format
+ * so this function validate and convert date to store in db.
+ *
+ * @since 1.5.1
+ * @package GeoDirectory
+ *
+ * @param string $date Date in Y-m-d or d/m/Y format.
+ * @return doesn't Date.
+ */
+function geodir_imex_get_date_ymd($date) {
+	if (strpos($date, '/') !== false) {
+		$date = str_replace('/', '-', $date); // PHP doesn't work well with dd/mm/yyyy format.
+	}
+	
+	$date = date_i18n('Y-m-d', strtotime($date));
+	return $date;
+}
+
+/**
+ * Validate the event data.
+ *
+ * @since 1.5.1
+ * @package GeoDirectory
+ *
+ * @param array $gd_post Post array.
+ * @return array Event data array.
+ */
+function geodir_imex_process_event_data($gd_post) {
+	$recurring_pkg = geodir_event_recurring_pkg( (object)$gd_post );
+	
+	$is_recurring = isset( $gd_post['is_recurring_event'] ) && (int)$gd_post['is_recurring_event'] == 0 ? false : true;
+	$event_date = isset($gd_post['event_date']) && $gd_post['event_date'] != '' ? geodir_imex_get_date_ymd($gd_post['event_date']) : '';
+	$event_enddate = isset($gd_post['event_enddate']) && $gd_post['event_enddate'] != '' ? geodir_imex_get_date_ymd($gd_post['event_enddate']) : $event_date;
+	$all_day = isset($gd_post['is_whole_day_event']) && !empty($gd_post['is_whole_day_event']) ? true : false;
+	$starttime = isset($gd_post['starttime']) && !$all_day ? $gd_post['starttime'] : '';
+	$endtime = isset($gd_post['endtime']) && !$all_day ? $gd_post['endtime'] : '';
+	
+	$repeat_type = '';
+	$different_times = '';
+	$starttimes = '';
+	$endtimes = '';
+	$repeat_days = '';
+	$repeat_weeks = '';
+	$event_recurring_dates = '';
+	$repeat_x = '';
+	$duration_x = '';
+	$repeat_end_type = '';
+	$max_repeat = '';
+	$repeat_end = '';
+	
+	if ($recurring_pkg && $is_recurring) {
+		$repeat_type = $gd_post['recurring_type'];
+		
+		if ($repeat_type == 'custom') {
+			$starttimes = !$all_day && !empty($gd_post['event_starttimes']) ? explode(",", $gd_post['event_starttimes']) : array();
+			$endtimes = !$all_day && !empty($gd_post['event_endtimes']) ? explode(",", $gd_post['event_endtimes']) : array();
+			
+			if (!empty($starttimes) || !empty($endtimes)) {
+				$different_times = true;
+			}
+			
+			$recurring_dates = isset($gd_post['recurring_dates']) && $gd_post['recurring_dates'] != '' ? explode(",", $gd_post['recurring_dates']) : array();
+			if (!empty($recurring_dates)) {
+				$event_recurring_dates = array();
+				
+				foreach ($recurring_dates as $recurring_date) {
+					$recurring_date = trim($recurring_date);
+					
+					if ($recurring_date != '') {
+						$event_recurring_dates[] = geodir_imex_get_date_ymd($recurring_date);
+					}
+				}
+				
+				$event_recurring_dates = array_unique($event_recurring_dates);
+				$event_recurring_dates = implode(",", $event_recurring_dates);
+			}
+		} else {
+			$duration_x = !empty( $gd_post['event_duration_days'] ) ? (int)$gd_post['event_duration_days'] : 1;
+			$repeat_x = !empty( $gd_post['recurring_interval'] ) ? (int)$gd_post['recurring_interval'] : 1;
+			$max_repeat = !empty( $gd_post['max_recurring_count'] ) ? (int)$gd_post['max_recurring_count'] : 1;
+			$repeat_end = !empty( $gd_post['recurring_end_date'] ) ? geodir_imex_get_date_ymd($gd_post['recurring_end_date']) : '';
+			
+			$repeat_end_type = $repeat_end != '' ? 1 : 0;
+			$max_repeat = $repeat_end != '' ? '' : $max_repeat;
+			
+			$week_days = array_flip(array('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'));
+			
+			$a_repeat_days = isset($gd_post['recurring_week_days']) && trim($gd_post['recurring_week_days'])!='' ? explode(',', trim($gd_post['recurring_week_days'])) : array();
+			$repeat_days = array();
+			if (!empty($a_repeat_days)) {
+				foreach ($a_repeat_days as $repeat_day) {
+					$repeat_day = strtolower(trim($repeat_day));
+					
+					if ($repeat_day != '' && isset($week_days[$repeat_day])) {
+						$repeat_days[] = $week_days[$repeat_day];
+					}
+				}
+				
+				$repeat_days = array_unique($repeat_days);
+			}
+			
+			$a_repeat_weeks = isset($gd_post['recurring_week_nos']) && trim($gd_post['recurring_week_nos']) != '' ? explode(",", trim($gd_post['recurring_week_nos'])) : array();
+			$repeat_weeks = array();
+			if (!empty($a_repeat_weeks)) {
+				foreach ($a_repeat_weeks as $repeat_week) {
+					$repeat_weeks[] = (int)$repeat_week;
+				}
+				
+				$repeat_weeks = array_unique($repeat_weeks);
+			}
+		}
+	}
+	
+	if (isset($gd_post['recurring_dates'])) {
+		unset($gd_post['recurring_dates']);
+	}
+	
+	$gd_post['is_recurring'] = $is_recurring;
+	$gd_post['event_date'] = $event_date;
+	$gd_post['event_start'] = $event_date;
+	$gd_post['event_end'] = $event_enddate;
+	$gd_post['all_day'] = $all_day;
+	$gd_post['starttime'] = $starttime;
+	$gd_post['endtime'] = $endtime;
+	
+	$gd_post['repeat_type'] = $repeat_type;
+	$gd_post['different_times'] = $different_times;
+	$gd_post['starttimes'] = $starttimes;
+	$gd_post['endtimes'] = $endtimes;
+	$gd_post['repeat_days'] = $repeat_days;
+	$gd_post['repeat_weeks'] = $repeat_weeks;
+	$gd_post['event_recurring_dates'] = $event_recurring_dates;
+	$gd_post['repeat_x'] = $repeat_x;
+	$gd_post['duration_x'] = $duration_x;
+	$gd_post['repeat_end_type'] = $repeat_end_type;
+	$gd_post['max_repeat'] = $max_repeat;
+	$gd_post['repeat_end'] = $repeat_end;
+
+	return $gd_post;
+}
+
+/**
+ * Create a page.
+ *
+ * @since 1.0.0
+ * @package GeoDirectory
+ * @global object $wpdb WordPress Database object.
+ * @global object $current_user Current user object.
+ * @param string $slug The page slug.
+ * @param string $option The option meta key.
+ * @param string $page_title The page title.
+ * @param string $page_content The page description.
+ * @param int $post_parent Parent page ID.
+ * @param string $status Post status.
+ */
+function geodir_create_page($slug, $option, $page_title = '', $page_content = '', $post_parent = 0, $status = 'publish')
+{
+    global $wpdb, $current_user;
+
+    $option_value = get_option($option);
+
+    if ($option_value > 0) :
+        if (get_post($option_value)) :
+            // Page exists
+            return;
+        endif;
+    endif;
+
+
+    $page_found = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT ID FROM " . $wpdb->posts . " WHERE post_name = %s LIMIT 1;",
+            array($slug)
+        )
+    );
+
+    if ($page_found) :
+        // Page exists
+        if (!$option_value) update_option($option, $page_found);
+        return;
+    endif;
+
+    $page_data = array(
+        'post_status' => $status,
+        'post_type' => 'page',
+        'post_author' => $current_user->ID,
+        'post_name' => $slug,
+        'post_title' => $page_title,
+        'post_content' => $page_content,
+        'post_parent' => $post_parent,
+        'comment_status' => 'closed'
+    );
+    $page_id = wp_insert_post($page_data);
+
+    add_option($option, $page_id);
+
 }

@@ -1798,8 +1798,8 @@ if (!function_exists('geodir_get_infowindow_html')) {
 
         if ($lat && $lng) {
             ob_start(); ?>
-            <div class="bubble">
-                <div style="position: relative;margin:5px 0px;">
+            <div class="gd-bubble" style="">
+                <div class="gd-bubble-inside">
                     <?php
                     $comment_count = '';
                     $rating_star = '';
@@ -1934,8 +1934,9 @@ if (!function_exists('geodir_get_infowindow_html')) {
 
                             $post_author = isset($postinfo_obj->post_author) ? $postinfo_obj->post_author : get_post_field('post_author', $ID);
                             ?>
+                        <div class="geodir-bubble-meta-fade"></div>
 
-                            <div class="geodir-bubble-meta-bottom">
+                        <div class="geodir-bubble-meta-bottom">
                                 <span class="geodir-bubble-rating"><?php echo $rating_star;?></span>
 
                                 <span
@@ -2961,11 +2962,11 @@ function geodir_function_post_updated($post_ID, $post_after, $post_before)
             $message_type = 'listing_published';
 
             if (get_option('geodir_post_published_email_subject') == '') {
-                update_option('geodir_post_published_email_subject', __('Listing Published Successfully', GEODIRECTORY_TEXTDOMAIN));
+                update_option('geodir_post_published_email_subject', __('Listing Published Successfully', 'geodirectory'));
             }
 
             if (get_option('geodir_post_published_email_content') == '') {
-                update_option('geodir_post_published_email_content', __("<p>Dear [#client_name#],</p><p>Your listing [#listing_link#] has been published. This email is just for your information.</p><p>[#listing_link#]</p><br><p>Thank you for your contribution.</p><p>[#site_name#]</p>", GEODIRECTORY_TEXTDOMAIN));
+                update_option('geodir_post_published_email_content', __("<p>Dear [#client_name#],</p><p>Your listing [#listing_link#] has been published. This email is just for your information.</p><p>[#listing_link#]</p><br><p>Thank you for your contribution.</p><p>[#site_name#]</p>", 'geodirectory'));
             }
 
             /**

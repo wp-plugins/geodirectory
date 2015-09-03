@@ -18,22 +18,28 @@ class geodir_bestof_widget extends WP_Widget
 	 * Register the best of widget with WordPress.
 	 *
 	 * @since 1.3.9
+     * @since 1.5.1 Changed from PHP4 style constructors to PHP5 __construct.
 	 */
-	function geodir_bestof_widget()
-    {
-        $widget_ops = array('classname' => 'geodir_bestof_widget', 'description' => __('GD > Best of widget', GEODIRECTORY_TEXTDOMAIN));
-        $this->WP_Widget('bestof_widget', __('GD > Best of widget', GEODIRECTORY_TEXTDOMAIN), $widget_ops);
+    function __construct() {
+        $widget_ops = array('classname' => 'geodir_bestof_widget', 'description' => __('GD > Best of widget', 'geodirectory'));
+        parent::__construct(
+            'bestof_widget', // Base ID
+            __('GD > Best of widget', 'geodirectory'), // Name
+            $widget_ops// Args
+        );
     }
 
 	/**
 	 * Front-end display content for best of widget.
 	 *
 	 * @since 1.3.9
+     * @since 1.5.1 Added filter to view all link.
+     * @since 1.5.1 Declare function public.
 	 *
 	 * @param array $args     Widget arguments.
 	 * @param array $instance Saved values from database.
 	 */
-	function widget($args, $instance)
+	public function widget($args, $instance)
     {
         extract($args);
 		/**
@@ -69,7 +75,7 @@ class geodir_bestof_widget extends WP_Widget
 		 *
 		 * @param string $instance['title'] The widget title.
 		 */
-		$title = empty($instance['title']) ? wp_sprintf( __( 'Best of %s', GEODIRECTORY_TEXTDOMAIN ), get_bloginfo('name') . $cur_location ) : apply_filters('bestof_widget_title', __($instance['title'], GEODIRECTORY_TEXTDOMAIN));
+		$title = empty($instance['title']) ? wp_sprintf( __( 'Best of %s', 'geodirectory' ), get_bloginfo('name') . $cur_location ) : apply_filters('bestof_widget_title', __($instance['title'], 'geodirectory'));
         
 		/**
 		 * Filter the post type.
@@ -196,7 +202,7 @@ class geodir_bestof_widget extends WP_Widget
             $is_dropdown = ($tab_layout == 'bestof-tabs-as-dropdown') ? true : false;
 
             if ($is_dropdown) {
-                $nav_html .= '<select id="geodir_bestof_tab_dd" class="chosen_select" name="geodir_bestof_tab_dd" data-placeholder="<?php echo esc_attr( __( \'Select Category\', GEODIRECTORY_TEXTDOMAIN ) );?>">';
+                $nav_html .= '<select id="geodir_bestof_tab_dd" class="chosen_select" name="geodir_bestof_tab_dd" data-placeholder="' . esc_attr( __( 'Select Category', 'geodirectory' ) ).'">';
             } else {
                 $nav_html .= '<dl class="geodir-tab-head geodir-bestof-cat-list">';
                 $nav_html .= '<dt></dt>';
@@ -228,11 +234,11 @@ class geodir_bestof_widget extends WP_Widget
                     if (isset($cat->review_count)) {
                         $num_reviews = $cat->review_count;
                         if ($num_reviews == 0) {
-                            $reviews = __('No Reviews', GEODIRECTORY_TEXTDOMAIN);
+                            $reviews = __('No Reviews', 'geodirectory');
                         } elseif ($num_reviews > 1) {
-                            $reviews = $num_reviews . __(' Reviews', GEODIRECTORY_TEXTDOMAIN);
+                            $reviews = $num_reviews . __(' Reviews', 'geodirectory');
                         } else {
-                            $reviews = __('1 Review', GEODIRECTORY_TEXTDOMAIN);
+                            $reviews = __('1 Review', 'geodirectory');
                         }
                         $nav_html .= $reviews;
                     }
@@ -287,7 +293,19 @@ class geodir_bestof_widget extends WP_Widget
             <?php
             echo '<div id="geodir-bestof-places">';
             if ($terms) {
-                echo '<h3 class="bestof-cat-title">' . wp_sprintf( __( 'Best of %s', GEODIRECTORY_TEXTDOMAIN ), $first_term->name ) . '<a href="' . esc_url(add_query_arg(array('sort_by' => 'overall_rating_desc'), get_term_link($first_term, $first_term->taxonomy))) . '">' . __("View all", GEODIRECTORY_TEXTDOMAIN) . '</a></h3>';
+                $view_all_link = add_query_arg(array('sort_by' => 'rating_count_desc'), get_term_link($first_term, $first_term->taxonomy));
+				/**
+				 * Filter the page link to view all lisitngs.
+				 *
+				 * @since 1.5.1
+				 *
+				 * @param array $view_all_link View all listings page link.
+				 * @param array $post_type The Post type.
+				 * @param array $first_term The category term object.
+				 */
+				$view_all_link = apply_filters('geodir_bestof_widget_view_all_link', $view_all_link, $post_type, $first_term);
+				
+				echo '<h3 class="bestof-cat-title">' . wp_sprintf( __( 'Best of %s', 'geodirectory' ), $first_term->name ) . '<a href="' . esc_url($view_all_link) . '">' . __("View all", 'geodirectory') . '</a></h3>';
             }
             geodir_bestof_places_by_term($query_args);
             echo "</div>";
@@ -303,13 +321,14 @@ class geodir_bestof_widget extends WP_Widget
 	 * Sanitize best of widget form values as they are saved.
 	 *
 	 * @since 1.3.9
+     * @since 1.5.1 Declare function public.
 	 *
 	 * @param array $new_instance Values just sent to be saved.
 	 * @param array $old_instance Previously saved values from database.
 	 *
 	 * @return array Updated safe values to be saved.
 	 */
-	function update($new_instance, $old_instance)
+	public function update($new_instance, $old_instance)
     {
         $instance = $old_instance;
         $instance['title'] = strip_tags($new_instance['title']);
@@ -330,10 +349,11 @@ class geodir_bestof_widget extends WP_Widget
 	 * Back-end best of widget settings form.
 	 *
 	 * @since 1.3.9
+     * @since 1.5.1 Declare function public.
 	 *
 	 * @param array $instance Previously saved values from database.
 	 */
-	function form($instance)
+	public function form($instance)
     {
         $instance = wp_parse_args((array)$instance,
             array(
@@ -358,7 +378,7 @@ class geodir_bestof_widget extends WP_Widget
 
         ?>
         <p>
-            <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', GEODIRECTORY_TEXTDOMAIN);?>
+            <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'geodirectory');?>
 
                 <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>"
                        name="<?php echo $this->get_field_name('title'); ?>" type="text"
@@ -368,7 +388,7 @@ class geodir_bestof_widget extends WP_Widget
 
         <p>
             <label
-                for="<?php echo $this->get_field_id('post_type'); ?>"><?php _e('Post Type:', GEODIRECTORY_TEXTDOMAIN);?>
+                for="<?php echo $this->get_field_id('post_type'); ?>"><?php _e('Post Type:', 'geodirectory');?>
 
                 <?php $postypes = geodir_get_posttypes();
 				/**
@@ -400,7 +420,7 @@ class geodir_bestof_widget extends WP_Widget
         <p>
 
             <label
-                for="<?php echo $this->get_field_id('post_limit'); ?>"><?php _e('Number of posts:', GEODIRECTORY_TEXTDOMAIN);?>
+                for="<?php echo $this->get_field_id('post_limit'); ?>"><?php _e('Number of posts:', 'geodirectory');?>
 
                 <input class="widefat" id="<?php echo $this->get_field_id('post_limit'); ?>"
                        name="<?php echo $this->get_field_name('post_limit'); ?>" type="text"
@@ -411,7 +431,7 @@ class geodir_bestof_widget extends WP_Widget
         <p>
 
             <label
-                for="<?php echo $this->get_field_id('categ_limit'); ?>"><?php _e('Number of categories:', GEODIRECTORY_TEXTDOMAIN);?>
+                for="<?php echo $this->get_field_id('categ_limit'); ?>"><?php _e('Number of categories:', 'geodirectory');?>
 
                 <input class="widefat" id="<?php echo $this->get_field_id('categ_limit'); ?>"
                        name="<?php echo $this->get_field_name('categ_limit'); ?>" type="text"
@@ -421,7 +441,7 @@ class geodir_bestof_widget extends WP_Widget
 
         <p>
             <label
-                for="<?php echo $this->get_field_id('character_count'); ?>"><?php _e('Post Content excerpt character count :', GEODIRECTORY_TEXTDOMAIN);?>
+                for="<?php echo $this->get_field_id('character_count'); ?>"><?php _e('Post Content excerpt character count :', 'geodirectory');?>
                 <input class="widefat" id="<?php echo $this->get_field_id('character_count'); ?>"
                        name="<?php echo $this->get_field_name('character_count'); ?>" type="text"
                        value="<?php echo esc_attr($character_count); ?>"/>
@@ -429,28 +449,28 @@ class geodir_bestof_widget extends WP_Widget
         </p>
         <p>
             <label
-                for="<?php echo $this->get_field_id('tab_layout'); ?>"><?php _e('Tab Layout:', GEODIRECTORY_TEXTDOMAIN);?>
+                for="<?php echo $this->get_field_id('tab_layout'); ?>"><?php _e('Tab Layout:', 'geodirectory');?>
 
                 <select class="widefat" id="<?php echo $this->get_field_id('tab_layout'); ?>"
                         name="<?php echo $this->get_field_name('tab_layout'); ?>">
 
                     <option <?php if ($tab_layout == 'bestof-tabs-on-top') {
                         echo 'selected="selected"';
-                    } ?> value="bestof-tabs-on-top"><?php _e('Tabs on Top', GEODIRECTORY_TEXTDOMAIN); ?></option>
+                    } ?> value="bestof-tabs-on-top"><?php _e('Tabs on Top', 'geodirectory'); ?></option>
                     <option <?php if ($tab_layout == 'bestof-tabs-on-left') {
                         echo 'selected="selected"';
-                    } ?> value="bestof-tabs-on-left"><?php _e('Tabs on Left', GEODIRECTORY_TEXTDOMAIN); ?></option>
+                    } ?> value="bestof-tabs-on-left"><?php _e('Tabs on Left', 'geodirectory'); ?></option>
                     <option <?php if ($tab_layout == 'bestof-tabs-as-dropdown') {
                         echo 'selected="selected"';
                     } ?>
-                        value="bestof-tabs-as-dropdown"><?php _e('Tabs as Dropdown', GEODIRECTORY_TEXTDOMAIN); ?></option>
+                        value="bestof-tabs-as-dropdown"><?php _e('Tabs as Dropdown', 'geodirectory'); ?></option>
                 </select>
             </label>
         </p>
 
         <p>
             <label for="<?php echo $this->get_field_id('add_location_filter'); ?>">
-                <?php _e('Enable Location Filter:', GEODIRECTORY_TEXTDOMAIN);?>
+                <?php _e('Enable Location Filter:', 'geodirectory');?>
                 <input type="checkbox" id="<?php echo $this->get_field_id('add_location_filter'); ?>"
                        name="<?php echo $this->get_field_name('add_location_filter'); ?>" <?php if ($add_location_filter) echo 'checked="checked"';?>
                        value="1"/>
@@ -459,7 +479,7 @@ class geodir_bestof_widget extends WP_Widget
 
         <p>
             <label
-                for="<?php echo $this->get_field_id('use_viewing_post_type'); ?>"><?php _e('Use current viewing post type:', GEODIRECTORY_TEXTDOMAIN); ?>
+                for="<?php echo $this->get_field_id('use_viewing_post_type'); ?>"><?php _e('Use current viewing post type:', 'geodirectory'); ?>
                 <input type="checkbox" id="<?php echo $this->get_field_id('use_viewing_post_type'); ?>"
                        name="<?php echo $this->get_field_name('use_viewing_post_type'); ?>" <?php if ($use_viewing_post_type) {
                     echo 'checked="checked"';
@@ -556,6 +576,7 @@ add_action('wp_ajax_nopriv_geodir_bestof', 'geodir_bestof_callback');
  * Get the best of widget content using ajax.
  *
  * @since 1.3.9
+ * @since 1.5.1 Added filter to view all link.
  *
  * @return string Html content.
  */
@@ -591,7 +612,11 @@ function geodir_bestof_callback()
     $query_args['tax_query'] = array($tax_query);
     if ($term_id && $taxonomy) {
         $term = get_term_by('id', $term_id, $taxonomy);
-        echo '<h3 class="bestof-cat-title">' . wp_sprintf( __( 'Best of %s', GEODIRECTORY_TEXTDOMAIN ), $term->name ) . '<a href="' . esc_url( add_query_arg(array('sort_by' => 'overall_rating_desc'), get_term_link($term)) ) . '">' . __("View all", GEODIRECTORY_TEXTDOMAIN) . '</a></h3>';
+        $view_all_link = add_query_arg(array('sort_by' => 'rating_count_desc'), get_term_link($term)) ;
+		/** This filter is documented in geodirectory-widgets/geodirectory_bestof_widget.php */
+		$view_all_link = apply_filters('geodir_bestof_widget_view_all_link', $view_all_link, $post_type, $term);
+				
+		echo '<h3 class="bestof-cat-title">' . wp_sprintf( __( 'Best of %s', 'geodirectory' ), $term->name ) . '<a href="' . esc_url( $view_all_link ) . '">' . __("View all", 'geodirectory') . '</a></h3>';
     }
     geodir_bestof_places_by_term($query_args);
     wp_die();

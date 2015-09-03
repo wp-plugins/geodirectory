@@ -1,10 +1,10 @@
-=== GeoDirectory - WordPress Directory Plugin ===
+=== GeoDirectory - Directory Plugin ===
 Contributors: stiofansisland, paoltaia
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=payments@nomaddevs.com&item_name=Donation+for+WPGD
 Tags:  address book, addressbook, addresses, bio, biographies, bios, business, business directory plugin, business-directory, businesses, church, directories, directory, directory plugin, directory widget, geodirectory, googlemap, googlemaps, google maps, list, listings, lists, member directory, members directories, members directory, microformat, microformats, multisite, profile, profiles, staff, user, users, vcard, wordpress business directory, wordpress directory, wordpress directory plugin, yelp clone, tripadvisor clone, yellow pages clone, wordpress business directory plugin, wordpress directory theme, wordpress business directory theme, wordpress city directory plugin, wordpress local directory plugin
 Requires at least: 3.1
-Tested up to: 4.2.2
-Stable tag: 1.5.0
+Tested up to: 4.3
+Stable tag: 1.5.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -13,7 +13,6 @@ Create huge location-based business directories with this fully-featured directo
 == Description ==
 
 Turn any WordPress theme into a lightning-fast global business directory. Now 100% Multisite compatible! Includes extensive new set of shortcodes. New! CSV import, export, re-import and update. You asked for it, we built it!
-
 
 = Scale easily - go global =
 
@@ -50,7 +49,7 @@ We have been wholly focused on directory tools for WordPress since 2011. That's 
 * New! CSV import, export, re-import. Easily transfer millions of listings across instances. Edit data offline: live listings automagically update on re-import. You asked for it, we made it.
 * New! Theme Compatibility admin page. Set up GeoDirectory to perform just the way you want with your particular theme. You can even export your settings and use them on new installs.
 * New! Shortcodes for core elements, such as Add, Listing, Popular Post View, Related Listings and many more.
-* New! Yelp-like "Best Of" widget
+* New! Yelp-like 'Best Of' widget
 * New! Improved Google Analytics widget for listings owners.
 
 = WordPress Directory Theme? Whoop! =
@@ -84,7 +83,7 @@ Premium [Addons](http://wpgeodirectory.com/addons/ "Premium addons for GeoDirect
 * [Advance search filters](http://wpgeodirectory.com/addons/advanced-search-filters/ "Allows you to extended search with custom filters") - Adds advance filters to the search widget, search autocompleter, geolocation and much more (eg: "pet friendly" filter).
 * [Buddypress Integration](http://wpgeodirectory.com/addons/buddypress-integration/ "integrates Buddypress with GeoDirectory") - Smoothly integrates GeoDirectory with Buddypress.
 * [AffiliateWP Integration](http://wpgeodirectory.com/addons/affiliatewp-integration/ "integrates AffiliateWP with GeoDirectory") - Easily use GeoDirectory with AffiliateWP.
-* [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allow business owners to fine-tune their listings, add images, link to events and show an "owner-verified" dge on the listing.
+* [Claim Listing Manger](http://wpgeodirectory.com/addons/claim-manager/ "Allows users to claim their business") - Allow business owners to fine-tune their listings, add images, link to events and show an 'owner-verified' badge on the listing. Now with force upgrade option.
 * [Marker Cluster](http://wpgeodirectory.com/addons/marker-cluster/ "To avoid overcrowded maps") - Avoid cluttered maps by using numbered markers at high zoom levels.
 * [Duplicate alert](http://wpgeodirectory.com/addons/ajax-duplicate-alert/ "Listing already exists?") - Alert users when they add a listing with the same title as another.
 * [Stripe Payment Gateway](http://wpgeodirectory.com/addons/stripe-payment-gateway/ "Extend Prices and Payments with Stripe Payment Geteway") -  Extend the Prices and Payments add-on with this seamless gateway for Stripe.
@@ -145,6 +144,14 @@ GeoDirectory comes with some dummy data you can use to see how listings look. Yo
 7. GD WordPress Admin Page.
 
 == Changelog ==
+
+= 1.5.2 =
+
+[GeoDirectory changelog for version 1.5.2](http://wpgeodirectory.com/change-logs/#v1.5.2).
+
+= 1.5.1 =
+
+[GeoDirectory changelog for version 1.5.1](http://wpgeodirectory.com/change-logs/#v1.5.1).
 
 = 1.5.0 =
 
@@ -303,4 +310,3 @@ initial release
 == Upgrade Notice ==
 
 = none =
-
