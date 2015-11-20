@@ -38,6 +38,14 @@ if (get_option('geodirectory' . '_db_version') != GEODIRECTORY_VERSION) {
         add_action('init', 'geodir_upgrade_152', 11);
     }
 
+    if (GEODIRECTORY_VERSION <= '1.5.3') {
+        add_action('init', 'geodir_upgrade_153', 11);
+    }
+
+    if (GEODIRECTORY_VERSION <= '1.5.4') {
+        add_action('init', 'geodir_upgrade_154', 11);
+    }
+
 
     add_action('init', 'gd_fix_cpt_rewrite_slug', 11);// this needs to be kept for a few versions
 
@@ -107,6 +115,27 @@ function geodir_upgrade_148(){
 
 }
 
+
+/**
+ * Handles upgrade for geodirectory versions <= 1.5.3.
+ *
+ * @since 1.5.3
+ * @package GeoDirectory
+ */
+function geodir_upgrade_153(){
+    geodir_create_page(esc_sql(_x('gd-info', 'page_slug', 'geodirectory')), 'geodir_info_page', __('Info', 'geodirectory'), '');
+    geodir_create_page(esc_sql(_x('gd-login', 'page_slug', 'geodirectory')), 'geodir_login_page', __('Login', 'geodirectory'), '');
+}
+
+/**
+ * Handles upgrade for geodirectory versions <= 1.5.3.
+ *
+ * @since 1.5.3
+ * @package GeoDirectory
+ */
+function geodir_upgrade_154(){
+    geodir_create_page(esc_sql(_x('gd-home', 'page_slug', 'geodirectory')), 'geodir_home_page', __('GD Home page', 'geodirectory'), '');
+}
 
 /**
  * Handles upgrade for geodirectory versions <= 1.5.2.
@@ -328,6 +357,12 @@ function gd_install_theme_compat()
         'geodir_theme_compat_code' => ''
     );
 
+//Jobby
+    $theme_compat['Jobby'] = $theme_compat['Directory_Starter'];
+
+//GeoProperty
+    $theme_compat['GeoProperty'] = $theme_compat['Directory_Starter'];
+
 //Avada
     $theme_compat['Avada'] = array(
         'geodir_wrapper_open_id' => '',
@@ -358,7 +393,7 @@ function gd_install_theme_compat()
         'geodir_before_main_content_add' => '',
         'geodir_before_widget_filter' => '',
         'geodir_after_widget_filter' => '',
-        'geodir_theme_compat_css' => stripslashes('.geodir-sidebar-left{float:left}select,textarea{border-style:solid;border-width:1px}.top-menu li > div{visibility:visible}.geodir-chosen-container-single .chosen-single{height:auto}ul li#menu-item-gd-location-switcher ul{width:222px}ul li#menu-item-gd-location-switcher ul li{padding-right:0!important}#mobile-nav li#mobile-menu-item-gd-location-switcher li a{padding-left:10px;padding-right:10px}#menu-item-gd-location-switcher dd,#mobile-menu-item-gd-location-switcher{margin-left:0}#menu-item-gd-location-switcher dd a{display:block}.geodir-chosen-container .chosen-results li.highlighted{background-color:#eee;background-image:none;color:#444}#mobile-nav li.mobile-nav-item li a:before{content:\'\';margin:0}#mobile-nav li.mobile-nav-item li a{padding:10px;width:auto}.geodir-listing-search{text-align:center}.geodir-search{float:none;margin:0}.geodir-search select,.geodir-search .search_by_post,.geodir-search input[type="text"],.geodir-search input[type="button"],.geodir-search input[type="submit"]{display:inline-block;float:none}.geodir-cat-list ul li,.map_category ul li{list-style-type:none}.wpgeo-avada .page-title ul li:after{content:\'\'}.top_banner_section{margin-bottom:0}.geodir-category-list-in{margin:0;padding:15px}.geodir_full_page .geodir-cat-list .widget-title{margin-top:0}.geodir_full_page .geodir-cat-list ul li{padding-left:0}.geodir-loc-bar{border:none;margin:0;padding:0}.geodir-loc-bar-in{padding:15px 0}.geodir_full_page section.widget{margin-bottom:20px}.sidebar .geodir-loginbox-list li{margin-bottom:10px;padding-bottom:10px}.sidebar .geodir-loginbox-list li a{display:block}.sidebar .geodir-chosen-container .chosen-results li{margin:0;padding:5px 6px}.sidebar .geodir-chosen-container .chosen-results li.highlighted{background:#eee;background-image:none;color:#000}.sidebar .geodir_category_list_view li.geodir-gridview{display:inline-block;margin-bottom:15px}.wpgeo-avada.double-sidebars #main #sidebar{margin-left:3%}.wpgeo-avada.double-sidebars #main #sidebar-2{margin-left:-100%}.wpgeo-avada.double-sidebars #content{float:left;margin-left:0}.geodir_full_page section.widget{margin-bottom: 0px;} .sidebar .widget .geodir-hide {display: none;}'),
+        'geodir_theme_compat_css' => stripslashes('.geodir-sidebar-left{float:left}select,textarea{border-style:solid;border-width:1px}.top-menu li > div{visibility:visible}.geodir-chosen-container-single .chosen-single{height:auto}ul li#menu-item-gd-location-switcher ul{width:222px}ul li#menu-item-gd-location-switcher ul li{padding-right:0!important}#mobile-nav li#mobile-menu-item-gd-location-switcher li a{padding-left:10px;padding-right:10px}#menu-item-gd-location-switcher dd,#mobile-menu-item-gd-location-switcher{margin-left:0}#menu-item-gd-location-switcher dd a{display:block}.geodir-chosen-container .chosen-results li.highlighted{background-color:#eee;background-image:none;color:#444}#mobile-nav li.mobile-nav-item li a:before{content:\'\';margin:0}#mobile-nav li.mobile-nav-item li a{padding:10px;width:auto}.geodir-listing-search{text-align:center}.geodir-search{float:none;margin:0}.geodir-search select,.geodir-search .search_by_post,.geodir-search input[type="text"],.geodir-search button[type="button"], .geodir-search input[type="button"],.geodir-search input[type="submit"]{display:inline-block;float:none}.geodir-cat-list ul li,.map_category ul li{list-style-type:none}.wpgeo-avada .page-title ul li:after{content:\'\'}.top_banner_section{margin-bottom:0}.geodir-category-list-in{margin:0;padding:15px}.geodir_full_page .geodir-cat-list .widget-title{margin-top:0}.geodir_full_page .geodir-cat-list ul li{padding-left:0}.geodir-loc-bar{border:none;margin:0;padding:0}.geodir-loc-bar-in{padding:15px 0}.geodir_full_page section.widget{margin-bottom:20px}.sidebar .geodir-loginbox-list li{margin-bottom:10px;padding-bottom:10px}.sidebar .geodir-loginbox-list li a{display:block}.sidebar .geodir-chosen-container .chosen-results li{margin:0;padding:5px 6px}.sidebar .geodir-chosen-container .chosen-results li.highlighted{background:#eee;background-image:none;color:#000}.sidebar .geodir_category_list_view li.geodir-gridview{display:inline-block;margin-bottom:15px}.wpgeo-avada.double-sidebars #main #sidebar{margin-left:3%}.wpgeo-avada.double-sidebars #main #sidebar-2{margin-left:-100%}.wpgeo-avada.double-sidebars #content{float:left;margin-left:0}.geodir_full_page section.widget{margin-bottom: 0px;} .sidebar .widget .geodir-hide {display: none;}'),
         'geodir_theme_compat_js' => '',
         'geodir_theme_compat_default_options' => '',
         'geodir_theme_compat_code' => 'Avada'

@@ -181,7 +181,7 @@ function geodir_listing_loop_filter($query)
                 $terms_arr = get_terms($taxonomies[0], $args);
                 foreach ($terms_arr as $location_term) {
                     $term_arr = $location_term;
-                    $term_arr->name = ucwords(str_replace('-', ' ', $request_term));
+                    $term_arr->name = geodir_ucwords(str_replace('-', ' ', $request_term));
                 }
                 $wp_query->queried_object_id = 1;
                 $wp_query->queried_object = $term_arr;
@@ -683,6 +683,7 @@ function geodir_default_where($where)
  * Listing search where filter.
  *
  * @since 1.0.0
+ * @since 1.5.4 Modified to fix unable to find listings for a particular keyword in the content.
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
  * @global string $plugin_prefix Geodirectory plugin table prefix.
@@ -767,9 +768,9 @@ function searching_filter_where($where)
          *
          * @since 1.5.0
          * @package GeoDirectory
-         * @param string $content_where The query values, default: `" OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s%\" OR $wpdb->posts.post_content LIKE \"% $s%\") "`.
+         * @param string $content_where The query values, default: `" OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s%\" OR $wpdb->posts.post_content LIKE \"% $s%\" OR $wpdb->posts.post_content LIKE \"%>$s%\" OR $wpdb->posts.post_content LIKE \"%\n$s%\") ") "`.
          */
-		$content_where = apply_filters("geodir_search_content_where"," OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s%\" OR $wpdb->posts.post_content LIKE \"% $s%\") ");
+		$content_where = apply_filters("geodir_search_content_where"," OR ($wpdb->posts.post_content LIKE \"$s\" OR $wpdb->posts.post_content LIKE \"$s%\" OR $wpdb->posts.post_content LIKE \"% $s%\" OR $wpdb->posts.post_content LIKE \"%>$s%\" OR $wpdb->posts.post_content LIKE \"%\n$s%\") ");
         /**
          * Filter the search query term values.
          *
@@ -829,7 +830,7 @@ function searching_filter_where($where)
 								)
 						) 
 					) 
-				AND $wpdb->posts.post_type in ('$post_types') 
+				AND $wpdb->posts.post_type in ('$post_types')
 				AND ($wpdb->posts.post_status = 'publish') ";
     }
 	

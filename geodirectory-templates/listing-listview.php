@@ -223,13 +223,24 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
                             <div class="geodir-entry-content">
 
                                 <?php
-                                if (isset($character_count) && ($character_count || $character_count == '0')) {
-                                    $content_out = geodir_max_excerpt($character_count);
-                                } else {
-                                    $content_out = get_the_excerpt();
-                                }
-                                if (!empty($content_out)) {
-                                    echo "<p>" . $content_out . "</p>";
+                                /**
+                                 * Filter to hide the listing excerpt
+                                 *
+                                 * @since 1.5.3
+                                 * @param bool $display Display the excerpt or not. Default true.
+                                 * @param string $view The view type, default 'listview'.
+                                 * @param object $post The post object.
+                                 */
+                                $show_listing_excerpt = apply_filters('geodir_show_listing_post_excerpt', true, 'listview', $post);
+                                if ($show_listing_excerpt) {
+                                    if ( isset( $character_count ) && ( $character_count || $character_count == '0' ) ) {
+                                        $content_out = geodir_max_excerpt( $character_count );
+                                    } else {
+                                        $content_out = get_the_excerpt();
+                                    }
+                                    if ( ! empty( $content_out ) ) {
+                                        echo "<p>" . $content_out . "</p>";
+                                    }
                                 }
                                 ?></div>
 
@@ -244,10 +255,27 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
                             do_action('geodir_after_listing_post_excerpt', $post); ?>
                         </div>
                         <!-- gd-content ends here-->
+                        <?php
+                        /**
+                         * Called after printing listing content.
+                         *
+                         * @since 1.5.3
+                         * @param object $post The post object.
+                         * @param string $view The view type, default 'listing'.
+                         */
+                        do_action( 'geodir_after_listing_content', $post, 'listing' ); ?>
                         <footer class="geodir-entry-meta">
                             <div class="geodir-addinfo clearfix">
 
                                 <?php
+                                /**
+                                 * Called before printing review stars html.
+                                 *
+                                 * @since 1.5.3
+                                 * @param object $post The post object.
+                                 * @param string $view The view type, default 'listing'.
+                                 */
+                                do_action( 'geodir_before_review_html', $post, 'listing' );
 
                                 $review_show = geodir_is_reviews_show('listview');
 
@@ -394,12 +422,16 @@ if (isset($_SESSION['gd_listing_view']) && $_SESSION['gd_listing_view'] != '' &&
             do_action('geodir_after_listing_post_listview');
 
         else:
-
-            if (isset($_REQUEST['list']) && $_REQUEST['list'] == 'favourite')
-                echo '<li class="no-listing">' . __('No favorite listings found which match your selection.', 'geodirectory') . '</li>';
-            else
-                echo '<li class="no-listing">' . __('No listings found which match your selection.', 'geodirectory') . '</li>';
-
+			$favorite = isset($_REQUEST['list']) && $_REQUEST['list'] == 'favourite' ? true : false;
+            
+			/**
+             * Called inside the `ul` of the listings template, when no listing found.
+             *
+             * @since 1.5.5
+			 * @param string 'listing-listview' Listing listview template.
+			 * @param bool $favorite Are favorite listings results?
+             */
+            do_action('geodir_message_not_found_on_listing', 'listing-listview', $favorite);
         endif;
 
         ?>

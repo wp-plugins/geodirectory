@@ -105,10 +105,15 @@ function geodir_create_pages()
 {
 
     //geodir_create_page( esc_sql( _x('home-map', 'page_slug', 'geodirectory') ), 'geodir_home_map_page', __('Home Map', 'geodirectory'), '',0,'publish' );
+    geodir_create_page(esc_sql(_x('gd-home', 'page_slug', 'geodirectory')), 'geodir_home_page', __('GD Home page', 'geodirectory'), '');
     geodir_create_page(esc_sql(_x('add-listing', 'page_slug', 'geodirectory')), 'geodir_add_listing_page', __('Add Listing', 'geodirectory'), '');
     geodir_create_page(esc_sql(_x('listing-preview', 'page_slug', 'geodirectory')), 'geodir_preview_page', __('Listing Preview', 'geodirectory'), '');
     geodir_create_page(esc_sql(_x('listing-success', 'page_slug', 'geodirectory')), 'geodir_success_page', __('Listing Success', 'geodirectory'), '');
     geodir_create_page(esc_sql(_x('location', 'page_slug', 'geodirectory')), 'geodir_location_page', __('Location', 'geodirectory'), '');
+
+    //New since 1.5.3
+    geodir_create_page(esc_sql(_x('gd-info', 'page_slug', 'geodirectory')), 'geodir_info_page', __('Info', 'geodirectory'), '');
+    geodir_create_page(esc_sql(_x('gd-login', 'page_slug', 'geodirectory')), 'geodir_login_page', __('Login', 'geodirectory'), '');
 
 
 }
@@ -171,6 +176,13 @@ function geodir_set_default_options()
      * @package GeoDirectory
      */
     include_once("option-pages/permalink_settings_array.php");
+    /**
+     * Contains settings array for title / meta tab.
+     *
+     * @since 1.5.4
+     * @package GeoDirectory
+     */
+    include_once("option-pages/title_meta_settings_array.php");
     foreach ($geodir_settings as $value) {
         geodir_update_options($value, true);
     }
@@ -198,7 +210,7 @@ function geodir_set_default_widgets()
 
     $widget_option_list['geodir_home_top'] =
         array('popular_post_category' => array("title" => __('Popular Categories', 'geodirectory')),
-            'geodir_map_v3_home_map' => array("autozoom" => 1, "width" => '940', "heigh" => '425'),
+            'geodir_map_v3_home_map' => array("autozoom" => 1, "width" => '100%', "heigh" => '425'),
             'geodir_advance_search' => array());
 
     $widget_option_list['geodir_home_content'] =

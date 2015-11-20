@@ -169,7 +169,7 @@ function geodir_draw_map($map_args = array())
     if (count((array)$post_types) != count($exclude_post_types) || ($enable_jason_on_load)):
         // Set default map options
 
-        wp_enqueue_script('geodir-map-widget', geodir_plugin_url() . '/geodirectory-functions/map-functions/js/map.js');
+        wp_enqueue_script('geodir-map-widget', geodir_plugin_url() . '/geodirectory-functions/map-functions/js/map.min.js');
 
         wp_localize_script('geodir-map-widget', $map_canvas_name, $geodir_map_options);
 
@@ -348,43 +348,22 @@ function geodir_draw_map($map_args = array())
 
                 <?php
                 if ($geodir_map_options['enable_location_filters']) {
-
-                    if (get_query_var('gd_city')) {
-                        if ($city = get_query_var('gd_city')) {
-                        }
-                    }
-
-                    if (get_query_var('gd_country')) {
-
-                        if ($country = get_query_var('gd_country')) {
-                        }
-                        if ($region = get_query_var('gd_region')) {
-                        }
-                        if ($city = get_query_var('gd_city')) {
-                        }
-
-                    }
+					$country = get_query_var('gd_country');
+					$region = get_query_var('gd_region');
+					$city = get_query_var('gd_city');
+                    
                     //fix for location/me page
-                    if (isset($country) && $country == 'me') {
-                        $country = '';
-                    }
-
-                    //$gd_posttype = 'gd_place';
-
+                    $country = $country != 'me' ? $country : '';
+					$region = $region != 'me' ? $region : '';
+					$city = $country != 'me' ? $city : '';
                     ?>
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_location_enabled" value="1"/>
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_country" name="gd_country"
-                           value="<?php if (isset($country)) {
-                               echo $country;
-                           }?>"/>
+                           value="<?php echo $country;?>"/>
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_region" name="gd_region"
-                           value="<?php if (isset($region)) {
-                               echo $region;
-                           }?>"/>
+                           value="<?php echo $region;?>"/>
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_city" name="gd_city"
-                           value="<?php if (isset($city)) {
-                               echo $city;
-                           }?>"/>
+                           value="<?php echo $city;?>"/>
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_neighbourhood" name="gd_neighbourhood"
                            value="<?php if (isset($_REQUEST['gd_neighbourhood'])) {
                                echo $_REQUEST['gd_neighbourhood'];
@@ -394,10 +373,11 @@ function geodir_draw_map($map_args = array())
                     <input type="hidden" id="<?php echo $map_canvas_name;?>_location_enabled" value="0"/>
                 <?php }?>
 
-                <input type="hidden" id="<?php echo $map_canvas_name;?>_posttype" name="gd_posttype"
-                       value="<?php echo $map_search_pt;?>"/>
+                <input type="hidden" id="<?php echo $map_canvas_name;?>_posttype" name="gd_posttype" value="<?php echo $map_search_pt;?>"/>
 
                 <input type="hidden" name="limitstart" value=""/>
+
+
 
                 <?php if ($geodir_map_options['enable_post_type_filters']) {
                     $post_types = geodir_get_posttypes('object');
@@ -491,6 +471,16 @@ function geodir_draw_map($map_args = array())
             </script>
         <?php
         }
+
+        /**
+         * Action that runs after all the map code has been output;
+         *
+         * @since 1.5.3
+         *
+         * @param array $geodir_map_options Array of map settings.
+         * @param string $map_canvas_name The canvas name and ID for the map.
+         */
+        do_action('geodir_map_after_render',$geodir_map_options,$map_canvas_name);
 
 
     endif; // Exclude posttypes if end

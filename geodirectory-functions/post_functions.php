@@ -65,6 +65,7 @@ if (!function_exists('geodir_save_listing')) {
      * Saves listing in the database using given information.
      *
      * @since 1.0.0
+	 * @since 1.5.4 New parameter $wp_error added.
      * @package GeoDirectory
      * @global object $wpdb WordPress Database object.
      * @global object $post The current post object.
@@ -115,9 +116,10 @@ if (!function_exists('geodir_save_listing')) {
      *
      * }
      * @param bool $dummy Optional. Is this a dummy listing? Default false.
-     * @return int|string|WP_Error Created post id.
+     * @param bool $wp_error Optional. Allow return of WP_Error on failure. Default false.
+     * @return int|string|WP_Error Created post id or WP_Error on failure.
      */
-    function geodir_save_listing($request_info = array(), $dummy = false)
+    function geodir_save_listing($request_info = array(), $dummy = false, $wp_error = false)
     {
         global $wpdb, $current_user;
 
@@ -129,7 +131,7 @@ if (!function_exists('geodir_save_listing')) {
             $request_info = array_merge($_REQUEST, $request_session);
         } else if (!isset($_SESSION['listing']) && !$dummy) {
             global $post;
-            $request_info['pid'] = $post->ID;
+            $request_info['pid'] = !empty($post->ID) ? $post->ID : (!empty($request_info['post_id']) ? $request_info['post_id'] : NULL);
             $request_info['post_title'] = $request_info['post_title'];
             $request_info['listing_type'] = $post->post_type;
             $request_info['post_desc'] = $request_info['content'];
@@ -220,15 +222,23 @@ if (!function_exists('geodir_save_listing')) {
         if (isset($request_info['pid']) && $request_info['pid'] != '') {
             $post['ID'] = $request_info['pid'];
 
-            $last_post_id = wp_update_post($post);
+            $last_post_id = wp_update_post($post, $wp_error);
         } else {
-            $last_post_id = wp_insert_post($post);
+            $last_post_id = wp_insert_post($post, $wp_error);
 
             if (!$dummy && $last_post_id) {
                 $send_post_submit_mail = true; // we move post_submit email from here so the rest of the variables are added to the db first(was breaking permalink in email)
                 //geodir_sendEmail('','',$current_user->user_email,$current_user->display_name,'','',$request_info,'post_submit',$last_post_id,$current_user->ID);
             }
         }
+
+		if ($wp_error && is_wp_error($last_post_id)) {
+			return $last_post_id; // Return WP_Error on save failure.
+		}
+		
+		if (!$last_post_id) {
+			return false; // Save failure.
+		}
 
         // re-hook this function
         add_action('save_post', 'geodir_post_information_save',10,2);
@@ -361,7 +371,7 @@ if (!function_exists('geodir_save_listing')) {
                 }
             } elseif (trim($type) == 'datepicker') {
                 $datetime = '';
-                if ($request_info[$name] != '') {
+                if (isset($request_info[$name]) && $request_info[$name] != '') {
                     $date_format = geodir_default_date_format();
                     if (isset($val['extra_fields']) && $val['extra_fields'] != '') {
                         $extra_fields = unserialize($val['extra_fields']);
@@ -454,8 +464,10 @@ if (!function_exists('geodir_save_listing')) {
                 $tmpimgArr = trim($request_info['post_images'], ",");
                 $tmpimgArr = explode(",", $tmpimgArr);
                 geodir_save_post_images($last_post_id, $tmpimgArr, $dummy);
-            } else
+            } else{
                 geodir_save_post_images($last_post_id, $request_info['post_images'], $dummy);
+            }
+
 
         } elseif (!isset($request_info['post_images']) || $request_info['post_images'] == '') {
 
@@ -479,6 +491,7 @@ if (!function_exists('geodir_save_listing')) {
 
         geodir_remove_temp_images();
         geodir_set_wp_featured_image($last_post_id);
+
         /**
          * Called after a listing is saved to the database and before any email have been sent.
          *
@@ -864,6 +877,7 @@ if (!function_exists('geodir_save_post_images')) {
     function geodir_save_post_images($post_id = 0, $post_image = array(), $dummy = false)
     {
 
+
         global $wpdb, $plugin_prefix, $current_user;
 
         $post_type = get_post_type($post_id);
@@ -904,7 +918,7 @@ if (!function_exists('geodir_save_post_images')) {
                 $file_path = '';
                 /* --------- start ------- */
 
-                $split_img_path = explode($uploads['baseurl'], $post_image[$m]);
+                $split_img_path = explode(str_replace(array('http://','https://'),'',$uploads['baseurl']), str_replace(array('http://','https://'),'',$post_image[$m]));
 
                 $split_img_file_path = isset($split_img_path[1]) ? $split_img_path[1] : '';
 
@@ -961,7 +975,7 @@ if (!function_exists('geodir_save_post_images')) {
                         }
 
                         $external_img = false;
-                        if (strpos($curr_img_url, $uploads['baseurl']) !== false) {
+                        if (strpos(str_replace(array('http://','https://'),'',$curr_img_url), str_replace(array('http://','https://'),'',$uploads['baseurl'])) !== false) {
                         } else {
                             $external_img = true;
                         }
@@ -970,9 +984,11 @@ if (!function_exists('geodir_save_post_images')) {
                             $uploaded_file = array();
                             $uploaded = (array)fetch_remote_file($curr_img_url);
 
-                            if (empty($uploaded['error'])) {
+                            if (isset($uploaded['error']) && empty($uploaded['error'])) {
                                 $new_name = basename($uploaded['file']);
                                 $uploaded_file = $uploaded;
+                            }else{
+                                print_r($uploaded);exit;
                             }
                             $external_img = false;
                         } else {
@@ -1005,7 +1021,7 @@ if (!function_exists('geodir_save_post_images')) {
                                 $file_path = $sub_dir . '/' . $new_name;
                             }
 
-                            $postcurr_images[] = $uploads['baseurl'] . $file_path;
+                            $postcurr_images[] = str_replace(array('http://','https://'),'',$uploads['baseurl'] . $file_path);
 
                             if ($menu_order == 1) {
 
@@ -1043,7 +1059,7 @@ if (!function_exists('geodir_save_post_images')) {
                 } else {
                     $valid_file_ids[] = $find_image;
 
-                    $postcurr_images[] = $post_image[$m];
+                    $postcurr_images[] = str_replace(array('http://','https://'),'',$post_image[$m]);
 
                     $wpdb->query(
                         $wpdb->prepare(
@@ -1077,7 +1093,7 @@ if (!function_exists('geodir_save_post_images')) {
 
                 foreach ($post_images as $img) {
 
-                    if (!in_array($img->src, $postcurr_images)) {
+                    if (!in_array(str_replace(array('http://','https://'),'',$img->src), $postcurr_images)) {
 
                         $invalid_files[] = (object)array('src' => $img->src);
 
@@ -1096,9 +1112,8 @@ if (!function_exists('geodir_save_post_images')) {
 
         if (!empty($invalid_files))
             geodir_remove_attachments($invalid_files);
-
-
     }
+
 }
 
 /**
@@ -1491,6 +1506,8 @@ if (!function_exists('geodir_show_image')) {
             if (!is_object($request))
                 $request = (object)$request;
 
+            if(isset($request->src) && !isset($request->path)){$request->path = $request->src;}
+
             @list($width, $height) = getimagesize($request->path);
             $image->src = $request->src;
             $image->width = $width;
@@ -1742,6 +1759,7 @@ if (!function_exists('geodir_get_infowindow_html')) {
      * Set post Map Marker info html.
      *
      * @since 1.0.0
+	 * @since 1.5.4 Modified to add new action "geodir_infowindow_meta_before".
      * @package GeoDirectory
      * @global array $geodir_addon_list List of active GeoDirectory extensions.
      * @param object $postinfo_obj The post details object.
@@ -1851,17 +1869,33 @@ if (!function_exists('geodir_get_infowindow_html')) {
                                     } ?>"><img alt="bubble image" style="max-height:50px;"
                                                src="<?php echo $post_images[0]; ?>"/></a></div>
                             <?php
+                            }else{
+                                echo '<div class="geodir-bubble_image"></div>';
                             }
                         } else {
                             if ($image = geodir_show_featured_image($ID, 'widget-thumb', true, false, $postinfo_obj->featured_image)) {
                                 ?>
-                                <div class="geodir-bubble_image"><a
-                                        href="<?php echo $plink; ?>"><?php echo $image; ?></a></div>
+                                <div class="geodir-bubble_image"><a href="<?php echo $plink; ?>"><?php echo $image; ?></a></div>
                             <?php
+                            }else{
+                                echo '<div class="geodir-bubble_image"></div>';
                             }
                         }
                         ?>
                         <div class="geodir-bubble-meta-side">
+                            <?php
+                            /**
+                             * Fires before the meta info in the map info window.
+                             *
+                             * This can be used to add more info to the map info window before the normal meta info.
+                             *
+                             * @since 1.5.4
+							 * @param int $ID The post id.
+                             * @param object $postinfo_obj The posts info as an object.
+                             * @param bool|string $post_preview True if currently in post preview page. Empty string if not.                           *
+                             */
+                            do_action('geodir_infowindow_meta_before', $ID, $postinfo_obj, $post_preview);
+                            ?>
                             <span class="geodir_address"><i class="fa fa-home"></i> <?php echo $address; ?></span>
                             <?php if ($contact) { ?><span class="geodir_contact"><i
                                 class="fa fa-phone"></i> <?php echo $contact; ?></span><?php } ?>
@@ -1881,54 +1915,6 @@ if (!function_exists('geodir_get_infowindow_html')) {
                             ?>
                         </div>
                         <?php
-                        if (isset($postinfo_obj->recurring_dates)) {
-                            $recuring_data = unserialize($postinfo_obj->recurring_dates);
-                            $output = '';
-                            $output .= '<div class="geodir_event_schedule">';
-
-                            $event_recurring_dates = explode(',', $recuring_data['event_recurring_dates']);
-
-                            $starttimes = isset($recuring_data['starttime']) ? $recuring_data['starttime'] : '';
-                            $endtimes = isset($recuring_data['endtime']) ? $recuring_data['endtime'] : '';
-                            $e = 0;
-                            foreach ($event_recurring_dates as $key => $date) {
-
-                                if (strtotime($date) < strtotime(date("Y-m-d"))) {
-                                    continue;
-                                } // if the event is old don't show it on the map
-                                $e++;
-                                if ($e == 2) {
-                                    break;
-                                }// only show 3 event dates
-                                $output .= '<p>';
-                                //$geodir_num_dates++;
-                                if (isset($recuring_data['different_times']) && $recuring_data['different_times'] == '1') {
-                                    $starttimes = isset($recuring_data['starttimes'][$key]) ? $recuring_data['starttimes'][$key] : '';
-                                    $endtimes = isset($recuring_data['endtimes'][$key]) ? $recuring_data['endtimes'][$key] : '';
-                                }
-
-                                $sdate = strtotime($date . ' ' . $starttimes);
-                                $edate = strtotime($date . ' ' . $endtimes);
-
-                                if ($starttimes > $endtimes) {
-                                    $edate = strtotime($date . ' ' . $endtimes . " +1 day");
-                                }
-
-
-                                global $geodir_date_time_format;
-
-                                $output .= '<i class="fa fa-caret-right"></i>' . date($geodir_date_time_format, $sdate);
-                                //$output .=  __(' To', GEODIREVENTS_TEXTDOMAIN).' ';
-                                $output .= '<br />';
-                                $output .= '<i class="fa fa-caret-left"></i>' . date($geodir_date_time_format, $edate);//.'<br />';
-                                $output .= '</p>';
-                            }
-
-                            $output .= '</div>';
-
-                            echo $output;
-                        }
-
 
                         if ($ID) {
 
@@ -2409,7 +2395,7 @@ if (!function_exists('geodir_favourite_html')) {
         } else {
 
             if (!isset($current_user->data->ID) || $current_user->data->ID == '') {
-                $script_text = 'javascript:window.location.href=\'' . home_url('/?geodir_signup=true&amp;page1=sign_up') . '\'';
+                $script_text = 'javascript:window.location.href=\'' . geodir_login_url() . '\'';
             } else
                 $script_text = 'javascript:addToFavourite(' . $post_id . ',\'add\')';
 
@@ -2537,6 +2523,7 @@ function geodir_excerpt_length($length)
  * Changing excerpt more.
  *
  * @since 1.0.0
+ * @since 1.5.4 Now only applied to GD post types.
  * @package GeoDirectory
  * @global object $post The current post object.
  * @param string $more Optional. Old string.
@@ -2545,7 +2532,12 @@ function geodir_excerpt_length($length)
 function geodir_excerpt_more($more)
 {
     global $post;
-    return ' <a href="' . get_permalink($post->ID) . '">' . READ_MORE_TXT . '</a>';
+    $all_postypes = geodir_get_posttypes();
+    if (is_array($all_postypes) && in_array($post->post_type, $all_postypes)) {
+        return ' <a href="' . get_permalink($post->ID) . '">' . READ_MORE_TXT . '</a>';
+    }
+
+    return $more;
 }
 
 
@@ -2677,7 +2669,7 @@ function geodir_listing_belong_to_current_user($listing_id = '', $exclude_admin 
     global $current_user;
     if ($exclude_admin) {
         foreach ($current_user->caps as $key => $caps) {
-            if (strtolower($key) == 'administrator') {
+            if (geodir_strtolower($key) == 'administrator') {
                 return true;
                 break;
             }
@@ -2759,7 +2751,7 @@ function geodir_set_wp_featured_image($post_id)
 
         $new_attachment_name = basename($post_first_image[0]->file);
 
-        if (strtolower($new_attachment_name) != strtolower($old_attachment_name)) {
+        if (geodir_strtolower($new_attachment_name) != geodir_strtolower($old_attachment_name)) {
 
             if (has_post_thumbnail($post_id) && $post_thumbnail_id != '' && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'delete')) {
 

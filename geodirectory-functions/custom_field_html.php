@@ -60,12 +60,12 @@ if ($htmlvar_name == 'geodir_email') {
             ?>
 
             <b style="cursor:pointer;"
-               onclick="show_hide('field_frm<?php echo $result_str;?>')"><?php echo ucwords(__('Fieldset:', 'geodirectory') . ' ' . $field_admin_title);?></b>
+               onclick="show_hide('field_frm<?php echo $result_str;?>')"><?php echo geodir_ucwords(__('Fieldset:', 'geodirectory') . ' ' . $field_admin_title);?></b>
         <?php
         } else {
             ?>
             <b style="cursor:pointer;"
-               onclick="show_hide('field_frm<?php echo $result_str;?>')"><?php echo ucwords(__('Field:', 'geodirectory') . ' ' . $field_admin_title . ' (' . $field_type . ')');?></b>
+               onclick="show_hide('field_frm<?php echo $result_str;?>')"><?php echo geodir_ucwords(__('Field:', 'geodirectory') . ' ' . $field_admin_title . ' (' . $field_type . ')');?></b>
         <?php
         }
         ?>
@@ -372,11 +372,41 @@ if ($htmlvar_name == 'geodir_email') {
                                echo esc_attr($field_info->required_msg);
                            } ?>"/>
                     <span>
-                        <?php _e('Enter text for error message if field required and have not full fill requirment.', 'geodirectory'); ?>
+                        <?php _e('Enter text for error message if field required and have not full fill requirement.', 'geodirectory'); ?>
                     </span>
                 </td>
                 </td>
             </tr>
+
+            <?php if ($field_type == 'text'){?>
+            <tr>
+                <td><strong><?php _e('Validation Pattern:', 'geodirectory'); ?></strong></td>
+                <td align="left">
+                    <input type="text" name="validation_pattern" id="validation_pattern"
+                           value="<?php if (isset($field_info->validation_pattern)) {
+                               echo esc_attr($field_info->validation_pattern);
+                           } ?>"/>
+                    <span>
+                        <?php _e('Enter regex expression for HTML5 pattern validation.', 'geodirectory'); ?>
+                    </span>
+                </td>
+                </td>
+            </tr>
+
+            <tr>
+                <td><strong><?php _e('Validation Message:', 'geodirectory'); ?></strong></td>
+                <td align="left">
+                    <input type="text" name="validation_msg" id="validation_msg"
+                           value="<?php if (isset($field_info->validation_msg)) {
+                               echo esc_attr($field_info->validation_msg);
+                           } ?>"/>
+                    <span>
+                        <?php _e('Enter a extra validation message to show to the user if validation fails.', 'geodirectory'); ?>
+                    </span>
+                </td>
+                </td>
+            </tr>
+            <?php } ?>
 
             <tr <?php echo (!$display_on_listing ? 'style="display:none"' : '') ;?>>
                 <td><strong><?php _e('Show on listing page ? :', 'geodirectory'); ?></strong></td>

@@ -6,6 +6,7 @@
  * and the comment form.
  *
  * @since 1.0.0
+ * @since 1.5.4 Modified to fix review sorting.
  *
  * @package GeoDirectory
  */
@@ -32,8 +33,8 @@ if (post_password_required())
         </h2>
 
         <ol class="commentlist">
-            <?php wp_list_comments(array('callback' => 'geodir_comment', 'style' => 'ol'));
-            //wp_list_comments( );
+            <?php $reverse_top_level = is_plugin_active('geodir_review_rating_manager/geodir_review_rating_manager.php') ? false : null; ?>
+			<?php wp_list_comments(array('callback' => 'geodir_comment', 'reverse_top_level' => $reverse_top_level, 'style' => 'ol'));
             ?>
         </ol><!-- .commentlist -->
 
@@ -58,6 +59,14 @@ if (post_password_required())
 
     <?php endif; // have_comments() ?>
 
-    <?php comment_form(array('title_reply' => __('Leave a Review', 'geodirectory'), 'label_submit' => __('Post Review', 'geodirectory'), 'comment_field' => '<p class="comment-form-comment"><label for="comment">' . __('Review text', 'geodirectory') . '</label><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true"></textarea></p>', 'must_log_in' => '<p class="must-log-in">' . sprintf(__('You must be <a href="%s">logged in</a> to post a comment.', 'geodirectory'), home_url() . "/?geodir_signup=true&amp;page1=sign_in") . '</p>')); ?>
+    <?php
+    $args = apply_filters('geodir_review_form_args', array(
+        'title_reply' => __('Leave a Review', 'geodirectory'),
+        'label_submit' => __('Post Review', 'geodirectory'),
+        'comment_field' => '<p class="comment-form-comment"><label for="comment">' . __('Review text', 'geodirectory') . '</label><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true"></textarea></p>',
+        'must_log_in' => '<p class="must-log-in">' . sprintf(__('You must be <a href="%s">logged in</a> to post a comment.', 'geodirectory'), geodir_login_url()) . '</p>'
+    ));
+    comment_form($args);
+    ?>
 
 </div><!-- #comments .comments-area -->

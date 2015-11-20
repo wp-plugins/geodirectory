@@ -313,7 +313,7 @@ function geodir_templates_styles()
     wp_enqueue_style('geodirectory-frontend-rtl-style');
     }
 
-    wp_register_style('geodirectory-font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', array(), GEODIRECTORY_VERSION);
+    wp_register_style('geodirectory-font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css', array(), GEODIRECTORY_VERSION);
     wp_enqueue_style('geodirectory-font-awesome');
 
 
@@ -335,6 +335,7 @@ function geodir_get_sidebar()
  * Returns paginated HTML string based on the given parameters.
  *
  * @since 1.0.0
+ * @since 1.5.5 Fixed pagination links when location selected.
  * @package GeoDirectory
  * @global object $wpdb WordPress Database object.
  * @global object $wp_query WordPress Query object.
@@ -360,11 +361,13 @@ function geodir_pagination($before = '', $after = '', $prelabel = '', $nxtlabel 
 
     $half_pages_to_show = round($pages_to_show / 2);
 
-    if (get_option('geodir_set_as_home') && is_home()) // dont apply default  pagination for geodirectory home page.
+    if (geodir_is_page('home') || (get_option('geodir_set_as_home') && is_home())) // dont apply default  pagination for geodirectory home page.
         return;
 
     if (!is_single()) {
-
+		if (function_exists('geodir_location_geo_home_link')) {
+			remove_filter('home_url', 'geodir_location_geo_home_link', 100000);
+		}
         $numposts = $wp_query->found_posts;
 
 
@@ -410,6 +413,10 @@ function geodir_pagination($before = '', $after = '', $prelabel = '', $nxtlabel 
             }
             echo "</div> $after";
         }
+		
+		if (function_exists('geodir_location_geo_home_link')) {
+			add_filter('home_url', 'geodir_location_geo_home_link', 100000, 2);
+		}
     }
 }
 
