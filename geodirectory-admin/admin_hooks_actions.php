@@ -172,6 +172,7 @@ function geodir_default_admin_main_tabs($tabs)
         'general_settings' => array('label' => __('General', 'geodirectory')),
         'design_settings' => array('label' => __('Design', 'geodirectory')),
         'permalink_settings' => array('label' => __('Permalinks', 'geodirectory')),
+        'title_meta_settings' => array('label' => __('Titles & Metas', 'geodirectory')),
         'notifications_settings' => array('label' => __('Notifications', 'geodirectory')),
         'default_location_settings' => array('label' => __('Set Default Location', 'geodirectory')),
 
@@ -220,7 +221,7 @@ function geodir_meta_box_add()
     if (isset($post->post_type) && in_array($post->post_type, $geodir_posttypes)):
 
         $geodir_posttype = $post->post_type;
-        $post_typename = ucwords($geodir_post_types[$geodir_posttype]['labels']['singular_name']);
+        $post_typename = geodir_ucwords($geodir_post_types[$geodir_posttype]['labels']['singular_name']);
 
         // Filter-Payment-Manager
 
@@ -845,7 +846,7 @@ function geodir_diagnose_multisite_table($filter_arr, $table, $tabel_name, $fix)
                 $wpdb->query("RENAME TABLE " . $table . "_ms_bak TO " . $table . "_ms_bak2");// rename ms_bak table to ms_bak2
 
                 if ($wpdb->query("SHOW TABLES LIKE '" . $table . "_ms_bak'") == 0) {
-                    $filter_arr['output_str'] .= "<li>" . sprintf(__('-->FIXED: table %s_ms_bak renamed and backedup', 'geodirectory'), $table) . "</li>";
+                    $filter_arr['output_str'] .= "<li>" . sprintf(__('-->FIXED: table %s_ms_bak renamed and backed up', 'geodirectory'), $table) . "</li>";
                 } else {
                     $filter_arr['output_str'] .= "<li>" . __('-->PROBLEM: Failed to rename tables, please contact support.', 'geodirectory') . "</li>";
                 }
@@ -1332,6 +1333,31 @@ function geodir_diagnose_default_pages()
     $fix = isset($_POST['fix']) ? true : false;
 
     //////////////////////////////////
+    /* Diagnose GD Home Page Starts */
+    //////////////////////////////////
+    $option_value = get_option('geodir_home_page');
+    $page = get_post($option_value);
+    if(!empty($page)){$page_found = $page->ID;}else{$page_found = '';}
+
+    if(!empty($option_value) && !empty($page_found) && $option_value == $page_found && $page->post_status=='publish')
+        $output_str .= "<li>" . __('GD Home page exists with proper setting.', 'geodirectory') . "</li>";
+    else {
+        $is_error_during_diagnose = true;
+        $output_str .= "<li><strong>" . __('GD Home page is missing.', 'geodirectory') . "</strong></li>";
+        if ($fix) {
+            if (geodir_fix_virtual_page('gd-home', __('GD Home page', 'geodirectory'), $page_found, 'geodir_home_page')) {
+                $output_str .= "<li><strong>" . __('-->FIXED: GD Home page fixed', 'geodirectory') . "</strong></li>";
+            } else {
+                $output_str .= "<li><strong>" . __('-->FAILED: GD Home page fix failed', 'geodirectory') . "</strong></li>";
+            }
+        }
+    }
+
+    ////////////////////////////////
+    /* Diagnose GD Home Page Ends */
+    ////////////////////////////////
+
+    //////////////////////////////////
     /* Diagnose Add Listing Page Starts */
     //////////////////////////////////
     $option_value = get_option('geodir_add_listing_page');
@@ -1405,6 +1431,56 @@ function geodir_diagnose_default_pages()
 
     ////////////////////////////////
     /* Diagnose Listing Sucess Page Ends */
+    ////////////////////////////////
+
+    //////////////////////////////////
+    /* Diagnose Info Page Starts */
+    //////////////////////////////////
+    $option_value = get_option('geodir_info_page');
+    $page = get_post($option_value);
+    if(!empty($page)){$page_found = $page->ID;}else{$page_found = '';}
+
+    if(!empty($option_value) && !empty($page_found) && $option_value == $page_found && $page->post_status=='publish')
+        $output_str .= "<li>" . __('Info page exists with proper setting.', 'geodirectory') . "</li>";
+    else {
+        $is_error_during_diagnose = true;
+        $output_str .= "<li><strong>" . __('Info page is missing.', 'geodirectory') . "</strong></li>";
+        if ($fix) {
+            if (geodir_fix_virtual_page('gd-info', __('Info', 'geodirectory'), $page_found, 'geodir_info_page')) {
+                $output_str .= "<li><strong>" . __('-->FIXED: Info page fixed', 'geodirectory') . "</strong></li>";
+            } else {
+                $output_str .= "<li><strong>" . __('-->FAILED: Info page fix failed', 'geodirectory') . "</strong></li>";
+            }
+        }
+    }
+
+    ////////////////////////////////
+    /* Diagnose Info Page Ends */
+    ////////////////////////////////
+
+    //////////////////////////////////
+    /* Diagnose Login Page Starts */
+    //////////////////////////////////
+    $option_value = get_option('geodir_login_page');
+    $page = get_post($option_value);
+    if(!empty($page)){$page_found = $page->ID;}else{$page_found = '';}
+
+    if(!empty($option_value) && !empty($page_found) && $option_value == $page_found && $page->post_status=='publish')
+        $output_str .= "<li>" . __('Login page exists with proper setting.', 'geodirectory') . "</li>";
+    else {
+        $is_error_during_diagnose = true;
+        $output_str .= "<li><strong>" . __('Login page is missing.', 'geodirectory') . "</strong></li>";
+        if ($fix) {
+            if (geodir_fix_virtual_page('gd-login', __('Login', 'geodirectory'), $page_found, 'geodir_login_page')) {
+                $output_str .= "<li><strong>" . __('-->FIXED: Login page fixed', 'geodirectory') . "</strong></li>";
+            } else {
+                $output_str .= "<li><strong>" . __('-->FAILED: Login page fix failed', 'geodirectory') . "</strong></li>";
+            }
+        }
+    }
+
+    ////////////////////////////////
+    /* Diagnose Info Page Ends */
     ////////////////////////////////
 
     //////////////////////////////////
@@ -1626,7 +1702,7 @@ function geodir_ajax_import_csv()
     if (is_file($target_path) && file_exists($target_path) && $uploadedFile) {
         $wp_filetype = wp_check_filetype_and_ext($target_path, $filename);
 
-        if (!empty($wp_filetype) && isset($wp_filetype['ext']) && strtolower($wp_filetype['ext']) == 'csv') {
+        if (!empty($wp_filetype) && isset($wp_filetype['ext']) && geodir_strtolower($wp_filetype['ext']) == 'csv') {
             $return['error'] = NULL;
 
             $return['rows'] = 0;
@@ -1820,7 +1896,7 @@ function geodir_ajax_import_csv()
                         $blank_address++;
                         continue;
                     } else if ($location_result->location_id == 0) {
-                        if ((strtolower($gd_post_info['post_city']) != strtolower($location_result->city)) || (strtolower($gd_post_info['post_region']) != strtolower($location_result->region)) || (strtolower($gd_post_info['post_country']) != strtolower($location_result->country))) {
+                        if ((geodir_strtolower($gd_post_info['post_city']) != geodir_strtolower($location_result->city)) || (geodir_strtolower($gd_post_info['post_region']) != geodir_strtolower($location_result->region)) || (geodir_strtolower($gd_post_info['post_country']) != geodir_strtolower($location_result->country))) {
                             $address_invalid++;
                             continue;
                         }

@@ -44,6 +44,24 @@ $geodir_settings['permalink_settings'] = apply_filters('geodir_permalink_setting
         'radiogroup' => ''
     ),
 
+	array(
+        'name' => __('Add country and city slug in listing urls', 'geodirectory'),
+        'desc' => __('Add country and city slug in listing urls (/country/city/)', 'geodirectory'),
+        'id' => 'geodir_show_location_url',
+        'type' => 'radio',
+        'std' => 'all',
+        'value' => 'country_city',
+        'radiogroup' => ''
+    ),
+	array(
+        'name' => __('Add region and city slug in listing urls', 'geodirectory'),
+        'desc' => __('Add region and city slug in listing urls (/region/city/)', 'geodirectory'),
+        'id' => 'geodir_show_location_url',
+        'type' => 'radio',
+        'std' => 'all',
+        'value' => 'region_city',
+        'radiogroup' => ''
+    ),
     array(
         'name' => __('Add only city in listing urls', 'geodirectory'),
         'desc' => __('Add city slug in listing urls', 'geodirectory'),
@@ -53,6 +71,7 @@ $geodir_settings['permalink_settings'] = apply_filters('geodir_permalink_setting
         'value' => 'city',
         'radiogroup' => 'end'
     ),
+
 
 
     array(
@@ -108,6 +127,14 @@ $geodir_settings['permalink_settings'] = apply_filters('geodir_permalink_setting
         'id' => 'geodir_pages'),
 
     array(
+        'name' => __('GD Home page', 'geodirectory'),
+        'desc' => __('Select the page to use for the GD homepage (you must also set this page in Settings>Reading>Front page for it to work)', 'geodirectory'),
+        'id' => 'geodir_home_page',
+        'type' => 'single_select_page',
+        'class' => 'chosen_select'
+    ),
+
+    array(
         'name' => __('Add listing page', 'geodirectory'),
         'desc' => __('Select the page to use for adding listings', 'geodirectory'),
         'id' => 'geodir_add_listing_page',
@@ -143,6 +170,22 @@ $geodir_settings['permalink_settings'] = apply_filters('geodir_permalink_setting
         'name' => __('Terms and Conditions page', 'geodirectory'),
         'desc' => __('Select the page to use for Terms and Conditions (if enabled)', 'geodirectory'),
         'id' => 'geodir_term_condition_page',
+        'type' => 'single_select_page',
+        'class' => 'chosen_select'
+    ),
+
+    array(
+        'name' => __('Info page', 'geodirectory'),
+        'desc' => __('Select the page to use for Gd general Info', 'geodirectory'),
+        'id' => 'geodir_info_page',
+        'type' => 'single_select_page',
+        'class' => 'chosen_select'
+    ),
+
+    array(
+        'name' => __('Login page', 'geodirectory'),
+        'desc' => __('Select the page to use for Login / Register', 'geodirectory'),
+        'id' => 'geodir_login_page',
         'type' => 'single_select_page',
         'class' => 'chosen_select'
     ),

@@ -512,6 +512,7 @@ add_action('geodir_article_open', 'geodir_action_article_open', 10, 4);
  * @param string $class Optional. The element class.
  * @param string $itemtype Optional. The element itemtype.
  * @since 1.0.0
+ * @since 1.5.4 Removed itemscope itemtype="[itemtype]" as now added
  * @package GeoDirectory
  */
 function geodir_action_article_open($type = '', $id = '', $class = '', $itemtype = '')
@@ -521,7 +522,7 @@ function geodir_action_article_open($type = '', $id = '', $class = '', $itemtype
     if (!empty($tc['geodir_article_open_replace'])) {
         $text = $tc['geodir_article_open_replace'];
     } else {
-        $text = '<article  id="[id]" class="[class]" itemscope itemtype="[itemtype]">';
+        $text = '<article  id="[id]" class="[class]" >';
     }
 
     if (!empty($tc['geodir_article_open_id'])) {
@@ -897,7 +898,7 @@ function geodir_action_details_sidebar()
          * @since 1.0.0
          */
         do_action('geodir_detail_sidebar_inside');
-        ?></div><?php
+        ?></div><!-- end geodir-content-left --><?php
         /**
          * Called after the details page left sidebar.
          *
@@ -924,7 +925,7 @@ function geodir_action_details_sidebar()
         <div class="geodir-content-right geodir-sidebar-wrap"><?php
         /** This action is documented in geodirectory_template_actions.php */
         do_action('geodir_detail_sidebar_inside');
-        ?></div><?php
+        ?></div><!-- end geodir-content-right --><?php
         /**
          * Called after the details page right sidebar.
          *
@@ -971,6 +972,7 @@ add_action('geodir_details_slider', 'geodir_action_details_slider', 10, 1);
  * Output the details page slider HTML.
  *
  * @since 1.0.0
+ * @since 1.5.4 itemprop="image" removed as added via JSON-LD.
  * @package GeoDirectory
  * @global bool $preview True of on a preview page. False if not.
  * @global object $post The current post object.
@@ -1067,9 +1069,9 @@ function geodir_action_details_slider()
                 } else {
                     $spacer_height = ((400 - $image->height) / 2);
                 }
-
+                $caption = '';//(!empty($image->caption)) ? '<p class="flex-caption">'.$image->caption.'</p>' : '';
                 $main_slides .= '<li><img src="' . geodir_plugin_url() . "/geodirectory-assets/images/spacer.gif" . '" alt="' . $image->title . '" title="' . $image->title . '" style="max-height:' . $spacer_height . 'px;margin:0 auto;" />';
-                $main_slides .= '<img src="' . $image->src . '" alt="' . $image->title . '" title="' . $image->title . '" style="max-height:400px;margin:0 auto;" itemprop="image"/></li>';
+                $main_slides .= '<img src="' . $image->src . '" alt="' . $image->title . '" title="' . $image->title . '" style="max-height:400px;margin:0 auto;" />'.$caption.'</li>';
                 $nav_slides .= '<li><img src="' . $image->src . '" alt="' . $image->title . '" title="' . $image->title . '" style="max-height:48px;margin:0 auto;" /></li>';
                 $slides++;
             }
@@ -1184,7 +1186,7 @@ function geodir_action_details_taxonomies()
             if (!isset($listing_label)) {
                 $listing_label = '';
             }
-            $taxonomies[$post_type . '_tags'] = wp_sprintf('%s: %l', ucwords($listing_label . ' ' . __('Tags', 'geodirectory')), $links, (object)$terms);
+            $taxonomies[$post_type . '_tags'] = wp_sprintf('%s: %l', geodir_ucwords($listing_label . ' ' . __('Tags', 'geodirectory')), $links, (object)$terms);
         endif;
 
     }
@@ -1224,7 +1226,7 @@ function geodir_action_details_taxonomies()
         if (!isset($listing_label)) {
             $listing_label = '';
         }
-        $taxonomies[$post_taxonomy] = wp_sprintf('%s: %l', ucwords($listing_label . ' ' . __('Category', 'geodirectory')), $links, (object)$terms);
+        $taxonomies[$post_taxonomy] = wp_sprintf('%s: %l', geodir_ucwords($listing_label . ' ' . __('Category', 'geodirectory')), $links, (object)$terms);
 
     }
 
@@ -1240,7 +1242,7 @@ function geodir_action_details_taxonomies()
     </p><?php
 }
 
-add_action('geodir_details_micordata', 'geodir_action_details_micordata', 10);
+add_action('wp_head', 'geodir_action_details_micordata', 10);
 
 /**
  * Output the posts microdata in the source code.
@@ -1250,30 +1252,125 @@ add_action('geodir_details_micordata', 'geodir_action_details_micordata', 10);
  * @global bool $preview True of on a preview page. False if not.
  * @global object $post The current post object.
  * @since 1.0.0
+ * @since 1.5.4 Changed to JSON-LD and added filters.
  * @package GeoDirectory
  */
 function geodir_action_details_micordata()
 {
-    global $post, $preview;
-    if (!$preview) {
-        $c_url = geodir_curPageURL();
-        $c_url = strtok($c_url, "#");
-        $c_url = strtok($c_url, "?");
-        ?>
-        <span style="display:none;" class="url"><?php echo $c_url;?></span>
-        <span class="updated" style="display:none;"><?php the_modified_date('c');?></span>
-        <span class="vcard author" style="display:none;">
-	<span class="fn"><?php echo get_the_author(); ?></span>
-    <span class="org"><?php the_title();?></span>
-    <span class="role"><?php _e('Admin', 'geodirectory')?></span>
-</span>
-        <meta itemprop="name" content="<?php the_title_attribute();?>"/>
 
-        <meta itemprop="url" content="<?php echo $c_url;?>"/>
-        <?php if ($post->geodir_contact) {
-            echo '<meta itemprop="telephone" content="' . $post->geodir_contact . '" />';
-        }
+    global $post, $preview;
+    if ($preview || !geodir_is_page('detail')) {
+        return;
     }
+
+    // url
+    $c_url = geodir_curPageURL();
+
+    // post reviews
+    $post_reviews = get_comments(array('post_id' => $post->ID, 'status' => 'approve'));
+    if (empty($post_reviews)) {
+        $reviews = '';
+    } else {
+        foreach ($post_reviews as $review) {
+            $reviews[] = array(
+                "@type" => "Review",
+                "author" => $review->comment_author,
+                "datePublished" => $review->comment_date,
+                "description" => $review->comment_content,
+                "reviewRating" => array(
+                    "@type" => "Rating",
+                    "bestRating" => "5",// @todo this will need to be filtered for review manager if user changes the score.
+                    "ratingValue" => geodir_get_commentoverall($review->comment_ID),
+                    "worstRating" => "1"
+                )
+            );
+        }
+
+    }
+
+    // post images
+    $post_images = geodir_get_images($post->ID, 'thumbnail', get_option('geodir_listing_no_img'));
+    if (empty($post_images)) {
+        $images = '';
+    } else {
+        $i_arr = array();
+        foreach ($post_images as $img) {
+            $i_arr[] = $img->src;
+        }
+
+        if (count($i_arr) == 1) {
+            $images = $i_arr[0];
+        } else {
+            $images = $i_arr;
+        }
+
+    }
+    //print_r($post);
+    // external links
+    $external_links =  array();
+    $external_links[] = $post->geodir_website;
+    $external_links[] = $post->geodir_twitter;
+    $external_links[] = $post->geodir_facebook;
+    $external_links = array_filter($external_links);
+
+    // reviews
+    $comment_count = geodir_get_review_count_total($post->ID);
+    $post_avgratings = geodir_get_post_rating($post->ID);
+
+    // schema type
+    if(isset($post->default_category) && $post->default_category){
+        $schema_type = get_tax_meta($post->default_category, 'ct_cat_schema', false, $post->post_type);
+        if(!$schema_type && $post->post_type=='gd_event'){$schema_type = 'Event';}
+        elseif(!$schema_type){$schema_type = 'LocalBusiness';}
+    }
+
+    $schema = array();
+    $schema['@context'] = "http://schema.org";
+    $schema['@type'] = $schema_type;
+    $schema['name'] = $post->post_name;
+    $schema['description'] = $post->post_content;
+    $schema['telephone'] = $post->geodir_contact;
+    $schema['url'] = $c_url;
+    $schema['sameAs'] = $external_links;;
+    $schema['image'] = $images;
+    $schema['address'] = array(
+        "@type" => "PostalAddress",
+        "streetAddress" => $post->post_address,
+        "addressLocality" => $post->post_city,
+        "addressRegion" => $post->post_region,
+        "addressCountry" => $post->post_country,
+        "postalCode" => $post->post_zip
+    );
+
+    if($post->post_latitude && $post->post_longitude) {
+        $schema['geo'] = array(
+            "@type" => "GeoCoordinates",
+            "latitude" => $post->post_latitude,
+            "longitude" => $post->post_longitude
+        );
+    }
+
+    if($post_avgratings) {
+        $schema['aggregateRating'] = array(
+            "@type" => "AggregateRating",
+            "ratingValue" => $post_avgratings,
+            "bestRating" => "5", // @todo this will need to be filtered for review manager if user changes the score.
+            "worstRating" => "1",
+            "ratingCount" => $comment_count
+        );
+    }
+    $schema['review'] = $reviews;
+
+    /**
+     * Allow the schema JSON-LD info to be filtered.
+     *
+     * @since 1.5.4
+     * @param array $schema The array of schema data to be filtered.
+     */
+    $schema = apply_filters('geodir_details_schema', $schema);
+
+    echo '<script type="application/ld+json">' . json_encode($schema) . '</script>';
+
 }
 
 add_action('geodir_details_tabs', 'geodir_show_detail_page_tabs', 10);
@@ -1340,7 +1437,6 @@ add_action('geodir_details_main_content', 'geodir_action_before_single_post', 10
 add_action('geodir_details_main_content', 'geodir_action_page_title', 20);
 add_action('geodir_details_main_content', 'geodir_action_details_slider', 30);
 add_action('geodir_details_main_content', 'geodir_action_details_taxonomies', 40);
-add_action('geodir_details_main_content', 'geodir_action_details_micordata', 50);
 add_action('geodir_details_main_content', 'geodir_show_detail_page_tabs', 60);
 add_action('geodir_details_main_content', 'geodir_action_after_single_post', 70);
 add_action('geodir_details_main_content', 'geodir_action_details_next_prev', 80);
@@ -1400,7 +1496,7 @@ function geodir_action_listings_title()
             $current_term_name = __(ucfirst($current_term->name), 'geodirectory');
             if ($current_term_name != '' && $location_name != '' && isset($current_term->taxonomy) && $current_term->taxonomy == $gd_post_type . 'category') {
                 $location_last_char = substr($location_name, -1);
-                $location_name_attach = strtolower($location_last_char) == 's' ? __("'", 'geodirectory') : __("'s", 'geodirectory');
+                $location_name_attach = geodir_strtolower($location_last_char) == 's' ? __("'", 'geodirectory') : __("'s", 'geodirectory');
                 $list_title .= __(' in', 'geodirectory') . ' ' . $location_name . $location_name_attach . ' ' . $current_term_name;
             } else {
                 $list_title .= __(' in', 'geodirectory') . " '" . $current_term_name . "'";
@@ -1413,7 +1509,7 @@ function geodir_action_listings_title()
                     $current_term_name = __(ucfirst($current_term->name), 'geodirectory');
                     if ($current_term_name != '' && $location_name != '' && isset($current_term->taxonomy) && $current_term->taxonomy == $gd_post_type . 'category') {
                         $location_last_char = substr($location_name, -1);
-                        $location_name_attach = strtolower($location_last_char) == 's' ? __("'", 'geodirectory') : __("'s", 'geodirectory');
+                        $location_name_attach = geodir_strtolower($location_last_char) == 's' ? __("'", 'geodirectory') : __("'s", 'geodirectory');
                         $list_title .= __(' in', 'geodirectory') . ' ' . $location_name . $location_name_attach . ' ' . $current_term_name;
                     } else {
                         $list_title .= __(' in', 'geodirectory') . " '" . $current_term_name . "'";
@@ -1441,7 +1537,7 @@ function geodir_action_listings_title()
             } else {
                 $gd_city = preg_replace('/-(\d+)$/', '', $gd_city);
                 $gd_city = preg_replace('/[_-]/', ' ', $gd_city);
-                $gd_city = __(ucwords($gd_city), 'geodirectory');
+                $gd_city = __(geodir_ucwords($gd_city), 'geodirectory');
             }
 
             $list_title .= __(' in', 'geodirectory') . " '" . $gd_city . "'";
@@ -1451,7 +1547,7 @@ function geodir_action_listings_title()
             } else {
                 $gd_region = preg_replace('/-(\d+)$/', '', $gd_region);
                 $gd_region = preg_replace('/[_-]/', ' ', $gd_region);
-                $gd_region = __(ucwords($gd_region), 'geodirectory');
+                $gd_region = __(geodir_ucwords($gd_region), 'geodirectory');
             }
 
             $list_title .= __(' in', 'geodirectory') . " '" . $gd_region . "'";
@@ -1461,7 +1557,7 @@ function geodir_action_listings_title()
             } else {
                 $gd_country = preg_replace('/-(\d+)$/', '', $gd_country);
                 $gd_country = preg_replace('/[_-]/', ' ', $gd_country);
-                $gd_country = __(ucwords($gd_country), 'geodirectory');
+                $gd_country = __(geodir_ucwords($gd_country), 'geodirectory');
             }
 
             $list_title .= __(' in', 'geodirectory') . " '" . $gd_country . "'";
@@ -1476,6 +1572,43 @@ function geodir_action_listings_title()
     /** This action is documented in geodirectory_template_actions.php */
     $class_header = apply_filters('geodir_page_title_header_class', 'entry-header');
 
+
+    $title = $list_title;
+    if(geodir_is_page('pt')){
+        $gd_page = 'pt';
+        $title  = (get_option('geodir_page_title_pt')) ? get_option('geodir_page_title_pt') : $title;
+    }
+    elseif(geodir_is_page('listing')){
+        $gd_page = 'listing';
+        global $wp_query;
+        $current_term = $wp_query->get_queried_object();
+        if (strpos($current_term->taxonomy,'_tags') !== false) {
+            $title = (get_option('geodir_page_title_tag-listing')) ? get_option('geodir_page_title_tag-listing') : $title;
+        }else{
+            $title = (get_option('geodir_page_title_cat-listing')) ? get_option('geodir_page_title_cat-listing') : $title;
+        }
+
+    }
+    elseif(geodir_is_page('author')){
+        $gd_page = 'author';
+        if(isset($_REQUEST['list']) && $_REQUEST['list']=='favourite'){
+            $title = (get_option('geodir_page_title_favorite')) ? get_option('geodir_page_title_favorite') : $title;
+        }else{
+            $title = (get_option('geodir_page_title_author')) ? get_option('geodir_page_title_author') : $title;
+        }
+
+    }
+
+
+    /**
+     * Filter page title to replace variables.
+     *
+     * @since 1.5.4
+     * @param string $title The page title including variables.
+     * @param string $gd_page The GeoDirectory page type if any.
+     */
+    $title =  apply_filters('geodir_seo_page_title', __($title, 'geodirectory'), $gd_page);
+
     echo '<header class="' . $class_header . '"><h1 class="' . $class . '">' .
         /**
          * Filter the listing page title.
@@ -1483,7 +1616,7 @@ function geodir_action_listings_title()
          * @since 1.0.0
          * @param string $list_title The title for the category page.
          */
-        apply_filters('geodir_listing_page_title', wptexturize($list_title)) . '</h1></header>';
+        apply_filters('geodir_listing_page_title', $title) . '</h1></header>';
 }
 
 add_action('geodir_listings_page_description', 'geodir_action_listings_description', 10);
@@ -1634,7 +1767,7 @@ function geodir_listing_left_section()
     if (get_option('geodir_show_listing_left_section')) { ?>
         <div class="geodir-content-left geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_listing_left_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-left -->
     <?php }
 }
 
@@ -1678,7 +1811,7 @@ function geodir_listing_right_section()
     if (get_option('geodir_show_listing_right_section')) { ?>
         <div class="geodir-content-right geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_listing_right_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-right -->
     <?php }
 }
 
@@ -1876,25 +2009,31 @@ function geodir_action_add_listing_page_title()
     $class = apply_filters('geodir_page_title_class', 'entry-title fn');
     /** This action is documented in geodirectory_template_actions.php */
     $class_header = apply_filters('geodir_page_title_header_class', 'entry-header');
-    echo '<header class="' . $class_header . '"><h1 class="' . $class . '">';
 
-    if (isset($_REQUEST['pid']) && $_REQUEST['pid'] != '') {
-        $post_type_info = geodir_get_posttype_info(get_post_type($_REQUEST['pid']));
-        /**
-         * Filter the add listing page title.
-         *
-         * @since 1.0.0
-         * @param string $title The page title. This is usually Edit/Add followed by the post type name.
-         */
-        echo apply_filters('geodir_add_listing_page_title_text', (ucwords(__('Edit', 'geodirectory') . ' ' . __($post_type_info['labels']['singular_name'], 'geodirectory'))));
-    } elseif (isset($listing_type)) {
-        $post_type_info = geodir_get_posttype_info($listing_type);
-        /** This action is documented in geodirectory_template_actions.php */
-        echo apply_filters('geodir_add_listing_page_title_text', (ucwords(__('Add', 'geodirectory') . ' ' . __($post_type_info['labels']['singular_name'], 'geodirectory'))));
-    } else {
-        /** This action is documented in geodirectory_template_actions.php */
-        apply_filters('geodir_add_listing_page_title_text', the_title());
+    $title = apply_filters('geodir_add_listing_page_title_text', get_the_title());
+
+    if(geodir_is_page('add-listing')){
+        $gd_page = 'add-listing';
+        if(isset($_REQUEST['pid']) && $_REQUEST['pid'] != ''){
+            $title = (get_option('geodir_page_title_edit-listing')) ? get_option('geodir_page_title_edit-listing') : $title;
+        }elseif(isset($listing_type)){
+            $title = (get_option('geodir_page_title_add-listing')) ? get_option('geodir_page_title_add-listing') : $title;
+        }
+
     }
+
+
+    /**
+     * Filter page title to replace variables.
+     *
+     * @since 1.5.4
+     * @param string $title The page title including variables.
+     * @param string $gd_page The GeoDirectory page type if any.
+     */
+    $title =  apply_filters('geodir_seo_page_title', __($title, 'geodirectory'), $gd_page);
+
+    echo '<header class="' . $class_header . '"><h1 class="' . $class . '">';
+    echo $title;
     echo '</h1></header>';
 }
 
@@ -2521,7 +2660,7 @@ function geodir_action_author_page_title()
     if (!empty($term)) {
         $current_term = get_term_by('slug', $term, $taxonomy[0]);
         if (!empty($current_term))
-            $list_title .= __(' in', 'geodirectory') . " '" . ucwords($current_term->name) . "'";
+            $list_title .= __(' in', 'geodirectory') . " '" . geodir_ucwords($current_term->name) . "'";
     }
 
 
@@ -2533,6 +2672,28 @@ function geodir_action_author_page_title()
     $class = apply_filters('geodir_page_title_class', 'entry-title fn');
     /** This action is documented in geodirectory_template_actions.php */
     $class_header = apply_filters('geodir_page_title_header_class', 'entry-header');
+
+    $title = $list_title;
+    if(geodir_is_page('author')){
+        $gd_page = 'author';
+        if(isset($_REQUEST['list']) && $_REQUEST['list']=='favourite'){
+            $title = (get_option('geodir_page_title_favorite')) ? get_option('geodir_page_title_favorite') : $title;
+        }else{
+            $title = (get_option('geodir_page_title_author')) ? get_option('geodir_page_title_author') : $title;
+        }
+
+    }
+
+
+    /**
+     * Filter page title to replace variables.
+     *
+     * @since 1.5.4
+     * @param string $title The page title including variables.
+     * @param string $gd_page The GeoDirectory page type if any.
+     */
+    $title =  apply_filters('geodir_seo_page_title', __($title, 'geodirectory'), $gd_page);
+
     echo '<header class="' . $class_header . '"><h1 class="' . $class . '">' .
         /**
          * Filter the author page title text.
@@ -2540,7 +2701,7 @@ function geodir_action_author_page_title()
          * @since 1.0.0
          * @param string $list_title The title for the page.
          */
-        apply_filters('geodir_author_page_title_text', wptexturize($list_title)) . '</h1></header>';
+        apply_filters('geodir_author_page_title_text', $title) . '</h1></header>';
 }
 
 
@@ -2581,7 +2742,7 @@ function geodir_author_left_section()
     if (get_option('geodir_show_author_left_section')) { ?>
         <div class="geodir-content-left geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_author_left_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-left -->
     <?php }
 }
 
@@ -2627,7 +2788,7 @@ function geodir_author_right_section()
     if (get_option('geodir_show_author_right_section')) { ?>
         <div class="geodir-content-right geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_author_right_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-right -->
     <?php }
 }
 
@@ -2796,7 +2957,7 @@ function geodir_search_left_section()
     if (get_option('geodir_show_search_left_section')) { ?>
         <div class="geodir-content-left geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_search_left_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-left -->
     <?php }
 }
 
@@ -2841,7 +3002,7 @@ function geodir_search_right_section()
     if (get_option('geodir_show_search_right_section')) { ?>
         <div class="geodir-content-right geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_search_right_sidebar'); ?>
-        </div>
+        </div><!-- end geodir-content-right -->
     <?php }
 }
 
@@ -2987,7 +3148,7 @@ function geodir_home_left_section()
     if (get_option('geodir_show_home_left_section')) { ?>
         <div class="geodir-content-left geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_home_left'); ?>
-        </div>
+        </div><!-- end geodir-content-left -->
     <?php }
 }
 
@@ -3034,7 +3195,7 @@ function geodir_home_right_section()
     if (get_option('geodir_show_home_right_section')) { ?>
         <div class="geodir-content-right geodir-sidebar-wrap">
             <?php dynamic_sidebar('geodir_home_right'); ?>
-        </div>
+        </div><!-- end geodir-content-right -->
     <?php }
 }
 
@@ -3165,3 +3326,6 @@ function geodir_filter_listing_page_title($list_title)
     }
     return $list_title;
 }
+
+add_action('geodir_message_not_found_on_listing', 'geodir_display_message_not_found_on_listing');
+add_filter('geodir_breadcrumb', 'geodir_strip_breadcrumb_li_wrappers', 999, 2);

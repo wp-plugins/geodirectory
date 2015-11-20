@@ -13,7 +13,13 @@
 global $wp_query, $current_term, $query;
 
 $curr_post_type = geodir_get_current_posttype();
-
+if (function_exists('geodir_location_geo_home_link')) {
+    remove_filter('home_url', 'geodir_location_geo_home_link', 100000);
+}
+$search_url = trailingslashit(get_home_url());
+if (function_exists('geodir_location_geo_home_link')) {
+    add_filter('home_url', 'geodir_location_geo_home_link', 100000, 2);
+}
 ?>
 
 
@@ -25,7 +31,7 @@ $curr_post_type = geodir_get_current_posttype();
  * @param string $class The class for the search form, default: 'geodir-listing-search'.
  */
 echo apply_filters('geodir_search_form_class', 'geodir-listing-search'); ?>"
-      name="geodir-listing-search" action="<?php echo home_url(); ?>" method="get">
+      name="geodir-listing-search" action="<?php echo $search_url ?>" method="get">
     <input type="hidden" name="geodir_search" value="1"/>
 
     <div class="geodir-loc-bar">
@@ -39,7 +45,6 @@ echo apply_filters('geodir_search_form_class', 'geodir-listing-search'); ?>"
         do_action('geodir_before_search_form') ?>
 
         <div class="clearfix geodir-loc-bar-in">
-
             <div class="geodir-search">
 
                 <?php
@@ -64,7 +69,7 @@ echo apply_filters('geodir_search_form_class', 'geodir-listing-search'); ?>"
                         <?php foreach ($post_types as $post_type => $info):
                             global $wpdb;
                             $has_posts = '';
-                            $has_posts = $wpdb->get_row($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_type = %s LIMIT 1", $post_type));
+                            $has_posts = $wpdb->get_row($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_type = %s AND post_status='publish' LIMIT 1", $post_type));
                             if (!$has_posts) {
                                 continue;
                             }
@@ -142,8 +147,18 @@ echo apply_filters('geodir_search_form_class', 'geodir-listing-search'); ?>"
                  *
                  * @since 1.0.0
                  */
-                do_action('geodir_before_search_button'); ?>
-                <input type="button" value="<?php echo $default_search_button_label; ?>" class="geodir_submit_search">
+                do_action('geodir_before_search_button');
+
+                /**
+                 * Filter the default search button text value for the search form.
+                 *
+                 * This text can be changed via an option in settings, this is a last resort.
+                 *
+                 * @since 1.5.5
+                 * @param string $default_search_button_label The current search button text.
+                 */
+                $default_search_button_label = apply_filters('geodir_search_default_search_button_text', $default_search_button_label);?>
+				<input type="button" value="<?php esc_attr_e($default_search_button_label); ?>" class="geodir_submit_search" />
                 <?php
                 /**
                  * Called on the GD search form just after the search button.
